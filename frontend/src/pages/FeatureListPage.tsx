@@ -66,9 +66,7 @@ export function FeatureListPage() {
         </Center>
       )}
 
-      {isError && !isLoading && (
-        <ErrorMessage error={error} />
-      )}
+      {isError && !isLoading && <ErrorMessage error={error} />}
 
       {!isLoading && !isError && features.length === 0 && (
         <EmptyState
@@ -81,8 +79,8 @@ export function FeatureListPage() {
             hasActiveFilters
               ? { label: 'Clear filters', onClick: handleClearFilters }
               : user
-              ? { label: 'Submit the first feature request', href: '/features/new' }
-              : undefined
+                ? { label: 'Submit the first feature request', href: '/features/new' }
+                : undefined
           }
         />
       )}
@@ -104,9 +102,7 @@ export function FeatureListPage() {
             />
           ))}
 
-          {meta && (
-            <Pagination meta={meta} onPageChange={setPage} />
-          )}
+          {meta && <Pagination meta={meta} onPageChange={setPage} />}
         </Stack>
       )}
     </Stack>

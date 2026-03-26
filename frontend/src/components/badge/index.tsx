@@ -14,7 +14,11 @@ export function Badge({ label, color, icon }: BadgeProps) {
 
   return (
     <MantineBadge variant="light" radius="sm" style={style}>
-      {icon && <span aria-hidden="true" style={{ marginRight: 4 }}>{icon}</span>}
+      {icon && (
+        <span aria-hidden="true" style={{ marginRight: 4 }}>
+          {icon}
+        </span>
+      )}
       {label}
     </MantineBadge>
   )

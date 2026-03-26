@@ -24,8 +24,8 @@ export function VoteButton({
   const ariaLabel = isPending
     ? 'Vote action in progress…'
     : hasVoted
-    ? `Remove vote (${voteCount} votes)`
-    : `Vote (${voteCount} votes)`
+      ? `Remove vote (${voteCount} votes)`
+      : `Vote (${voteCount} votes)`
 
   function handleClick() {
     if (hasVoted) {
@@ -39,10 +39,7 @@ export function VoteButton({
     return (
       <div className="flex flex-col items-center gap-1">
         <span className="text-lg font-semibold text-gray-700">{voteCount}</span>
-        <a
-          href="/login"
-          className="text-xs text-blue-600 hover:text-blue-700 underline"
-        >
+        <a href="/login" className="text-xs text-blue-600 hover:text-blue-700 underline">
           Log in to vote
         </a>
       </div>

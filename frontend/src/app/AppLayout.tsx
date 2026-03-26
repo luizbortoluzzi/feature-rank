@@ -40,9 +40,7 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
     { label: 'My Votes', icon: IconThumbUp, path: '/my-votes' },
   ]
 
-  const adminLinks = [
-    { label: 'Admin Console', icon: IconShield, path: '/admin' },
-  ]
+  const adminLinks = [{ label: 'Admin Console', icon: IconShield, path: '/admin' }]
 
   function isActive(path: string): boolean {
     if (path === '/') return location.pathname === '/'
@@ -59,11 +57,7 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
     : '?'
 
   return (
-    <AppShell
-      navbar={{ width: 220, breakpoint: 'sm' }}
-      header={{ height: 60 }}
-      padding="md"
-    >
+    <AppShell navbar={{ width: 220, breakpoint: 'sm' }} header={{ height: 60 }} padding="md">
       <AppShell.Header
         style={{
           backgroundColor: 'var(--mantine-color-white)',

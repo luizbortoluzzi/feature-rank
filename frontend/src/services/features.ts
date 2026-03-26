@@ -40,7 +40,10 @@ export async function createFeature(payload: CreateFeaturePayload): Promise<Feat
   return response.data.data
 }
 
-export async function updateFeature(id: number, payload: UpdateFeaturePayload): Promise<FeatureRequest> {
+export async function updateFeature(
+  id: number,
+  payload: UpdateFeaturePayload,
+): Promise<FeatureRequest> {
   const response = await apiClient.patch(`/api/features/${id}/`, payload)
   return response.data.data
 }

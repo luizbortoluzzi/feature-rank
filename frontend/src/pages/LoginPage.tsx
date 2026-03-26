@@ -29,11 +29,7 @@ export function LoginPage() {
       <div className="w-full max-w-sm bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <h1 className="text-xl font-bold text-gray-900 mb-6">Sign in</h1>
 
-        <LoginForm
-          onSubmit={handleSubmit}
-          isPending={isPending}
-          error={isError ? error : null}
-        />
+        <LoginForm onSubmit={handleSubmit} isPending={isPending} error={isError ? error : null} />
 
         <p className="mt-4 text-sm text-center text-gray-500">
           <Link to="/" className="text-blue-600 hover:text-blue-700 underline">

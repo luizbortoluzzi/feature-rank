@@ -19,7 +19,10 @@ function getDisplayMessage(error: ApiError | Error | null, fallback: string): st
   return fallback
 }
 
-export function ErrorMessage({ error, fallback = 'Something went wrong. Please try again later.' }: ErrorMessageProps) {
+export function ErrorMessage({
+  error,
+  fallback = 'Something went wrong. Please try again later.',
+}: ErrorMessageProps) {
   const message = getDisplayMessage(error, fallback)
 
   return (

@@ -1101,3 +1101,100 @@ I am building a modern SaaS dashboard using React and Mantine. I want you to hel
 Installed Mantine v7 (@mantine/core, @mantine/hooks, @mantine/notifications, @mantine/dates), @tabler/icons-react, and PostCSS dependencies. Created frontend/postcss.config.cjs with Mantine breakpoint variables. Created frontend/src/styles/theme.ts with full createTheme config (indigo primary, Inter typography, custom spacing/radius/shadows, component defaults). Created frontend/src/app/AppLayout.tsx with AppShell sidebar (nav links, admin section, user profile strip) and header (search + new request button). Updated main.tsx to wrap app with MantineProvider and Notifications. Updated router.tsx to wrap authenticated routes in AppLayout. Replaced all stub components (Spinner, Button, Badge, EmptyState, ErrorMessage, Pagination) with Mantine-backed implementations preserving existing import paths. Fully restyled FeatureCard to match the prototype design (vote widget, category/status badges, star rating, author footer). Updated FeatureListPage to use new FeatureCard props. tsc --noEmit passed with zero errors.
 
 ---
+
+## [2026-03-26T01:00:00Z] – Set up ESLint, Prettier, and TypeScript config split
+
+### Prompt
+You are a senior frontend engineer. Set up three things in this React + TypeScript + Vite project: ESLint, Prettier, and React Router. Read the existing project structure and package.json before touching anything.
+
+[Full prompt included Prettier config, ESLint flat config (ESLint 9+), TypeScript three-file split (tsconfig.json / tsconfig.app.json / tsconfig.node.json), path alias @/ in vite.config.ts, and React Router setup instructions.]
+
+### Action Taken
+Installed prettier@^3, eslint@^9, @eslint/js@^9, globals@^15, typescript-eslint@^8, eslint-plugin-react-hooks@^5, eslint-plugin-react-refresh@^0.4, eslint-config-prettier@^9, and @types/node. Created .prettierrc and .prettierignore. Created eslint.config.js using flat config format. Split tsconfig into tsconfig.json (project references root), tsconfig.app.json (src/ code), and tsconfig.node.json (vite.config.ts). Added @/ path alias to vite.config.ts. Added lint, lint:fix, format, format:check scripts to package.json. Re-installed Mantine and Tabler icons (overwritten by worktree package.json copy). Ran prettier --write to auto-fix formatting across all src files. All three checks pass: npm run lint (0 errors, 1 expected warning), npm run format:check (all files pass), npx tsc --noEmit -p tsconfig.app.json (0 errors).
+
+---
+
+## [2026-03-26T21:00:00Z] – Write comprehensive backend test suite covering all apps
+
+### Prompt
+You are the backend-engineer agent for the Django monorepo at /home/isam/prj/feature-rank.
+
+Your task is to write a comprehensive test suite that covers the entire backend. Read the existing test files and all source files before writing anything.
+
+---
+
+## Step 0 — Read everything first
+
+Read these files before writing a single test:
+
+**Existing tests (read all of them):**
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/tests/test_models.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/tests/test_services.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/tests/test_selectors.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/tests/test_views.py`
+- `/home/isam/prj/feature-rank/backend/apps/users/tests/test_views.py`
+
+**Source files:**
+- `/home/isam/prj/feature-rank/backend/apps/users/models.py`
+- `/home/isam/prj/feature-rank/backend/apps/users/views.py`
+- `/home/isam/prj/feature-rank/backend/apps/users/serializers.py`
+- `/home/isam/prj/feature-rank/backend/apps/users/services.py`
+- `/home/isam/prj/feature-rank/backend/apps/users/selectors.py`
+- `/home/isam/prj/feature-rank/backend/apps/users/permissions.py`
+- `/home/isam/prj/feature-rank/backend/apps/categories/models.py`
+- `/home/isam/prj/feature-rank/backend/apps/categories/views.py`
+- `/home/isam/prj/feature-rank/backend/apps/categories/serializers.py`
+- `/home/isam/prj/feature-rank/backend/apps/categories/services.py`
+- `/home/isam/prj/feature-rank/backend/apps/categories/selectors.py`
+- `/home/isam/prj/feature-rank/backend/apps/categories/permissions.py`
+- `/home/isam/prj/feature-rank/backend/apps/statuses/models.py`
+- `/home/isam/prj/feature-rank/backend/apps/statuses/views.py`
+- `/home/isam/prj/feature-rank/backend/apps/statuses/serializers.py`
+- `/home/isam/prj/feature-rank/backend/apps/statuses/services.py`
+- `/home/isam/prj/feature-rank/backend/apps/statuses/selectors.py`
+- `/home/isam/prj/feature-rank/backend/apps/statuses/permissions.py`
+- `/home/isam/prj/feature-rank/backend/apps/roles/models.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/models.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/views.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/serializers.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/services.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/selectors.py`
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/permissions.py`
+- `/home/isam/prj/feature-rank/backend/config/urls.py`
+- `/home/isam/prj/feature-rank/backend/config/views.py`
+- `/home/isam/prj/feature-rank/backend/config/pagination.py`
+- `/home/isam/prj/feature-rank/backend/config/drf_exception_handler.py`
+- `/home/isam/prj/feature-rank/backend/config/drf_renderer.py`
+- `/home/isam/prj/feature-rank/backend/docs/engineering/backend/testing-strategy.md` (read from /home/isam/prj/feature-rank/docs/engineering/backend/testing-strategy.md)
+
+### Action Taken
+Read all existing test files and all source files across the backend. Installed pytest-django (was missing from the environment). Created the following files:
+
+- `/home/isam/prj/feature-rank/backend/conftest.py` — shared pytest fixtures for users, categories, statuses, feature_requests
+- `/home/isam/prj/feature-rank/backend/apps/users/tests/test_serializers.py` — UserRegistrationSerializer and UserMeSerializer tests
+- `/home/isam/prj/feature-rank/backend/apps/users/tests/test_services.py` — register_user service tests
+- `/home/isam/prj/feature-rank/backend/apps/users/tests/test_selectors.py` — get_current_user selector tests
+- `/home/isam/prj/feature-rank/backend/apps/users/tests/test_permissions.py` — IsAdminUser permission tests
+- `/home/isam/prj/feature-rank/backend/apps/categories/tests/test_models.py` — Category model constraint tests
+- `/home/isam/prj/feature-rank/backend/apps/categories/tests/test_serializers.py` — CategorySerializer tests
+- `/home/isam/prj/feature-rank/backend/apps/categories/tests/test_services.py` — create/update/delete_category service tests
+- `/home/isam/prj/feature-rank/backend/apps/categories/tests/test_selectors.py` — get_categories_list and get_category selector tests
+- `/home/isam/prj/feature-rank/backend/apps/categories/tests/test_views.py` — all 5 category endpoints (list, retrieve, create, update, delete)
+- `/home/isam/prj/feature-rank/backend/apps/statuses/tests/test_models.py` — Status model constraint tests
+- `/home/isam/prj/feature-rank/backend/apps/statuses/tests/test_serializers.py` — StatusSerializer tests
+- `/home/isam/prj/feature-rank/backend/apps/statuses/tests/test_services.py` — create/update/delete_status service tests
+- `/home/isam/prj/feature-rank/backend/apps/statuses/tests/test_selectors.py` — get_statuses_list and get_status selector tests
+- `/home/isam/prj/feature-rank/backend/apps/statuses/tests/test_views.py` — all 5 status endpoints
+- `/home/isam/prj/feature-rank/backend/apps/roles/tests/test_models.py` — Role model constraint tests
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/tests/test_serializers.py` — FeatureRequestWriteSerializer and FeatureRequestListSerializer tests
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/tests/test_permissions.py` — IsAuthorOrAdmin permission tests
+- `/home/isam/prj/feature-rank/backend/tests/test_health.py` — health check endpoint tests
+- `/home/isam/prj/feature-rank/backend/tests/test_auth.py` — JWT token obtain and refresh tests
+- `/home/isam/prj/feature-rank/backend/tests/test_pagination.py` — StandardResultsPagination behavior tests
+- `/home/isam/prj/feature-rank/backend/tests/test_exception_handler.py` — custom exception handler error envelope tests
+
+Modified existing test files to update URLs from /api/ to /api/v1/:
+- `/home/isam/prj/feature-rank/backend/apps/feature_requests/tests/test_views.py`
+- `/home/isam/prj/feature-rank/backend/apps/users/tests/test_views.py`
+
+All 199 tests pass.

@@ -20,8 +20,8 @@ export function EmptyState({ message, action }: EmptyStateProps) {
         <Text size="sm" c="dimmed" ta="center">
           {message}
         </Text>
-        {action && (
-          action.href ? (
+        {action &&
+          (action.href ? (
             <Anchor href={action.href} size="sm" fw={500}>
               {action.label}
             </Anchor>
@@ -31,8 +31,7 @@ export function EmptyState({ message, action }: EmptyStateProps) {
                 {action.label}
               </Text>
             </UnstyledButton>
-          )
-        )}
+          ))}
       </Stack>
     </Center>
   )

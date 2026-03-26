@@ -33,9 +33,7 @@ export function useCastVote(params: FeatureListParams): UseCastVoteResult {
         queryClient.setQueryData<CachedListData>(featureKeys.list(params), {
           ...previousList,
           items: previousList.items.map((f) =>
-            f.id === featureId
-              ? { ...f, has_voted: true, vote_count: f.vote_count + 1 }
-              : f,
+            f.id === featureId ? { ...f, has_voted: true, vote_count: f.vote_count + 1 } : f,
           ),
         })
       }
@@ -58,14 +56,14 @@ export function useCastVote(params: FeatureListParams): UseCastVoteResult {
         queryClient.setQueryData<CachedListData>(featureKeys.list(params), {
           ...listData,
           items: listData.items.map((f) =>
-            f.id === feature_request_id
-              ? { ...f, has_voted, vote_count }
-              : f,
+            f.id === feature_request_id ? { ...f, has_voted, vote_count } : f,
           ),
         })
       }
 
-      const detailData = queryClient.getQueryData<FeatureRequest>(featureKeys.detail(feature_request_id))
+      const detailData = queryClient.getQueryData<FeatureRequest>(
+        featureKeys.detail(feature_request_id),
+      )
       if (detailData) {
         queryClient.setQueryData<FeatureRequest>(featureKeys.detail(feature_request_id), {
           ...detailData,

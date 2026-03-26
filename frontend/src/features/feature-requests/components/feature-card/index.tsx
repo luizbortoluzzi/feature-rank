@@ -1,14 +1,5 @@
 import { Link } from 'react-router-dom'
-import {
-  Card,
-  Group,
-  Stack,
-  Text,
-  Avatar,
-  ActionIcon,
-  Rating,
-  Box,
-} from '@mantine/core'
+import { Card, Group, Stack, Text, Avatar, ActionIcon, Rating, Box } from '@mantine/core'
 import { IconArrowUp, IconClock } from '@tabler/icons-react'
 import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
@@ -30,9 +21,7 @@ export function FeatureCard({ feature, onVote, isVoting }: FeatureCardProps) {
     .slice(0, 2)
 
   const truncatedDescription =
-    feature.description.length > 160
-      ? feature.description.slice(0, 160) + '…'
-      : feature.description
+    feature.description.length > 160 ? feature.description.slice(0, 160) + '…' : feature.description
 
   return (
     <Card withBorder shadow="xs" radius="md" p="md">
@@ -49,17 +38,14 @@ export function FeatureCard({ feature, onVote, isVoting }: FeatureCardProps) {
             isVoting
               ? 'Vote action in progress…'
               : feature.has_voted
-              ? `Remove vote (${feature.vote_count} votes)`
-              : `Vote (${feature.vote_count} votes)`
+                ? `Remove vote (${feature.vote_count} votes)`
+                : `Vote (${feature.vote_count} votes)`
           }
           aria-pressed={feature.has_voted}
           style={{ flexShrink: 0, flexDirection: 'column', height: 'auto', padding: '8px 12px' }}
         >
           <Stack align="center" gap={2}>
-            <IconArrowUp
-              size={20}
-              stroke={feature.has_voted ? 2.5 : 1.5}
-            />
+            <IconArrowUp size={20} stroke={feature.has_voted ? 2.5 : 1.5} />
             <Text
               size="md"
               fw={700}

@@ -22,11 +22,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     retry: false,
   })
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ user, isLoading }}>{children}</AuthContext.Provider>
 }
 
 export function useCurrentUser(): AuthContextValue {

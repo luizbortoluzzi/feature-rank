@@ -20,9 +20,9 @@ class UserRegistrationViewTest(TestCase):
         self.client = APIClient()
 
     def test_register_with_valid_data_returns_201(self):
-        """POST /api/users/register/ with valid data creates a user and returns 201."""
+        """POST /api/v1/users/register/ with valid data creates a user and returns 201."""
         response = self.client.post(
-            "/api/users/register/",
+            "/api/v1/users/register/",
             {
                 "username": "newuser",
                 "email": "newuser@example.com",
@@ -38,12 +38,12 @@ class UserRegistrationViewTest(TestCase):
         self.assertNotIn("password", data["data"])
 
     def test_register_with_duplicate_email_returns_400(self):
-        """POST /api/users/register/ with an already-registered email returns 400."""
+        """POST /api/v1/users/register/ with an already-registered email returns 400."""
         User.objects.create_user(
             username="existing", email="existing@example.com", password="pass", name="Existing"
         )
         response = self.client.post(
-            "/api/users/register/",
+            "/api/v1/users/register/",
             {
                 "username": "newuser2",
                 "email": "existing@example.com",  # duplicate
@@ -57,7 +57,7 @@ class UserRegistrationViewTest(TestCase):
     def test_register_normalizes_email_to_lowercase(self):
         """Email is normalized to lowercase on registration."""
         response = self.client.post(
-            "/api/users/register/",
+            "/api/v1/users/register/",
             {
                 "username": "caseuser",
                 "email": "CaseUser@EXAMPLE.COM",
@@ -71,9 +71,9 @@ class UserRegistrationViewTest(TestCase):
         self.assertEqual(data["data"]["email"], "caseuser@example.com")
 
     def test_register_missing_required_fields_returns_400(self):
-        """POST /api/users/register/ with missing required fields returns 400."""
+        """POST /api/v1/users/register/ with missing required fields returns 400."""
         response = self.client.post(
-            "/api/users/register/",
+            "/api/v1/users/register/",
             {"email": "incomplete@example.com"},
             format="json",
         )
@@ -88,14 +88,14 @@ class UserMeViewTest(TestCase):
         )
 
     def test_me_without_auth_returns_401(self):
-        """GET /api/users/me/ without authentication returns 401."""
-        response = self.client.get("/api/users/me/")
+        """GET /api/v1/users/me/ without authentication returns 401."""
+        response = self.client.get("/api/v1/users/me/")
         self.assertEqual(response.status_code, 401)
 
     def test_me_with_valid_auth_returns_200_with_user_data(self):
-        """GET /api/users/me/ with valid authentication returns 200 with user data."""
+        """GET /api/v1/users/me/ with valid authentication returns 200 with user data."""
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/users/me/")
+        response = self.client.get("/api/v1/users/me/")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
@@ -105,9 +105,9 @@ class UserMeViewTest(TestCase):
         self.assertNotIn("password", data["data"])
 
     def test_me_response_shape(self):
-        """GET /api/users/me/ response data contains expected fields."""
+        """GET /api/v1/users/me/ response data contains expected fields."""
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/users/me/")
+        response = self.client.get("/api/v1/users/me/")
         data = response.json()["data"]
         for field in ["id", "username", "name", "email", "is_admin", "date_joined"]:
             self.assertIn(field, data)

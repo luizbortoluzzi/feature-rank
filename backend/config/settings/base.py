@@ -148,7 +148,7 @@ SPECTACULAR_SETTINGS = {
     ],
 
     "COMPONENT_SPLIT_REQUEST": True,
-    "SCHEMA_PATH_PREFIX": r"/api/",
+    "SCHEMA_PATH_PREFIX": r"/api/v1/",
 }
 
 CORS_ALLOWED_ORIGINS = config(

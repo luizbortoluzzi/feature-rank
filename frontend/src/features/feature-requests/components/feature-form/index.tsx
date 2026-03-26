@@ -57,13 +57,14 @@ export function FeatureForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-      {submitError && !submitError.details && (
-        <ErrorMessage error={submitError} />
-      )}
+      {submitError && !submitError.details && <ErrorMessage error={submitError} />}
 
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-          Title <span aria-hidden="true" className="text-red-500">*</span>
+          Title{' '}
+          <span aria-hidden="true" className="text-red-500">
+            *
+          </span>
         </label>
         <input
           id="title"
@@ -82,7 +83,10 @@ export function FeatureForm({
 
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-          Description <span aria-hidden="true" className="text-red-500">*</span>
+          Description{' '}
+          <span aria-hidden="true" className="text-red-500">
+            *
+          </span>
         </label>
         <textarea
           id="description"
@@ -101,7 +105,10 @@ export function FeatureForm({
 
       <div>
         <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
-          Category <span aria-hidden="true" className="text-red-500">*</span>
+          Category{' '}
+          <span aria-hidden="true" className="text-red-500">
+            *
+          </span>
         </label>
         {isLoadingCategories ? (
           <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -135,7 +142,10 @@ export function FeatureForm({
 
       <div>
         <label htmlFor="rate" className="block text-sm font-medium text-gray-700 mb-1">
-          Priority (1–5) <span aria-hidden="true" className="text-red-500">*</span>
+          Priority (1–5){' '}
+          <span aria-hidden="true" className="text-red-500">
+            *
+          </span>
         </label>
         <input
           id="rate"

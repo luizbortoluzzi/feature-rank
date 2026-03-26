@@ -46,20 +46,20 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Health check — no auth required, used by load balancers and CI
-    path("api/health/", health_check, name="health_check"),
+    path("api/v1/health/", health_check, name="health_check"),
 
     # JWT authentication
-    path("api/auth/token/", DocumentedTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/auth/token/refresh/", DocumentedTokenRefreshView.as_view(), name="token_refresh"),
+    path("api/v1/auth/token/", DocumentedTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/v1/auth/token/refresh/", DocumentedTokenRefreshView.as_view(), name="token_refresh"),
 
     # Application API routes
-    path("api/", include("apps.users.urls")),
-    path("api/", include("apps.feature_requests.urls")),
-    path("api/", include("apps.categories.urls")),
-    path("api/", include("apps.statuses.urls")),
+    path("api/v1/", include("apps.users.urls")),
+    path("api/v1/", include("apps.feature_requests.urls")),
+    path("api/v1/", include("apps.categories.urls")),
+    path("api/v1/", include("apps.statuses.urls")),
 
     # OpenAPI schema + UI
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/v1/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]

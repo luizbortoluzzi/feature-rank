@@ -2,7 +2,10 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCreateFeature } from '../features/feature-requests/hooks/use-create-feature'
 import { useCategories } from '../features/categories/hooks/use-categories'
-import { FeatureForm, type FeatureFormFields } from '../features/feature-requests/components/feature-form'
+import {
+  FeatureForm,
+  type FeatureFormFields,
+} from '../features/feature-requests/components/feature-form'
 import { ErrorMessage } from '../components/error-message'
 
 export function CreateFeaturePage() {
@@ -35,9 +38,7 @@ export function CreateFeaturePage() {
 
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Submit Feature Request</h1>
 
-      {isError && error && !error.details && (
-        <ErrorMessage error={error} />
-      )}
+      {isError && error && !error.details && <ErrorMessage error={error} />}
 
       <FeatureForm
         categories={categories}

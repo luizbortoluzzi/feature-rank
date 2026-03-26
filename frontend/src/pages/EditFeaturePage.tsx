@@ -3,7 +3,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useFeatureDetail } from '../features/feature-requests/hooks/use-feature-detail'
 import { useUpdateFeature } from '../features/feature-requests/hooks/use-update-feature'
 import { useCategories } from '../features/categories/hooks/use-categories'
-import { FeatureForm, type FeatureFormFields } from '../features/feature-requests/components/feature-form'
+import {
+  FeatureForm,
+  type FeatureFormFields,
+} from '../features/feature-requests/components/feature-form'
 import { Spinner } from '../components/spinner'
 import { ErrorMessage } from '../components/error-message'
 import type { ApiError } from '../types/api'
@@ -13,7 +16,12 @@ export function EditFeaturePage() {
   const featureId = Number(id)
   const navigate = useNavigate()
 
-  const { feature, isLoading: isLoadingFeature, isError: isFeatureError, error: featureError } = useFeatureDetail(featureId)
+  const {
+    feature,
+    isLoading: isLoadingFeature,
+    isError: isFeatureError,
+    error: featureError,
+  } = useFeatureDetail(featureId)
   const { updateFeature, isPending, isError, error, data } = useUpdateFeature()
   const { categories, isLoading: isLoadingCategories } = useCategories()
 

@@ -23,7 +23,12 @@ export function FeatureDetailPage() {
   const { feature, isLoading, isError, error } = useFeatureDetail(featureId)
   const { castVote, isPending: isCastingVote } = useCastVote(emptyParams)
   const { removeVote, isPending: isRemovingVote } = useRemoveVote(emptyParams)
-  const { deleteFeature, isPending: isDeleting, isError: isDeleteError, error: deleteError } = useDeleteFeature()
+  const {
+    deleteFeature,
+    isPending: isDeleting,
+    isError: isDeleteError,
+    error: deleteError,
+  } = useDeleteFeature()
 
   const isVoting = isCastingVote || isRemovingVote
   const isOwner = user && feature && user.id === feature.author.id
@@ -106,9 +111,7 @@ export function FeatureDetailPage() {
           </div>
         </div>
 
-        {isDeleteError && deleteError && (
-          <ErrorMessage error={deleteError} />
-        )}
+        {isDeleteError && deleteError && <ErrorMessage error={deleteError} />}
 
         {(canEdit || canDelete) && (
           <div className="flex items-center gap-3 pt-4 border-t border-gray-200">

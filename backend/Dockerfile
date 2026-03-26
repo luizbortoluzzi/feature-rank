@@ -21,9 +21,10 @@ WORKDIR /build
 # and silently skips installing [project] dependencies.
 COPY . .
 
-# Install the package and all its dependencies (no dev extras in the image)
+# Install the package with dev extras (pytest, factory-boy, ruff) so the dev
+# container can run tests. The prod override uses gunicorn but the same image.
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir .
+    pip install --no-cache-dir ".[dev]"
 
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 # Minimal image containing only the runtime MySQL shared library and the venv.

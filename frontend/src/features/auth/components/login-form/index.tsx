@@ -37,7 +37,10 @@ export function LoginForm({ onSubmit, isPending, error }: LoginFormProps) {
 
       <div>
         <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-          Username <span aria-hidden="true" className="text-red-500">*</span>
+          Username{' '}
+          <span aria-hidden="true" className="text-red-500">
+            *
+          </span>
         </label>
         <input
           id="username"
@@ -56,7 +59,10 @@ export function LoginForm({ onSubmit, isPending, error }: LoginFormProps) {
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-          Password <span aria-hidden="true" className="text-red-500">*</span>
+          Password{' '}
+          <span aria-hidden="true" className="text-red-500">
+            *
+          </span>
         </label>
         <input
           id="password"

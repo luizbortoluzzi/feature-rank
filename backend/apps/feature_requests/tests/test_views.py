@@ -61,8 +61,8 @@ class FeatureRequestListViewTest(TestCase):
         self.feature = create_feature(self.user, self.category, self.status)
 
     def test_unauthenticated_can_list_features(self):
-        """GET /api/features/ without auth returns 200."""
-        response = self.client.get("/api/features/")
+        """GET /api/v1/features/ without auth returns 200."""
+        response = self.client.get("/api/v1/features/")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("data", data)
@@ -71,34 +71,34 @@ class FeatureRequestListViewTest(TestCase):
         """
         For unauthenticated requests, has_voted must be False on all items.
         """
-        response = self.client.get("/api/features/")
+        response = self.client.get("/api/v1/features/")
         self.assertEqual(response.status_code, 200)
         for item in response.json()["data"]:
             self.assertFalse(item["has_voted"])
 
     def test_sort_by_rate_returns_400(self):
         """sort=rate must return 400. rate is never a permitted sort field."""
-        response = self.client.get("/api/features/?sort=rate")
+        response = self.client.get("/api/v1/features/?sort=rate")
         self.assertEqual(response.status_code, 400)
 
     def test_sort_by_negative_rate_returns_400(self):
         """sort=-rate must return 400."""
-        response = self.client.get("/api/features/?sort=-rate")
+        response = self.client.get("/api/v1/features/?sort=-rate")
         self.assertEqual(response.status_code, 400)
 
     def test_invalid_sort_value_returns_400(self):
         """An unknown sort value returns 400."""
-        response = self.client.get("/api/features/?sort=invalid_sort")
+        response = self.client.get("/api/v1/features/?sort=invalid_sort")
         self.assertEqual(response.status_code, 400)
 
     def test_category_id_non_integer_returns_400(self):
         """category_id=abc (non-integer) must return 400."""
-        response = self.client.get("/api/features/?category_id=abc")
+        response = self.client.get("/api/v1/features/?category_id=abc")
         self.assertEqual(response.status_code, 400)
 
     def test_list_is_paginated(self):
         """List response includes pagination meta."""
-        response = self.client.get("/api/features/")
+        response = self.client.get("/api/v1/features/")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("meta", data)
@@ -116,9 +116,9 @@ class FeatureRequestCreateViewTest(TestCase):
         self.status = create_status()
 
     def test_unauthenticated_create_returns_401(self):
-        """POST /api/features/ without auth returns 401."""
+        """POST /api/v1/features/ without auth returns 401."""
         response = self.client.post(
-            "/api/features/",
+            "/api/v1/features/",
             {"title": "Test", "description": "Desc", "rate": 3, "category_id": self.category.pk},
             format="json",
         )
@@ -128,7 +128,7 @@ class FeatureRequestCreateViewTest(TestCase):
         """Authenticated user can create a feature request. Returns 201."""
         self.client.force_authenticate(user=self.user)
         response = self.client.post(
-            "/api/features/",
+            "/api/v1/features/",
             {"title": "Test Feature", "description": "A description", "rate": 3, "category_id": self.category.pk},
             format="json",
         )
@@ -141,7 +141,7 @@ class FeatureRequestCreateViewTest(TestCase):
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.post(
-            "/api/features/",
+            "/api/v1/features/",
             {
                 "title": "Test",
                 "description": "Desc",
@@ -160,7 +160,7 @@ class FeatureRequestCreateViewTest(TestCase):
         """
         self.client.force_authenticate(user=self.user)
         response = self.client.post(
-            "/api/features/",
+            "/api/v1/features/",
             {
                 "title": "Auth Test",
                 "description": "A description",
@@ -190,7 +190,7 @@ class FeatureRequestUpdateDeleteViewTest(TestCase):
         """PATCH by a user who is neither the author nor an admin must return 403."""
         self.client.force_authenticate(user=self.non_author)
         response = self.client.patch(
-            f"/api/features/{self.feature.pk}/",
+            f"/api/v1/features/{self.feature.pk}/",
             {"title": "Hacked"},
             format="json",
         )
@@ -200,7 +200,7 @@ class FeatureRequestUpdateDeleteViewTest(TestCase):
         """PATCH by the feature request author returns 200."""
         self.client.force_authenticate(user=self.author)
         response = self.client.patch(
-            f"/api/features/{self.feature.pk}/",
+            f"/api/v1/features/{self.feature.pk}/",
             {"title": "Updated Title"},
             format="json",
         )
@@ -210,7 +210,7 @@ class FeatureRequestUpdateDeleteViewTest(TestCase):
         """PATCH by an admin user returns 200."""
         self.client.force_authenticate(user=self.admin)
         response = self.client.patch(
-            f"/api/features/{self.feature.pk}/",
+            f"/api/v1/features/{self.feature.pk}/",
             {"title": "Admin Updated"},
             format="json",
         )
@@ -219,13 +219,13 @@ class FeatureRequestUpdateDeleteViewTest(TestCase):
     def test_delete_by_non_author_non_admin_returns_403(self):
         """DELETE by a user who is neither the author nor an admin must return 403."""
         self.client.force_authenticate(user=self.non_author)
-        response = self.client.delete(f"/api/features/{self.feature.pk}/")
+        response = self.client.delete(f"/api/v1/features/{self.feature.pk}/")
         self.assertEqual(response.status_code, 403)
 
     def test_delete_by_author_returns_204(self):
         """DELETE by the feature request author returns 204."""
         self.client.force_authenticate(user=self.author)
-        response = self.client.delete(f"/api/features/{self.feature.pk}/")
+        response = self.client.delete(f"/api/v1/features/{self.feature.pk}/")
         self.assertEqual(response.status_code, 204)
 
 
@@ -238,9 +238,9 @@ class VoteViewTest(TestCase):
         self.feature = create_feature(self.user, self.category, self.status)
 
     def test_vote_first_time_returns_200(self):
-        """POST /api/features/{id}/vote/ returns 200 on first vote."""
+        """POST /api/v1/features/{id}/vote/ returns 200 on first vote."""
         self.client.force_authenticate(user=self.user)
-        response = self.client.post(f"/api/features/{self.feature.pk}/vote/")
+        response = self.client.post(f"/api/v1/features/{self.feature.pk}/vote/")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data["data"]["has_voted"])
@@ -248,12 +248,12 @@ class VoteViewTest(TestCase):
 
     def test_vote_second_time_is_idempotent_returns_200(self):
         """
-        POST /api/features/{id}/vote/ a second time returns 200 with current state.
+        POST /api/v1/features/{id}/vote/ a second time returns 200 with current state.
         No duplicate vote is created.
         """
         self.client.force_authenticate(user=self.user)
-        self.client.post(f"/api/features/{self.feature.pk}/vote/")
-        response = self.client.post(f"/api/features/{self.feature.pk}/vote/")
+        self.client.post(f"/api/v1/features/{self.feature.pk}/vote/")
+        response = self.client.post(f"/api/v1/features/{self.feature.pk}/vote/")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data["data"]["has_voted"])
@@ -261,11 +261,11 @@ class VoteViewTest(TestCase):
 
     def test_unvote_when_no_vote_exists_returns_200(self):
         """
-        DELETE /api/features/{id}/vote/ when no vote exists returns 200.
+        DELETE /api/v1/features/{id}/vote/ when no vote exists returns 200.
         Missing vote is not an error.
         """
         self.client.force_authenticate(user=self.user)
-        response = self.client.delete(f"/api/features/{self.feature.pk}/vote/")
+        response = self.client.delete(f"/api/v1/features/{self.feature.pk}/vote/")
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertFalse(data["data"]["has_voted"])
@@ -273,7 +273,7 @@ class VoteViewTest(TestCase):
     def test_vote_response_shape(self):
         """Vote response must have data with feature_request_id, has_voted, vote_count."""
         self.client.force_authenticate(user=self.user)
-        response = self.client.post(f"/api/features/{self.feature.pk}/vote/")
+        response = self.client.post(f"/api/v1/features/{self.feature.pk}/vote/")
         data = response.json()
         self.assertIn("data", data)
         self.assertIn("meta", data)
@@ -284,5 +284,5 @@ class VoteViewTest(TestCase):
 
     def test_unauthenticated_vote_returns_401(self):
         """Unauthenticated vote attempt must return 401."""
-        response = self.client.post(f"/api/features/{self.feature.pk}/vote/")
+        response = self.client.post(f"/api/v1/features/{self.feature.pk}/vote/")
         self.assertEqual(response.status_code, 401)

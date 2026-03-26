@@ -4,8 +4,7 @@ import type { ReactNode } from 'react'
 type CustomVariant = 'primary' | 'secondary' | 'danger' | 'ghost'
 type CustomSize = 'sm' | 'md' | 'lg'
 
-interface ButtonProps
-  extends Omit<MantineButtonProps, 'variant' | 'size' | 'loading'> {
+interface ButtonProps extends Omit<MantineButtonProps, 'variant' | 'size' | 'loading'> {
   children: ReactNode
   variant?: CustomVariant
   size?: CustomSize
