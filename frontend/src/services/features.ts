@@ -14,6 +14,7 @@ export interface CreateFeaturePayload {
   description: string
   rate: number
   category_id: number
+  status_id?: number
 }
 
 export interface UpdateFeaturePayload {

@@ -1,40 +1,87 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { Button } from '../../../../components/button'
-import { ErrorMessage } from '../../../../components/error-message'
-import { Spinner } from '../../../../components/spinner'
+import { useForm, Controller } from 'react-hook-form'
+import {
+  TextInput,
+  Textarea,
+  Select,
+  SimpleGrid,
+  Group,
+  Button,
+  Text,
+  Stack,
+  Paper,
+  ActionIcon,
+  Tooltip,
+} from '@mantine/core'
+import {
+  IconStar,
+  IconStarFilled,
+  IconSend,
+  IconBulb,
+} from '@tabler/icons-react'
 import type { Category } from '../../../../types/category'
+import type { Status } from '../../../../types/status'
 import type { ApiError } from '../../../../types/api'
 
 export interface FeatureFormFields {
   title: string
   description: string
   rate: number
-  category_id: number
+  category_id: string
+  status_id?: string
 }
 
 interface FeatureFormProps {
   defaultValues?: Partial<FeatureFormFields>
   categories: Category[]
+  statuses: Status[]
+  isAdmin: boolean
   isLoadingCategories: boolean
+  isLoadingStatuses: boolean
   isPending: boolean
   submitError: ApiError | null
   onSubmit: (data: FeatureFormFields) => void
-  submitLabel: string
+}
+
+interface StarPickerProps {
+  value: number
+  onChange: (value: number) => void
+}
+
+function StarPicker({ value, onChange }: StarPickerProps) {
+  return (
+    <Group gap={4}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <ActionIcon
+          key={star}
+          variant="transparent"
+          size="lg"
+          aria-label={`Rate ${star}`}
+          onClick={() => onChange(star)}
+          style={{ color: star <= value ? 'var(--mantine-color-yellow-5)' : 'var(--mantine-color-gray-4)' }}
+        >
+          {star <= value ? <IconStarFilled size={22} /> : <IconStar size={22} />}
+        </ActionIcon>
+      ))}
+    </Group>
+  )
 }
 
 export function FeatureForm({
   defaultValues,
   categories,
+  statuses,
+  isAdmin,
   isLoadingCategories,
+  isLoadingStatuses,
   isPending,
   submitError,
   onSubmit,
-  submitLabel,
 }: FeatureFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     setError,
     formState: { errors },
   } = useForm<FeatureFormFields>({
@@ -42,7 +89,8 @@ export function FeatureForm({
       title: '',
       description: '',
       rate: 3,
-      category_id: 0,
+      category_id: '',
+      status_id: '',
       ...defaultValues,
     },
   })
@@ -55,133 +103,158 @@ export function FeatureForm({
     }
   }, [submitError, setError])
 
+  const categoryData = categories.map((c) => ({
+    value: String(c.id),
+    label: c.name,
+  }))
+
+  const statusData = statuses.map((s) => ({
+    value: String(s.id),
+    label: s.name,
+  }))
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-      {submitError && !submitError.details && <ErrorMessage error={submitError} />}
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <Stack gap="md">
+        {/* Non-field submit error */}
+        {submitError && !submitError.details && (
+          <Text c="red" fz="sm" role="alert">
+            {submitError.message}
+          </Text>
+        )}
 
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-          Title{' '}
-          <span aria-hidden="true" className="text-red-500">
-            *
-          </span>
-        </label>
-        <input
-          id="title"
-          type="text"
-          maxLength={200}
-          aria-describedby={errors.title ? 'title-error' : undefined}
+        {/* Feature Title */}
+        <TextInput
+          label="Feature Title"
+          withAsterisk
+          placeholder="Enter a clear, concise title for your feature request"
+          maxLength={100}
+          description="Keep it short and descriptive (max 100 characters)"
+          error={errors.title?.message}
           {...register('title', { required: 'Title is required.' })}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        {errors.title && (
-          <p id="title-error" role="alert" className="mt-1 text-xs text-red-600">
-            {errors.title.message}
-          </p>
-        )}
-      </div>
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-          Description{' '}
-          <span aria-hidden="true" className="text-red-500">
-            *
-          </span>
-        </label>
-        <textarea
-          id="description"
+        {/* Description */}
+        <Textarea
+          label="Description"
+          withAsterisk
+          placeholder="Describe your feature request in detail. What problem does it solve? How would it benefit users?"
           rows={5}
-          maxLength={2000}
-          aria-describedby={errors.description ? 'description-error' : undefined}
+          description="Be as detailed as possible to help our team understand your request"
+          error={errors.description?.message}
           {...register('description', { required: 'Description is required.' })}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        {errors.description && (
-          <p id="description-error" role="alert" className="mt-1 text-xs text-red-600">
-            {errors.description.message}
-          </p>
-        )}
-      </div>
 
-      <div>
-        <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
-          Category{' '}
-          <span aria-hidden="true" className="text-red-500">
-            *
-          </span>
-        </label>
-        {isLoadingCategories ? (
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Spinner size="sm" label="Loading categories…" />
-            <span>Loading categories…</span>
-          </div>
-        ) : (
-          <select
-            id="category_id"
-            aria-describedby={errors.category_id ? 'category-error' : undefined}
-            {...register('category_id', {
-              required: 'Category is required.',
-              validate: (v) => Number(v) > 0 || 'Please select a category.',
-            })}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={0}>Select a category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        )}
-        {errors.category_id && (
-          <p id="category-error" role="alert" className="mt-1 text-xs text-red-600">
-            {errors.category_id.message}
-          </p>
-        )}
-      </div>
+        {/* Priority star picker */}
+        <Stack gap={4}>
+          <Text fz="sm" fw={500}>
+            Priority <span aria-hidden="true" style={{ color: 'var(--mantine-color-red-6)' }}>*</span>
+          </Text>
+          <Controller
+            name="rate"
+            control={control}
+            rules={{ required: 'Priority is required.', min: 1, max: 5 }}
+            render={({ field }) => (
+              <StarPicker value={field.value} onChange={field.onChange} />
+            )}
+          />
+          <Text fz="xs" c="dimmed">
+            Your self-assessed importance (1 = lowest, 5 = highest)
+          </Text>
+          {errors.rate && (
+            <Text fz="xs" c="red" role="alert">
+              {errors.rate.message}
+            </Text>
+          )}
+        </Stack>
 
-      <div>
-        <label htmlFor="rate" className="block text-sm font-medium text-gray-700 mb-1">
-          Priority (1–5){' '}
-          <span aria-hidden="true" className="text-red-500">
-            *
-          </span>
-        </label>
-        <input
-          id="rate"
-          type="number"
-          min={1}
-          max={5}
-          aria-describedby={errors.rate ? 'rate-error' : undefined}
-          {...register('rate', {
-            required: 'Rate is required.',
-            min: { value: 1, message: 'Rate must be between 1 and 5.' },
-            max: { value: 5, message: 'Rate must be between 1 and 5.' },
-            valueAsNumber: true,
-          })}
-          className="w-32 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Your self-assessed importance of this feature (1 = lowest, 5 = highest).
-        </p>
-        {errors.rate && (
-          <p id="rate-error" role="alert" className="mt-1 text-xs text-red-600">
-            {errors.rate.message}
-          </p>
-        )}
-      </div>
+        {/* Category + Initial Status */}
+        <SimpleGrid cols={2} spacing="md">
+          <Controller
+            name="category_id"
+            control={control}
+            rules={{ required: 'Category is required.' }}
+            render={({ field }) => (
+              <Select
+                label="Category"
+                withAsterisk
+                placeholder={isLoadingCategories ? 'Loading…' : 'Select a category'}
+                data={categoryData}
+                disabled={isLoadingCategories}
+                value={field.value || null}
+                onChange={(val) => field.onChange(val ?? '')}
+                error={errors.category_id?.message}
+              />
+            )}
+          />
+          {isAdmin ? (
+            <Controller
+              name="status_id"
+              control={control}
+              rules={{ required: 'Status is required.' }}
+              render={({ field }) => (
+                <Select
+                  label="Initial Status"
+                  withAsterisk
+                  placeholder={isLoadingStatuses ? 'Loading…' : 'Select a status'}
+                  data={statusData}
+                  disabled={isLoadingStatuses}
+                  value={field.value || null}
+                  onChange={(val) => field.onChange(val ?? '')}
+                  error={errors.status_id?.message}
+                />
+              )}
+            />
+          ) : null}
+        </SimpleGrid>
 
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          variant="primary"
-          isLoading={isPending}
-          disabled={isPending}
-          aria-label={isPending ? 'Submitting…' : submitLabel}
+        {/* Tips box */}
+        <Paper
+          p="md"
+          radius="md"
+          style={{
+            backgroundColor: 'var(--mantine-color-indigo-0)',
+            border: '1px solid var(--mantine-color-indigo-2)',
+          }}
         >
-          {isPending ? 'Submitting…' : submitLabel}
-        </Button>
-      </div>
+          <Group gap="xs" mb="xs">
+            <IconBulb size={16} color="var(--mantine-color-indigo-6)" />
+            <Text fw={600} fz="sm" c="indigo">
+              Tips for a great feature request
+            </Text>
+          </Group>
+          <Stack gap={4}>
+            {[
+              'Be specific about the problem you\'re trying to solve',
+              'Explain how this feature would benefit users',
+              'Include any relevant examples or use cases',
+              'Check if a similar request already exists',
+            ].map((tip) => (
+              <Text key={tip} fz="xs" c="indigo.7">
+                • {tip}
+              </Text>
+            ))}
+          </Stack>
+        </Paper>
+
+        {/* Buttons row */}
+        <Group gap="sm">
+          <Button
+            type="submit"
+            color="indigo"
+            style={{ flex: 1 }}
+            leftSection={<IconSend size={16} />}
+            loading={isPending}
+          >
+            Submit Feature Request
+          </Button>
+          <Tooltip label="Coming soon">
+            <Button variant="default" disabled>
+              Save as Draft
+            </Button>
+          </Tooltip>
+        </Group>
+      </Stack>
     </form>
   )
 }

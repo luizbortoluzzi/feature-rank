@@ -23,10 +23,7 @@ export const router = createBrowserRouter([
     path: '/features',
     element: (
       <ProtectedRoute>
-        <AppLayout
-          title="Feature Rank List"
-          subtitle="Browse and vote on feature requests"
-        >
+        <AppLayout>
           <FeatureListPage />
         </AppLayout>
       </ProtectedRoute>
@@ -36,7 +33,7 @@ export const router = createBrowserRouter([
     path: '/features/new',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Submit Idea" subtitle="Share a new feature request">
+        <AppLayout>
           <CreateFeaturePage />
         </AppLayout>
       </ProtectedRoute>

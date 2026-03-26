@@ -13,7 +13,6 @@ export function CategoryBadge({ category }: CategoryBadgeProps) {
       color="gray"
       style={{ textTransform: 'none', fontWeight: 500 }}
     >
-      {category.icon && <span style={{ marginRight: 4 }}>{category.icon}</span>}
       {category.name}
     </Badge>
   )

@@ -1387,3 +1387,137 @@ installHook.js:1 Query data cannot be undefined. Please make sure to return a va
 
 ### Action Taken
 Identified root cause: getCurrentUser() returns response.data.data expecting the EnvelopeRenderer to wrap the response in { data: ..., meta: null }, but DEFAULT_RENDERER_CLASSES in base.py was set to the plain JSONRenderer instead of EnvelopeRenderer. The /users/me/ endpoint returned the user object directly, so response.data.data was undefined. Fixed by updating REST_FRAMEWORK in base.py to use config.drf_renderer.EnvelopeRenderer as the default renderer and wiring up config.drf_exception_handler.custom_exception_handler as the EXCEPTION_HANDLER. Auth views already have renderer_classes = [JSONRenderer] to bypass the envelope so they are unaffected.
+
+## [2026-03-26T00:02:00Z] – Implement features list page matching prototype
+
+### Prompt
+ok, great, so now we will do this features page, lets create exactly as the image prototype
+
+### Action Taken
+Updated three files to match the prototype screenshot:
+1. feature-card/index.tsx: Complete redesign — badges (Category + Status) and star rating in top row, title, description, author footer with avatar (initials+color), relative date with clock icon. Added formatRelativeDate() utility and StarRating component. Avatar color cycles from a palette based on author.id.
+2. FeatureListPage.tsx: Added page header Group with title/subtitle on left and search TextInput + "New Request" Button on right. Added search state wired to useFeatureList params. hasActiveFilters now includes search state.
+3. router.tsx: Removed title/subtitle props from /features AppLayout since FeatureListPage owns its header now. TypeScript check passed.
+
+## [2026-03-26T00:03:00Z] – Add mock data for features
+
+### Prompt
+lets add some mock data for features
+
+### Action Taken
+Created backend/apps/feature_requests/management/commands/seed_features.py with 10 realistic feature requests (Dark Mode Support, Public API v2, Jira Integration Sync, 2FA, etc.) spread across all categories and statuses, with varied rates and votes between admin and regular user. Idempotent via get_or_create. Requires seed_reference_data to have been run first. Added backend-seed-features target to Makefile. Ran the command — 10 features and 10 votes created successfully.
+
+## [2026-03-26T00:04:00Z] – Fix feature card to match prototype more closely
+
+### Prompt
+ok, so now testing with the values i realised that it is really different from the prototype, look the image e look the second one that is how it should be
+
+### Action Taken
+Fixed two visual issues identified by comparing screenshots:
+1. CategoryBadge: removed icon string rendering (category.icon stores names like "palette", "shield" which were being rendered as literal text). Now shows only category.name.
+2. Vote widget: increased size to match prototype — width 80px, padding 14px, count font-size 32px (was fz="xl"/20px), arrow 22px.
+
+## [2026-03-26T00:00:00Z] – Rewrite New Feature Request page to match design prototype
+
+### Prompt
+Rewrite three files to implement the "New Feature Request" page matching the design prototype. Do NOT modify any other files.
+
+## Prototype description
+
+Page header (not in AppLayout — the page owns it):
+- Left: "+" icon (IconPlus in a small indigo box, 32×32) + "New Feature Request" title + "Submit your idea to our product team" subtitle
+- Right: "← Back to Board" link (Anchor or Button variant="subtle", gray) that navigates to /features
+
+Form card (Paper, centered, maw=640, withBorder, radius="md", p="xl"):
+1. **Feature Title *** — TextInput, placeholder "Enter a clear, concise title for your feature request", helper text (below input, dimmed xs): "Keep it short and descriptive (max 100 characters)", maxLength=100
+2. **Description *** — Textarea, rows=5, placeholder "Describe your feature request in detail. What problem does it solve? How would it benefit users?", helper text: "Be as detailed as possible to help our team understand your request"
+3. **Priority *** — compact star rating picker (5 clickable IconStar/IconStarFilled, yellow when active, gray when not), label "Priority *", helper "Your self-assessed importance (1 = lowest, 5 = highest)". Default value: 3. Implemented as a Controller.
+4. **Category * + Initial Status *** — SimpleGrid cols=2, gap="md":
+   - Category: Mantine Select, placeholder "Select a category", data from categories prop
+   - Initial Status: only shown when `isAdmin` prop is true. Mantine Select, data from statuses prop. If not admin, the second column is empty/null.
+5. **Tips box** — Paper with light indigo background (`var(--mantine-color-indigo-0)`), border `var(--mantine-color-indigo-2)`, padding "md", radius "md":
+   - Header row: IconBulb (size 16, indigo) + Text "Tips for a great feature request" (fw=600, fz="sm", c="indigo")
+   - 4 bullet points (Text fz="xs", c="indigo.7"):
+     - "Be specific about the problem you're trying to solve"
+     - "Explain how this feature would benefit users"
+     - "Include any relevant examples or use cases"
+     - "Check if a similar request already exists"
+6. **Buttons row** — Group gap="sm":
+   - Submit: Button fullWidth={false} style={{flex:1}} color="indigo" leftSection={IconSend size 16}, loading when isPending, label "Submit Feature Request"
+   - Save as Draft: Button variant="default" disabled tooltip "Coming soon"
+
+## File 1: `/home/isam/prj/feature-rank/frontend/src/features/feature-requests/components/feature-form/index.tsx`
+
+Complete rewrite in Mantine. No Tailwind/className. Use react-hook-form with Controller for Select and star picker. Use register for TextInput and Textarea.
+
+```typescript
+export interface FeatureFormFields {
+  title: string
+  description: string
+  rate: number
+  category_id: string   // string for Mantine Select compatibility
+  status_id?: string    // optional, admin only
+}
+```
+
+Props:
+```typescript
+interface FeatureFormProps {
+  defaultValues?: Partial<FeatureFormFields>
+  categories: Category[]
+  statuses: Status[]
+  isAdmin: boolean
+  isLoadingCategories: boolean
+  isLoadingStatuses: boolean
+  isPending: boolean
+  submitError: ApiError | null
+  onSubmit: (data: FeatureFormFields) => void
+}
+```
+
+Map 400 validation errors from submitError.details to form fields using setError in a useEffect.
+
+## File 2: `/home/isam/prj/feature-rank/frontend/src/pages/CreateFeaturePage.tsx`
+
+Complete rewrite. No Tailwind/className.
+
+[full page implementation as specified in prompt]
+
+## File 3: `/home/isam/prj/feature-rank/frontend/src/app/router.tsx`
+
+Only change: remove `title` and `subtitle` from the `/features/new` AppLayout call (the page owns its own header now), so it becomes just `<AppLayout>`.
+
+## Additional: update services/features.ts
+
+Add `status_id?: number` to the `CreateFeaturePayload` interface (just add the optional field, don't change anything else).
+
+## Constraints
+- No Tailwind classes anywhere
+- No className prop
+- All Mantine components
+- TypeScript strict — no `any`
+- Run `npx tsc --noEmit` from `/home/isam/prj/feature-rank/frontend` to verify no errors before finishing
+- The star picker must be a Controller-wrapped custom component
+- Mantine Select `data` prop must be `{ value: string; label: string }[]`
+- For category_id and status_id, use string values in the form (Mantine Select works with strings), and convert to number in handleSubmit in the page
+
+### Action Taken
+Rewrote the four specified files:
+1. `frontend/src/features/feature-requests/components/feature-form/index.tsx` — complete Mantine rewrite: TextInput, Textarea, Controller-wrapped StarPicker (5 ActionIcon stars, yellow/gray), Controller-wrapped Mantine Select for category and (admin-only) status, tips Paper box, Submit + disabled Save as Draft buttons. FeatureFormFields.category_id and status_id changed to string for Mantine Select compatibility. New props: statuses, isAdmin, isLoadingStatuses added; submitLabel removed.
+2. `frontend/src/pages/CreateFeaturePage.tsx` — complete rewrite with owned page header (indigo IconPlus box, title, subtitle, Back to Board Anchor), centered Paper form card, useStatuses hook, admin status_id guard in handleSubmit.
+3. `frontend/src/app/router.tsx` — removed title and subtitle from /features/new AppLayout.
+4. `frontend/src/services/features.ts` — added status_id?: number to CreateFeaturePayload.
+5. `frontend/src/pages/EditFeaturePage.tsx` — updated as a necessary consequence of FeatureFormFields interface change: category_id converted to String(), new required props (statuses, isAdmin, isLoadingStatuses) passed, submitLabel removed. TypeScript strict check passes with zero errors.
+
+## [2026-03-26T00:05:00Z] – Implement New Feature Request form page matching prototype
+
+### Prompt
+ok now lets implement the feature form, follow the image prototype
+
+### Action Taken
+Rewrote four files to match the prototype:
+1. feature-form/index.tsx: Complete Mantine rewrite — TextInput (title with 100-char limit helper), Textarea (description with helper), StarPicker controller (5 clickable stars, yellow/gray, default 3), SimpleGrid cols=2 for Category + Initial Status (status shown only for admins per frontend rules), indigo tips box with IconBulb, Submit + disabled "Save as Draft" buttons. Error mapping from submitError.details to fields.
+2. CreateFeaturePage.tsx: Own page header (indigo IconPlus box + title/subtitle + back link), centered Paper maw=640 containing form. useStatuses and useCurrentUser added. status_id only included in payload when user.is_admin.
+3. router.tsx: Removed title/subtitle from /features/new AppLayout.
+4. services/features.ts: Added status_id?: number to CreateFeaturePayload.
+Also updated EditFeaturePage.tsx to pass new required props (statuses, isAdmin, isLoadingStatuses) to FeatureForm and convert category_id to string. TypeScript check passed with no errors.

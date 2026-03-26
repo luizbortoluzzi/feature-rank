@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useFeatureDetail } from '../features/feature-requests/hooks/use-feature-detail'
 import { useUpdateFeature } from '../features/feature-requests/hooks/use-update-feature'
 import { useCategories } from '../features/categories/hooks/use-categories'
+import { useStatuses } from '../features/statuses/hooks/use-statuses'
+import { useCurrentUser } from '../app/AuthProvider'
 import {
   FeatureForm,
   type FeatureFormFields,
@@ -15,6 +17,7 @@ export function EditFeaturePage() {
   const { id } = useParams<{ id: string }>()
   const featureId = Number(id)
   const navigate = useNavigate()
+  const { user } = useCurrentUser()
 
   const {
     feature,
@@ -24,6 +27,7 @@ export function EditFeaturePage() {
   } = useFeatureDetail(featureId)
   const { updateFeature, isPending, isError, error, data } = useUpdateFeature()
   const { categories, isLoading: isLoadingCategories } = useCategories()
+  const { statuses, isLoading: isLoadingStatuses } = useStatuses()
 
   useEffect(() => {
     if (data) {
@@ -93,14 +97,16 @@ export function EditFeaturePage() {
           title: feature.title,
           description: feature.description,
           rate: feature.rate,
-          category_id: feature.category.id,
+          category_id: String(feature.category.id),
         }}
         categories={categories}
+        statuses={statuses}
+        isAdmin={user?.is_admin ?? false}
         isLoadingCategories={isLoadingCategories}
+        isLoadingStatuses={isLoadingStatuses}
         isPending={isPending}
         submitError={isError ? error : null}
         onSubmit={handleSubmit}
-        submitLabel="Save Changes"
       />
     </main>
   )
