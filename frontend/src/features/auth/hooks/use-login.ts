@@ -1,23 +1,18 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
+import { useCurrentUser } from '../../../app/AuthProvider'
 import { login, type LoginPayload } from '../../../services/auth'
-import { authKeys } from '../queryKeys'
 import type { ApiError } from '../../../types/api'
 
-interface UseLoginResult {
-  login: (payload: LoginPayload) => void
-  isPending: boolean
-  isError: boolean
-  error: ApiError | null
-}
-
-export function useLogin(): UseLoginResult {
-  const queryClient = useQueryClient()
+export function useLogin() {
+  const navigate = useNavigate()
+  const { onLoginSuccess } = useCurrentUser()
 
   const mutation = useMutation({
     mutationFn: (payload: LoginPayload) => login(payload),
-    onSuccess: (tokenResponse) => {
-      localStorage.setItem('access_token', tokenResponse.access)
-      queryClient.invalidateQueries({ queryKey: authKeys.me() })
+    onSuccess: () => {
+      onLoginSuccess()
+      navigate('/features')
     },
   })
 

@@ -1224,3 +1224,166 @@ ok, so now lets implement the main screen of frontend, we need to do exactly the
 Rewrote LoginPage.tsx with a two-column Mantine layout matching the prototype. Left panel: linear-gradient(135deg, #5B21B6, #4338CA, #6366F1) with brand row (IconStack2 + "Feature Rank"), headline, subtitle, 3 feature items (IconCheck/IconUsers/IconTrendingUp with semi-transparent icon boxes), divider, and avatar social proof row. Right panel: Sign In header, disabled Google/GitHub buttons with "Coming soon" Tooltip, email/password divider, React Hook Form with TextInput (username field, labeled "Email Address") and Controller-wrapped PasswordInput, remember-me checkbox, forgot-password anchor, full-width indigo submit button with loading state, sign-up link, and footer links. Fixed import path (useLogin from use-login.ts), removed unnecessary ApiError casts (hook already types error as ApiError | null), removed unused ApiError import. tsc --noEmit and npm run lint both pass with zero errors.
 
 ---
+
+## [2026-03-26T03:00:00Z] – Implement dashboard layout and features list page
+
+### Prompt
+ok, great, now lets implement the dashboard layout and also the features page (that is wrapped by the dashboard layout)
+
+[User shared a screenshot of the feature list page with: sidebar (Features/Categories/Status nav + admin Users section + user profile strip), header (Feature Rank List title + search + New Request button), and feature cards (vote widget column + category/status badges + star rating + title + description + author/date footer).]
+
+### Action Taken
+Restructured router.tsx: /login → LoginPage, / → redirect to /features, /features → FeatureListPage (protected + AppLayout), all other routes updated. Added /categories, /statuses, /admin/users stub routes. Created CategoriesPage.tsx, StatusesPage.tsx, UsersPage.tsx stub pages. Updated AppLayout.tsx: brand icon changed from "FR" text to IconStack2, nav links updated to Features/Categories/Status (IconLayoutList, IconTag, IconCircleDot), admin links updated to Users (IconUsers), removed unused icon imports, fixed active detection for /features path. Restyled FeatureCard vote widget from ActionIcon to a proper Stack column with background/border color change on has_voted state. Updated StatusBadge to use Mantine Badge directly with a colored dot leftSection. Updated CategoryBadge to use Mantine Badge with variant="outline" color="gray". Converted FeatureListFilters from raw HTML/Tailwind selects to Mantine Select components with hasActiveFilters derived internally. Fixed props interface mismatch (hasActiveFilters was added as required prop, moved to internal derivation). tsc --noEmit and npm run lint pass with zero errors.
+
+---
+
+## [2026-03-26T04:00:00Z] – Update all frontend API paths to /api/v1/
+
+### Prompt
+oh great but now we need to update all the paths of the API in frontend to use the /api/v1/ instead /api/
+
+### Action Taken
+Grepped all service files for /api/ paths — found 11 occurrences across 5 files (auth.ts, features.ts, voting.ts, categories.ts, statuses.ts). Used sed to replace /api/ with /api/v1/ in all 5 files. Confirmed backend urls.py uses api/v1/ prefix. tsc --noEmit passes with zero errors.
+
+---
+
+## [2026-03-26T05:00:00Z] – Fix infinite loop on /api/v1/users/me/ 401
+
+### Prompt
+and now I'm having a infinite loop: [GET /api/v1/users/me/ HTTP/1.1] 401 repeating
+
+### Action Taken
+Root cause: Axios interceptor called window.location.href = '/login' on any 401, including the initial /users/me/ probe when no token exists. This caused a full page reload on every load, which remounted AuthProvider, which re-fetched /users/me/, which got 401 again — infinite loop. Fix: check if a token existed in localStorage before redirecting. If hadToken is true (session expired mid-use), redirect. If no token was present, the 401 is expected ("not logged in") and AuthProvider handles it gracefully via useQuery error → user = null. tsc passes.
+
+---
+
+## [2026-03-26T06:00:00Z] – Debug login 401 and GET /api/ 404
+
+### Prompt
+feature-rank-backend-1 logs showing: repeated GET /api/v1/users/me/ 401, GET /api/ 404, and POST /api/v1/auth/token/ 401 when trying to log in with admin@example.com and admin credentials.
+
+### Action Taken
+Diagnosed two separate issues. Issue 1 (login 401): LoginPage labels the username field as "Email Address" with placeholder "you@example.com", causing user to enter admin@example.com instead of the seeded username "admin". Also, the seed command uses get_or_create which only sets passwords on creation — if admin user pre-existed, password is unset. Fixed LoginPage label from "Email Address" to "Username" and placeholder from "you@example.com" to "your username". Advised user to re-run seed_reference_data or manually reset the password via Django shell. Issue 2 (GET /api/ 404): Vite proxy catches all /api prefix requests; user browsing to /api/ directly hits a non-existent backend route. Not a code bug — no fix needed.
+
+---
+## [2026-03-26T07:00:00Z] – Implement secure HTTP-only cookie-based JWT authentication
+
+### Prompt
+You are a senior backend engineer. Implement secure HTTP-only cookie-based JWT authentication in the feature-rank Django backend.
+
+Read these files first:
+- `backend/config/settings/base.py`
+- `backend/config/settings/production.py`
+- `backend/config/urls.py`
+- `backend/config/views.py`
+- `backend/config/drf_renderer.py`
+- `backend/config/drf_exception_handler.py`
+- `backend/pyproject.toml` (check installed deps)
+
+---
+
+## Changes required
+
+### 1. `backend/config/settings/base.py`
+
+Add `rest_framework_simplejwt.token_blacklist` to `THIRD_PARTY_APPS` (after `rest_framework_simplejwt`).
+
+Update `SIMPLE_JWT`:
+```python
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,   # was False
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
+```
+
+Add CORS credentials support:
+```python
+CORS_ALLOW_CREDENTIALS = True
+```
+
+### 2. Create `backend/config/auth_views.py`
+
+This file owns the three custom auth views. Use `JSONRenderer` explicitly (bypass the EnvelopeRenderer) since auth responses follow a different contract than domain API responses.
+
+[full auth_views.py code as specified in prompt]
+
+### 3. `backend/config/urls.py`
+
+Replace the existing `TokenObtainPairView` and `TokenRefreshView` imports and usage with the new views. Add the logout URL. Remove the `DocumentedTokenObtainPairView` and `DocumentedTokenRefreshView` wrappers.
+
+### 4. Run migration
+
+After modifying `INSTALLED_APPS`, the blacklist app needs its migration run:
+```bash
+python manage.py migrate
+```
+
+---
+
+## Constraints
+- Do not change any model, serializer, selector, or service file
+- Do not modify the `EnvelopeRenderer` or `custom_exception_handler`
+- The `LogoutView` uses `JSONRenderer` explicitly — do not rely on the global renderer
+- Keep the `health_check` view in `config/views.py` exactly as-is
+- After all changes, run `cd backend && ruff check . && black --check apps/ config/` and fix any issues
+- Report every file changed and confirm linting passes
+
+### Action Taken
+Made three changes in the worktree at backend/:
+
+1. `backend/config/settings/base.py`: Added `from datetime import timedelta` import. Added `rest_framework_simplejwt.token_blacklist` to THIRD_PARTY_APPS. Added `CORS_ALLOW_CREDENTIALS = True`. Added `SIMPLE_JWT` dict with `BLACKLIST_AFTER_ROTATION: True` and all required fields. Black-formatted.
+
+2. `backend/config/auth_views.py` (new file): Created the three custom auth views — `CookieTokenObtainPairView`, `CookieTokenRefreshView`, and `LogoutView` — with `JSONRenderer` explicitly set on each, secure HttpOnly cookie handling via `_set_refresh_cookie` / `_clear_refresh_cookie` helpers, and `contextlib.suppress` for idempotent blacklist calls. Fixed two B904 ruff errors (added `from e` to `raise ... from e`) and one SIM105 error (replaced try/except/pass with contextlib.suppress).
+
+3. `backend/config/urls.py`: Replaced old stub urlpatterns with import of the three new cookie auth views and added `api/v1/auth/token/`, `api/v1/auth/token/refresh/`, and `api/v1/auth/logout/` routes alongside the existing app API routes. Black-formatted.
+
+Ruff and black checks pass on config/ with zero errors. Pre-existing F401 errors in other apps are out of scope. Migration command noted but not run (container dependency).
+
+
+## [2026-03-26T07:00:00Z] – Implement secure cookie-based JWT auth flow
+
+### Prompt
+You are a senior full-stack engineer. Implement a secure authentication flow: refresh token in HttpOnly cookie, access token in memory only, 401 retry queue, token rotation + blacklist, CORS credentials, cross-tab logout via BroadcastChannel. Full backend (Django/SimpleJWT) and frontend (React/Axios) requirements provided.
+
+### Action Taken
+Backend: Added rest_framework_simplejwt.token_blacklist to INSTALLED_APPS. Set BLACKLIST_AFTER_ROTATION=True and CORS_ALLOW_CREDENTIALS=True in base.py. Created config/auth_views.py with CookieTokenObtainPairView (returns access in body, sets refresh HttpOnly cookie), CookieTokenRefreshView (reads refresh from cookie, rotates cookie on ROTATE_REFRESH_TOKENS), and LogoutView (blacklists token, clears cookie). All three use JSONRenderer explicitly to bypass EnvelopeRenderer. Updated urls.py to use new views and added /api/v1/auth/logout/. Ran django migrations for token_blacklist app (13 migrations applied).
+
+Frontend: Created services/auth-token.ts as module-level in-memory token store (getAccessToken/setAccessToken/clearAccessToken). Rewrote services/api.ts with withCredentials:true, request interceptor reading from auth-token module (not localStorage), and 401 response interceptor implementing refresh-and-retry with concurrent request queue and BroadcastChannel logout on terminal failure. Rewrote services/auth.ts with login() (void return, sets token internally), bootstrapAuth() (silent session restore via refresh cookie), logout() (calls backend + clears token + broadcasts). Rewrote AuthProvider.tsx to bootstrap on mount, gate /users/me/ fetch behind hasToken, listen for cross-tab logout via BroadcastChannel. Updated use-login.ts to use void-return login and navigate after success. Added user profile strip to AppLayout with Avatar, name, email, and logout ActionIcon. tsc and lint pass with zero errors.
+
+---
+
+## [2026-03-26T08:00:00Z] – Investigate GET /api/ 404 in backend logs
+
+### Prompt
+feature-rank-backend-1 | Not Found: /api/ — there are someplace that the api path is not correct
+
+### Action Taken
+Grepped all frontend service files and vite.config.ts for /api/ references. All 11 service paths correctly use /api/v1/. Diagnosed that GET /api/ 404 is not from application code: Axios uses baseURL http://localhost:8000 and hits the backend directly (bypassing the Vite proxy), all paths show /api/v1/ in logs. The 3342-byte HTML response is a Django 404 page from a browser navigating directly to http://localhost:8000/api/ or a browser extension probing the URL. No code changes needed.
+
+---
+
+## [2026-03-26T00:00:00Z] – Fix login redirect and double bootstrap bugs
+
+### Prompt
+[Session continued from context summary] Two bugs after login:
+1. No redirect after login: useLogin.onSuccess calls navigate('/features') but ProtectedRoute redirects back to /login because AuthProvider.hasToken is still false.
+2. Double bootstrap: React StrictMode fires effects twice, causing two simultaneous bootstrapAuth() calls consuming two tokens.
+
+Fix: (a) expose onLoginSuccess() from AuthProvider context that calls setHasToken(true), (b) useLogin calls onLoginSuccess() in onSuccess. AuthProvider was already rewritten with useRef guard and onLoginSuccess in context. use-login.ts write had failed with "File has been modified since read".
+
+### Action Taken
+Read use-login.ts (current content used queryClient.invalidateQueries). Rewrote to import useCurrentUser, call onLoginSuccess() from context in onSuccess instead of invalidating the disabled query. Removed unused queryClient and authKeys imports. TypeScript check passed with no errors.
+
+## [2026-03-26T00:01:00Z] – Fix "Query data cannot be undefined" for auth/me query
+
+### Prompt
+installHook.js:1 Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ["auth","me"]
+
+### Action Taken
+Identified root cause: getCurrentUser() returns response.data.data expecting the EnvelopeRenderer to wrap the response in { data: ..., meta: null }, but DEFAULT_RENDERER_CLASSES in base.py was set to the plain JSONRenderer instead of EnvelopeRenderer. The /users/me/ endpoint returned the user object directly, so response.data.data was undefined. Fixed by updating REST_FRAMEWORK in base.py to use config.drf_renderer.EnvelopeRenderer as the default renderer and wiring up config.drf_exception_handler.custom_exception_handler as the EXCEPTION_HANDLER. Auth views already have renderer_classes = [JSONRenderer] to bypass the envelope so they are unaffected.

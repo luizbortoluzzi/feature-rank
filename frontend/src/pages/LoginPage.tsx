@@ -332,13 +332,13 @@ export function LoginPage() {
             <form onSubmit={handleSubmit(onSubmit)}>
               <Stack gap="md">
                 <TextInput
-                  label="Email Address"
-                  placeholder="you@example.com"
+                  label="Username"
+                  placeholder="your username"
                   leftSection={<IconMail size={16} />}
                   radius="md"
                   error={errors.username?.message}
                   {...register('username', {
-                    required: 'Email is required.',
+                    required: 'Username is required.',
                   })}
                 />
 

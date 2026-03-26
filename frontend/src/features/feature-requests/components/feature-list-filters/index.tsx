@@ -1,3 +1,4 @@
+import { Group, Select, Button } from '@mantine/core'
 import type { Category } from '../../../../types/category'
 import type { Status } from '../../../../types/status'
 
@@ -6,11 +7,11 @@ interface FeatureListFiltersProps {
   statuses: Status[]
   selectedCategoryId: number | undefined
   selectedStatusId: number | undefined
-  onCategoryChange: (id: number | undefined) => void
-  onStatusChange: (id: number | undefined) => void
-  onClearFilters: () => void
   isLoadingCategories: boolean
   isLoadingStatuses: boolean
+  onCategoryChange: (categoryId: number | undefined) => void
+  onStatusChange: (statusId: number | undefined) => void
+  onClearFilters: () => void
 }
 
 export function FeatureListFilters({
@@ -18,69 +19,61 @@ export function FeatureListFilters({
   statuses,
   selectedCategoryId,
   selectedStatusId,
+  isLoadingCategories,
+  isLoadingStatuses,
   onCategoryChange,
   onStatusChange,
   onClearFilters,
-  isLoadingCategories,
-  isLoadingStatuses,
 }: FeatureListFiltersProps) {
   const hasActiveFilters = selectedCategoryId !== undefined || selectedStatusId !== undefined
+  const categoryData = [
+    { value: '', label: 'All categories' },
+    ...categories.map((c) => ({ value: String(c.id), label: c.name })),
+  ]
+  const statusData = [
+    { value: '', label: 'All statuses' },
+    ...statuses.map((s) => ({ value: String(s.id), label: s.name })),
+  ]
 
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-4">
-      <div>
-        <label htmlFor="filter-category" className="sr-only">
-          Filter by category
-        </label>
-        <select
-          id="filter-category"
-          value={selectedCategoryId ?? ''}
-          onChange={(e) =>
-            onCategoryChange(e.target.value !== '' ? Number(e.target.value) : undefined)
-          }
-          disabled={isLoadingCategories}
-          className="text-sm border border-gray-200 rounded-md px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-        >
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="filter-status" className="sr-only">
-          Filter by status
-        </label>
-        <select
-          id="filter-status"
-          value={selectedStatusId ?? ''}
-          onChange={(e) =>
-            onStatusChange(e.target.value !== '' ? Number(e.target.value) : undefined)
-          }
-          disabled={isLoadingStatuses}
-          className="text-sm border border-gray-200 rounded-md px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-        >
-          <option value="">All statuses</option>
-          {statuses.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
+    <Group gap="sm" mb="md" wrap="wrap">
+      <Select
+        placeholder="All categories"
+        data={categoryData}
+        value={selectedCategoryId !== undefined ? String(selectedCategoryId) : ''}
+        onChange={(val) =>
+          onCategoryChange(val && val !== '' ? Number(val) : undefined)
+        }
+        disabled={isLoadingCategories}
+        radius="md"
+        size="sm"
+        style={{ minWidth: 160 }}
+        clearable
+      />
+      <Select
+        placeholder="All statuses"
+        data={statusData}
+        value={selectedStatusId !== undefined ? String(selectedStatusId) : ''}
+        onChange={(val) =>
+          onStatusChange(val && val !== '' ? Number(val) : undefined)
+        }
+        disabled={isLoadingStatuses}
+        radius="md"
+        size="sm"
+        style={{ minWidth: 160 }}
+        clearable
+      />
       {hasActiveFilters && (
-        <button
-          type="button"
+        <Button
+          variant="subtle"
+          color="gray"
+          size="sm"
+          radius="md"
           onClick={onClearFilters}
-          className="text-sm text-blue-600 hover:text-blue-700 underline"
         >
           Clear filters
-        </button>
+        </Button>
       )}
-    </div>
+    </Group>
   )
 }

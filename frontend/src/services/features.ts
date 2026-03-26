@@ -26,17 +26,17 @@ export interface UpdateFeaturePayload {
 export async function getFeatureList(
   params: FeatureListParams,
 ): Promise<{ items: FeatureRequestSummary[]; meta: PaginationMeta }> {
-  const response = await apiClient.get('/api/features/', { params })
+  const response = await apiClient.get('/api/v1/features/', { params })
   return { items: response.data.data, meta: response.data.meta }
 }
 
 export async function getFeatureById(id: number): Promise<FeatureRequest> {
-  const response = await apiClient.get(`/api/features/${id}/`)
+  const response = await apiClient.get(`/api/v1/features/${id}/`)
   return response.data.data
 }
 
 export async function createFeature(payload: CreateFeaturePayload): Promise<FeatureRequest> {
-  const response = await apiClient.post('/api/features/', payload)
+  const response = await apiClient.post('/api/v1/features/', payload)
   return response.data.data
 }
 
@@ -44,10 +44,10 @@ export async function updateFeature(
   id: number,
   payload: UpdateFeaturePayload,
 ): Promise<FeatureRequest> {
-  const response = await apiClient.patch(`/api/features/${id}/`, payload)
+  const response = await apiClient.patch(`/api/v1/features/${id}/`, payload)
   return response.data.data
 }
 
 export async function deleteFeature(id: number): Promise<void> {
-  await apiClient.delete(`/api/features/${id}/`)
+  await apiClient.delete(`/api/v1/features/${id}/`)
 }

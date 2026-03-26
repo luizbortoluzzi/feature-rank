@@ -1,4 +1,4 @@
-import { Badge } from '../../../../components/badge'
+import { Badge } from '@mantine/core'
 import type { Category } from '../../../../types/category'
 
 interface CategoryBadgeProps {
@@ -6,5 +6,15 @@ interface CategoryBadgeProps {
 }
 
 export function CategoryBadge({ category }: CategoryBadgeProps) {
-  return <Badge label={category.name} color={category.color} icon={category.icon} />
+  return (
+    <Badge
+      variant="outline"
+      radius="sm"
+      color="gray"
+      style={{ textTransform: 'none', fontWeight: 500 }}
+    >
+      {category.icon && <span style={{ marginRight: 4 }}>{category.icon}</span>}
+      {category.name}
+    </Badge>
+  )
 }

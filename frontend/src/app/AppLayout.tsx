@@ -1,51 +1,53 @@
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   AppShell,
-  NavLink,
-  Group,
-  Stack,
-  Text,
   Avatar,
   ActionIcon,
-  TextInput,
-  Button,
-  Divider,
+  Group,
+  Text,
+  NavLink,
   Box,
+  Divider,
+  Title,
+  Stack,
 } from '@mantine/core'
 import {
-  IconLayoutDashboard,
-  IconPlus,
-  IconThumbUp,
-  IconShield,
-  IconSettings,
-  IconSearch,
+  IconLayoutList,
+  IconTag,
+  IconCircleDot,
+  IconUsers,
+  IconStack2,
+  IconLogout,
 } from '@tabler/icons-react'
-import { useLocation, useNavigate } from 'react-router-dom'
 import { useCurrentUser } from './AuthProvider'
 
 interface AppLayoutProps {
   children: ReactNode
-  title: string
+  title?: string
   subtitle?: string
 }
 
+const navLinks = [
+  { label: 'Features', icon: IconLayoutList, path: '/features' },
+  { label: 'Categories', icon: IconTag, path: '/categories' },
+  { label: 'Status', icon: IconCircleDot, path: '/statuses' },
+]
+
+const adminLinks = [
+  { label: 'Users', icon: IconUsers, path: '/admin/users' },
+]
+
+function isActive(path: string, locationPathname: string): boolean {
+  if (path === '/features')
+    return locationPathname === '/features' || locationPathname === '/'
+  return locationPathname.startsWith(path)
+}
+
 export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
-  const { user } = useCurrentUser()
   const location = useLocation()
   const navigate = useNavigate()
-
-  const navLinks = [
-    { label: 'Feature Board', icon: IconLayoutDashboard, path: '/' },
-    { label: 'Submit Idea', icon: IconPlus, path: '/features/new' },
-    { label: 'My Votes', icon: IconThumbUp, path: '/my-votes' },
-  ]
-
-  const adminLinks = [{ label: 'Admin Console', icon: IconShield, path: '/admin' }]
-
-  function isActive(path: string): boolean {
-    if (path === '/') return location.pathname === '/'
-    return location.pathname.startsWith(path)
-  }
+  const { user, logout } = useCurrentUser()
 
   const userInitials = user
     ? user.name
@@ -57,134 +59,116 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
     : '?'
 
   return (
-    <AppShell navbar={{ width: 220, breakpoint: 'sm' }} header={{ height: 60 }} padding="md">
-      <AppShell.Header
-        style={{
-          backgroundColor: 'var(--mantine-color-white)',
-          borderBottom: '1px solid var(--mantine-color-gray-2)',
-        }}
-      >
-        <Group h="100%" px="md" justify="space-between">
-          <Stack gap={0}>
-            <Text fw={600} size="md" lh={1.3}>
-              {title}
-            </Text>
+    <AppShell
+      navbar={{ width: 240, breakpoint: 'sm' }}
+      padding="md"
+    >
+      <AppShell.Navbar p="sm">
+        {/* Brand */}
+        <Group gap="sm" mb="xl" mt="xs">
+          <Box
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              backgroundColor: 'var(--mantine-color-indigo-6)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <IconStack2 size={20} color="white" />
+          </Box>
+          <Text fw={700} fz="md">
+            Feature Rank
+          </Text>
+        </Group>
+
+        {/* Nav links */}
+        {navLinks.map((link) => (
+          <NavLink
+            key={link.path}
+            label={link.label}
+            leftSection={<link.icon size={18} stroke={1.5} />}
+            active={isActive(link.path, location.pathname)}
+            onClick={() => navigate(link.path)}
+            variant="light"
+            mb={2}
+          />
+        ))}
+
+        {/* Admin section */}
+        {user?.is_admin && (
+          <>
+            <Divider
+              label="ADMIN"
+              labelPosition="left"
+              my="sm"
+              styles={{
+                label: {
+                  fontSize: 'var(--mantine-font-size-xs)',
+                  color: 'var(--mantine-color-dimmed)',
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                },
+              }}
+            />
+            {adminLinks.map((link) => (
+              <NavLink
+                key={link.path}
+                label={link.label}
+                leftSection={<link.icon size={18} stroke={1.5} />}
+                active={isActive(link.path, location.pathname)}
+                onClick={() => navigate(link.path)}
+                variant="light"
+                mb={2}
+              />
+            ))}
+          </>
+        )}
+        {/* User profile strip */}
+        {user && (
+          <>
+            <Divider mt="auto" mb="sm" />
+            <Group gap="sm" px={4} wrap="nowrap">
+              <Avatar size={32} radius="xl" color="indigo">
+                {userInitials}
+              </Avatar>
+              <Box style={{ flex: 1, minWidth: 0 }}>
+                <Text fz="sm" fw={500} truncate>
+                  {user.name}
+                </Text>
+                <Text fz="xs" c="dimmed" truncate>
+                  {user.email}
+                </Text>
+              </Box>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                aria-label="Log out"
+                onClick={() => void logout()}
+              >
+                <IconLogout size={16} />
+              </ActionIcon>
+            </Group>
+          </>
+        )}
+      </AppShell.Navbar>
+
+      <AppShell.Main>
+        {title && (
+          <Stack gap={4} mb="lg">
+            <Title order={2}>{title}</Title>
             {subtitle && (
-              <Text size="xs" c="dimmed" lh={1.3}>
+              <Text c="dimmed" fz="sm">
                 {subtitle}
               </Text>
             )}
           </Stack>
-
-          <Group gap="sm">
-            <TextInput
-              placeholder="Search features…"
-              leftSection={<IconSearch size={14} />}
-              size="sm"
-              radius="md"
-              style={{ width: 220 }}
-            />
-            <Button
-              size="sm"
-              radius="md"
-              leftSection={<IconPlus size={14} />}
-              onClick={() => navigate('/features/new')}
-            >
-              New Request
-            </Button>
-          </Group>
-        </Group>
-      </AppShell.Header>
-
-      <AppShell.Navbar
-        p="sm"
-        style={{
-          backgroundColor: 'var(--mantine-color-white)',
-          borderRight: '1px solid var(--mantine-color-gray-2)',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Box mb="sm">
-          <Group gap="xs" px="xs" py="sm">
-            <Box
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                backgroundColor: 'var(--mantine-color-indigo-6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text size="xs" fw={700} c="white">
-                FR
-              </Text>
-            </Box>
-            <Text fw={700} size="sm">
-              Feature Rank
-            </Text>
-          </Group>
-
-          <Divider mb="sm" />
-
-          <Stack gap={4}>
-            {navLinks.map(({ label, icon: Icon, path }) => (
-              <NavLink
-                key={path}
-                label={label}
-                leftSection={<Icon size={16} />}
-                active={isActive(path)}
-                onClick={() => navigate(path)}
-                style={{ borderRadius: 'var(--mantine-radius-md)' }}
-              />
-            ))}
-          </Stack>
-
-          {user?.is_admin && (
-            <>
-              <Divider my="sm" label="Admin" labelPosition="left" />
-              <Stack gap={4}>
-                {adminLinks.map(({ label, icon: Icon, path }) => (
-                  <NavLink
-                    key={path}
-                    label={label}
-                    leftSection={<Icon size={16} />}
-                    active={isActive(path)}
-                    onClick={() => navigate(path)}
-                    style={{ borderRadius: 'var(--mantine-radius-md)' }}
-                  />
-                ))}
-              </Stack>
-            </>
-          )}
-        </Box>
-
-        <Box mt="auto">
-          <Divider mb="sm" />
-          {user && (
-            <Group gap="sm" px="xs" py="xs" wrap="nowrap">
-              <Avatar radius="xl" size="sm" color="indigo">
-                {userInitials}
-              </Avatar>
-              <Box style={{ flex: 1, minWidth: 0 }}>
-                <Text size="sm" fw={500} truncate>
-                  {user.name}
-                </Text>
-                <Text size="xs" c="dimmed" truncate>
-                  {user.email}
-                </Text>
-              </Box>
-              <ActionIcon variant="subtle" color="gray" size="sm" aria-label="Settings">
-                <IconSettings size={14} />
-              </ActionIcon>
-            </Group>
-          )}
-        </Box>
-      </AppShell.Navbar>
-
-      <AppShell.Main>{children}</AppShell.Main>
+        )}
+        {children}
+      </AppShell.Main>
     </AppShell>
   )
 }
