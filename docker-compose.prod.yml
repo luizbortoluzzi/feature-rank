@@ -1,0 +1,51 @@
+# Production override — apply on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+# All services run with restart: always. No source bind mounts.
+# MySQL port NOT exposed to host. Secrets must come from environment only.
+
+services:
+
+  # ── MySQL — no host port in prod, data volume retained ────────────────────
+  db:
+    restart: always
+    ports: []  # override dev port exposure — 3306 not reachable from host
+
+  # ── Django backend — gunicorn production server ────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DJANGO_ENV: production
+    volumes: []  # remove dev bind mounts — image content only
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --bind
+      - "0.0.0.0:8000"
+      - --workers
+      - "4"
+      - --timeout
+      - "120"
+      - --access-logfile
+      - "-"
+      - --error-logfile
+      - "-"
+    restart: always
+
+  # ── nginx frontend — serves compiled static assets ─────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: runner
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
