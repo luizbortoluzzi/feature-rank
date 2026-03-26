@@ -52,3 +52,4 @@ __snapshots__/
 *.log
 .cache/
 .claude/worktrees/
+.claude/
