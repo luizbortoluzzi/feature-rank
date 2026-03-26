@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register Role model here once implemented.
+from apps.roles.models import Role
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ["name", "created_at"]

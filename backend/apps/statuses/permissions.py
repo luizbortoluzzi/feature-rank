@@ -6,8 +6,24 @@ Responsibilities:
 
 Design rules:
 - Mutation of status data is admin-only.
-- Read access may be available to authenticated users or public clients.
+- Read access is public (SAFE_METHODS).
 - Permission logic must be explicit, named, and testable.
 
 See docs/engineering/backend/security.md for security posture.
 """
+
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+
+class IsAdminOrReadOnly(BasePermission):
+    """
+    Allows read-only access to any client (including unauthenticated).
+    Write operations (POST, PATCH, DELETE) require is_admin=True.
+
+    Note: checks the domain is_admin field, not Django's is_staff flag.
+    """
+
+    def has_permission(self, request, view) -> bool:
+        if request.method in SAFE_METHODS:
+            return True
+        return bool(request.user and request.user.is_authenticated and request.user.is_admin)

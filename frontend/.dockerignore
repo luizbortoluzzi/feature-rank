@@ -1,0 +1,17 @@
+.git
+.gitignore
+node_modules/
+dist/
+.env*
+*.env
+.vite/
+coverage/
+.nyc_output/
+*.log
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Dockerfile*

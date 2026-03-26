@@ -17,7 +17,8 @@ class User(AbstractUser):
     user context. Clients must never supply author_id in create or update requests.
     """
 
-    name = models.CharField(max_length=150, blank=True)
+    name = models.CharField(max_length=150)
+    email = models.EmailField(max_length=254, unique=True)
     is_admin = models.BooleanField(default=False)
 
     class Meta:
@@ -25,3 +26,9 @@ class User(AbstractUser):
 
     def __str__(self) -> str:
         return self.email or self.username
+
+    def save(self, *args, **kwargs):
+        # Normalize email to lowercase for case-insensitive uniqueness
+        if self.email:
+            self.email = self.email.lower()
+        super().save(*args, **kwargs)

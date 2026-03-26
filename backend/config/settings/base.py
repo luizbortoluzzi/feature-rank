@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -25,6 +26,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
 ]
 
@@ -79,7 +81,9 @@ DATABASES = {
 AUTH_USER_MODEL = "users.User"
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -105,8 +109,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_RENDERER_CLASSES": [
-        "rest_framework.renderers.JSONRenderer",
+        "config.drf_renderer.EnvelopeRenderer",
     ],
+    "EXCEPTION_HANDLER": "config.drf_exception_handler.custom_exception_handler",
 }
 
 CORS_ALLOWED_ORIGINS = config(
@@ -114,3 +119,22 @@ CORS_ALLOWED_ORIGINS = config(
     default="http://localhost:5173",
     cast=lambda v: [s.strip() for s in v.split(",")],
 )
+CORS_ALLOW_CREDENTIALS = True
+
+# ---------------------------------------------------------------------------
+# JWT Configuration (djangorestframework-simplejwt)
+# Access tokens are short-lived to limit exposure; refresh tokens have a longer
+# window for seamless UX. Rotation is enabled so each refresh produces a new
+# refresh token, improving security by reducing the window for replay attacks.
+# Blacklisting is enabled so rotated-out refresh tokens cannot be reused.
+# ---------------------------------------------------------------------------
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
