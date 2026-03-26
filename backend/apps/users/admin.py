@@ -7,6 +7,4 @@ from .models import User
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     list_display = ["username", "email", "name", "is_admin", "is_active"]
-    fieldsets = BaseUserAdmin.fieldsets + (
-        ("Domain fields", {"fields": ("name", "is_admin")}),
-    )
+    fieldsets = BaseUserAdmin.fieldsets + (("Domain fields", {"fields": ("name", "is_admin")}),)

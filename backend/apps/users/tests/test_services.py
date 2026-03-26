@@ -11,7 +11,6 @@ Tests verify:
 from django.test import TestCase
 from rest_framework.exceptions import ValidationError
 
-from apps.users.models import User
 from apps.users.services import register_user
 
 

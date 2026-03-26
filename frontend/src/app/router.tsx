@@ -9,7 +9,7 @@ import { AppLayout } from './AppLayout'
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: '/features',
     element: (
       <AppLayout title="Feature Board" subtitle="Browse and vote on feature requests">
         <FeatureListPage />
@@ -45,7 +45,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/login',
+    path: '/',
     element: <LoginPage />,
   },
 ])

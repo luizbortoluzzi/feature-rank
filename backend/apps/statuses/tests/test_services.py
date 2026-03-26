@@ -66,7 +66,9 @@ class DeleteStatusServiceTest(TestCase):
 
     def test_deletes_unused_status_successfully(self):
         """delete_status removes a status that is not referenced by any feature request."""
-        s = Status.objects.create(name="deletable_svc", color="#000", is_terminal=False, sort_order=50)
+        s = Status.objects.create(
+            name="deletable_svc", color="#000", is_terminal=False, sort_order=50
+        )
         delete_status(status=s)
         self.assertFalse(Status.objects.filter(pk=s.pk).exists())
 

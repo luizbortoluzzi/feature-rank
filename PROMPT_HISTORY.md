@@ -1198,3 +1198,29 @@ Modified existing test files to update URLs from /api/ to /api/v1/:
 - `/home/isam/prj/feature-rank/backend/apps/users/tests/test_views.py`
 
 All 199 tests pass.
+
+## [2026-03-26T00:00:00Z] – Set up Black and Ruff for Django backend
+
+### Prompt
+You are a senior backend engineer. Set up Black (formatter) and Ruff (linter) for this Django Python project with pinned versions, updated pyproject.toml config, and new Makefile targets.
+
+### Action Taken
+- Pinned `ruff==0.5.7` and `black==24.8.0` in `[project.optional-dependencies]` dev section
+- Added `[tool.black]` config block: line-length=100, target-version=["py312"]
+- Updated `[tool.ruff]` config: line-length=100, removed SIM from select, added B008/B904 to ignore list, added per-file-ignores for migrations and manage.py
+- Added `format-check`, `format-check-backend`, `fix`, and `fix-backend` targets to Makefile
+- Updated `format-backend` to invoke `black` then `ruff format`
+- Suppressed B017 on one test with `# noqa: B017` (intentional broad assertRaises)
+- Auto-formatted 27 files with black; `ruff check` and `black --check` both pass clean
+
+## [2026-03-26T02:00:00Z] – Implement login page from design prototype
+
+### Prompt
+ok, so now lets implement the main screen of frontend, we need to do exactly the same of the image prototype
+
+[User shared a screenshot of a two-panel login page: left panel with purple-to-indigo gradient (brand, headline, 3 feature highlights, social proof), right panel with Sign In form (Google/GitHub social buttons, email+password fields, remember me, sign in button, footer links).]
+
+### Action Taken
+Rewrote LoginPage.tsx with a two-column Mantine layout matching the prototype. Left panel: linear-gradient(135deg, #5B21B6, #4338CA, #6366F1) with brand row (IconStack2 + "Feature Rank"), headline, subtitle, 3 feature items (IconCheck/IconUsers/IconTrendingUp with semi-transparent icon boxes), divider, and avatar social proof row. Right panel: Sign In header, disabled Google/GitHub buttons with "Coming soon" Tooltip, email/password divider, React Hook Form with TextInput (username field, labeled "Email Address") and Controller-wrapped PasswordInput, remember-me checkbox, forgot-password anchor, full-width indigo submit button with loading state, sign-up link, and footer links. Fixed import path (useLogin from use-login.ts), removed unnecessary ApiError casts (hook already types error as ApiError | null), removed unused ApiError import. tsc --noEmit and npm run lint both pass with zero errors.
+
+---

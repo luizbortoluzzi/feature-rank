@@ -16,13 +16,21 @@ from apps.users.models import User
 
 def create_admin():
     return User.objects.create_user(
-        username="catadmin", email="catadmin@example.com", name="Admin", password="pass", is_admin=True
+        username="catadmin",
+        email="catadmin@example.com",
+        name="Admin",
+        password="pass",
+        is_admin=True,
     )
 
 
 def create_user():
     return User.objects.create_user(
-        username="catuser", email="catuser@example.com", name="User", password="pass", is_admin=False
+        username="catuser",
+        email="catuser@example.com",
+        name="User",
+        password="pass",
+        is_admin=False,
     )
 
 
@@ -99,7 +107,9 @@ class CategoryCreateViewTest(TestCase):
         """POST /api/v1/categories/ by admin with valid data returns 201."""
         self.client.force_authenticate(user=self.admin)
         response = self.client.post(
-            "/api/v1/categories/", {"name": "New Category", "icon": "code", "color": "#000"}, format="json"
+            "/api/v1/categories/",
+            {"name": "New Category", "icon": "code", "color": "#000"},
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 

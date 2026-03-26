@@ -129,7 +129,6 @@ SPECTACULAR_SETTINGS = {
     ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-
     # JWT auth shown in Swagger UI
     "SECURITY": [{"bearerAuth": []}],
     "COMPONENTS": {
@@ -141,12 +140,10 @@ SPECTACULAR_SETTINGS = {
             }
         }
     },
-
     # Envelope wrapper — tell spectacular what the actual response shapes look like
     "POSTPROCESSING_HOOKS": [
         "drf_spectacular.hooks.postprocess_schema_enums",
     ],
-
     "COMPONENT_SPLIT_REQUEST": True,
     "SCHEMA_PATH_PREFIX": r"/api/v1/",
 }

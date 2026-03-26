@@ -40,7 +40,9 @@ class RegisterView(APIView):
         request=UserRegistrationSerializer,
         responses={
             201: UserMeSerializer,
-            400: OpenApiResponse(description="Validation error — duplicate email or missing fields."),
+            400: OpenApiResponse(
+                description="Validation error — duplicate email or missing fields."
+            ),
         },
     )
     def post(self, request):
@@ -66,7 +68,9 @@ class MeView(APIView):
         description="Returns the profile of the currently authenticated user. Requires a valid Bearer token.",
         responses={
             200: UserMeSerializer,
-            401: OpenApiResponse(description="Authentication credentials were not provided or are invalid."),
+            401: OpenApiResponse(
+                description="Authentication credentials were not provided or are invalid."
+            ),
         },
     )
     def get(self, request):

@@ -78,10 +78,20 @@ class DefaultOrderingTest(TestCase):
         """
         now = timezone.now()
         fr_low = FeatureRequest.objects.create(
-            title="Low", description="d", rate=3, author=self.user, category=self.category, status=self.status
+            title="Low",
+            description="d",
+            rate=3,
+            author=self.user,
+            category=self.category,
+            status=self.status,
         )
         fr_high = FeatureRequest.objects.create(
-            title="High", description="d", rate=3, author=self.user, category=self.category, status=self.status
+            title="High",
+            description="d",
+            rate=3,
+            author=self.user,
+            category=self.category,
+            status=self.status,
         )
         # Force same created_at
         FeatureRequest.objects.filter(pk=fr_low.pk).update(created_at=now)

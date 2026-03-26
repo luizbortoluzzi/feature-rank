@@ -44,7 +44,9 @@ VALID_TRANSITIONS: dict[str, set[str]] = {
 }
 
 
-def create_feature_request(*, user, title: str, description: str, rate: int, category_id: int) -> FeatureRequest:
+def create_feature_request(
+    *, user, title: str, description: str, rate: int, category_id: int
+) -> FeatureRequest:
     """
     Create a new FeatureRequest.
 
@@ -55,7 +57,9 @@ def create_feature_request(*, user, title: str, description: str, rate: int, cat
     try:
         open_status = Status.objects.get(name__iexact="open")
     except Status.DoesNotExist:
-        raise ValidationError({"detail": ["System error: 'open' status not found. Run seed_reference_data."]})
+        raise ValidationError(
+            {"detail": ["System error: 'open' status not found. Run seed_reference_data."]}
+        )
 
     return FeatureRequest.objects.create(
         title=title,
@@ -146,7 +150,9 @@ def unvote_feature_request(*, feature_request: FeatureRequest, user) -> dict:
     }
 
 
-def change_feature_request_status(*, feature_request: FeatureRequest, user, new_status_id: int) -> FeatureRequest:
+def change_feature_request_status(
+    *, feature_request: FeatureRequest, user, new_status_id: int
+) -> FeatureRequest:
     """
     Change the status of a feature request. Admin-only.
 

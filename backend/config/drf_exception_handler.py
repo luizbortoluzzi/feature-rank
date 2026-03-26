@@ -13,6 +13,7 @@ All error responses conform to the project API contract envelope:
 
 Internal detail (stack traces, raw DB errors) is never exposed in responses.
 """
+
 import logging
 
 from rest_framework import status

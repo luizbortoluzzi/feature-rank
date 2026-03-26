@@ -23,20 +23,30 @@ def _next_sort():
 
 def create_admin():
     return User.objects.create_user(
-        username="statviewadmin", email="statviewadmin@example.com", name="Admin", password="pass", is_admin=True
+        username="statviewadmin",
+        email="statviewadmin@example.com",
+        name="Admin",
+        password="pass",
+        is_admin=True,
     )
 
 
 def create_user():
     return User.objects.create_user(
-        username="statviewuser", email="statviewuser@example.com", name="User", password="pass", is_admin=False
+        username="statviewuser",
+        email="statviewuser@example.com",
+        name="User",
+        password="pass",
+        is_admin=False,
     )
 
 
 class StatusListViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        Status.objects.create(name="open_viewlist", color="#6B7280", is_terminal=False, sort_order=_next_sort())
+        Status.objects.create(
+            name="open_viewlist", color="#6B7280", is_terminal=False, sort_order=_next_sort()
+        )
 
     def test_get_returns_200_no_auth_required(self):
         """GET /api/v1/statuses/ returns 200 without authentication."""
@@ -84,7 +94,9 @@ class StatusCreateViewTest(TestCase):
     def test_unauthenticated_returns_401(self):
         """POST /api/v1/statuses/ without auth returns 401."""
         response = self.client.post(
-            "/api/v1/statuses/", {"name": "new_status", "color": "#000", "sort_order": _next_sort()}, format="json"
+            "/api/v1/statuses/",
+            {"name": "new_status", "color": "#000", "sort_order": _next_sort()},
+            format="json",
         )
         self.assertEqual(response.status_code, 401)
 
@@ -92,7 +104,9 @@ class StatusCreateViewTest(TestCase):
         """POST /api/v1/statuses/ by non-admin returns 403."""
         self.client.force_authenticate(user=self.user)
         response = self.client.post(
-            "/api/v1/statuses/", {"name": "new_status", "color": "#000", "sort_order": _next_sort()}, format="json"
+            "/api/v1/statuses/",
+            {"name": "new_status", "color": "#000", "sort_order": _next_sort()},
+            format="json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -128,13 +142,17 @@ class StatusUpdateViewTest(TestCase):
 
     def test_unauthenticated_returns_401(self):
         """PATCH /api/v1/statuses/{id}/ without auth returns 401."""
-        response = self.client.patch(f"/api/v1/statuses/{self.status.pk}/", {"name": "X"}, format="json")
+        response = self.client.patch(
+            f"/api/v1/statuses/{self.status.pk}/", {"name": "X"}, format="json"
+        )
         self.assertEqual(response.status_code, 401)
 
     def test_non_admin_returns_403(self):
         """PATCH /api/v1/statuses/{id}/ by non-admin returns 403."""
         self.client.force_authenticate(user=self.user)
-        response = self.client.patch(f"/api/v1/statuses/{self.status.pk}/", {"name": "X"}, format="json")
+        response = self.client.patch(
+            f"/api/v1/statuses/{self.status.pk}/", {"name": "X"}, format="json"
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_admin_patch_returns_200(self):
@@ -154,7 +172,9 @@ class StatusUpdateViewTest(TestCase):
     def test_put_method_returns_405(self):
         """PUT is not supported — must return 405."""
         self.client.force_authenticate(user=self.admin)
-        response = self.client.put(f"/api/v1/statuses/{self.status.pk}/", {"name": "X"}, format="json")
+        response = self.client.put(
+            f"/api/v1/statuses/{self.status.pk}/", {"name": "X"}, format="json"
+        )
         self.assertEqual(response.status_code, 405)
 
 
@@ -170,20 +190,26 @@ class StatusDeleteViewTest(TestCase):
 
     def test_unauthenticated_returns_401(self):
         """DELETE /api/v1/statuses/{id}/ without auth returns 401."""
-        s = Status.objects.create(name="del401_stat", color="#000", is_terminal=False, sort_order=_next_sort())
+        s = Status.objects.create(
+            name="del401_stat", color="#000", is_terminal=False, sort_order=_next_sort()
+        )
         response = self.client.delete(f"/api/v1/statuses/{s.pk}/")
         self.assertEqual(response.status_code, 401)
 
     def test_non_admin_returns_403(self):
         """DELETE /api/v1/statuses/{id}/ by non-admin returns 403."""
-        s = Status.objects.create(name="del403_stat", color="#000", is_terminal=False, sort_order=_next_sort())
+        s = Status.objects.create(
+            name="del403_stat", color="#000", is_terminal=False, sort_order=_next_sort()
+        )
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/v1/statuses/{s.pk}/")
         self.assertEqual(response.status_code, 403)
 
     def test_admin_delete_unused_status_returns_204(self):
         """DELETE by admin on unused status returns 204."""
-        s = Status.objects.create(name="unused_stat", color="#000", is_terminal=False, sort_order=_next_sort())
+        s = Status.objects.create(
+            name="unused_stat", color="#000", is_terminal=False, sort_order=_next_sort()
+        )
         self.client.force_authenticate(user=self.admin)
         response = self.client.delete(f"/api/v1/statuses/{s.pk}/")
         self.assertEqual(response.status_code, 204)
@@ -191,7 +217,9 @@ class StatusDeleteViewTest(TestCase):
 
     def test_admin_delete_in_use_status_returns_400(self):
         """DELETE by admin on a status referenced by a FeatureRequest returns 400."""
-        s = Status.objects.create(name="inuse_stat", color="#000", is_terminal=False, sort_order=_next_sort())
+        s = Status.objects.create(
+            name="inuse_stat", color="#000", is_terminal=False, sort_order=_next_sort()
+        )
         FeatureRequest.objects.create(
             title="Ref",
             description="desc",

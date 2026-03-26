@@ -22,7 +22,9 @@ def create_category(*, name: str, icon: str = "", color: str = "") -> Category:
     return Category.objects.create(name=name, icon=icon, color=color)
 
 
-def update_category(*, category: Category, name: str = None, icon: str = None, color: str = None) -> Category:
+def update_category(
+    *, category: Category, name: str = None, icon: str = None, color: str = None
+) -> Category:
     """
     Update a Category record. Only supplied fields (non-None) are changed.
     Returns the updated instance.

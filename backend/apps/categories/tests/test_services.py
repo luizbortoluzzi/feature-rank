@@ -69,7 +69,9 @@ class DeleteCategoryServiceTest(TestCase):
         self.user = User.objects.create_user(
             username="catdeluser", email="catdel@example.com", name="Del", password="pass"
         )
-        self.status = Status.objects.create(name="open_catdel", color="#000", is_terminal=False, sort_order=200)
+        self.status = Status.objects.create(
+            name="open_catdel", color="#000", is_terminal=False, sort_order=200
+        )
 
     def test_deletes_unused_category_successfully(self):
         """delete_category removes a category with no referenced feature requests."""

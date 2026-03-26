@@ -21,13 +21,22 @@ from rest_framework.exceptions import ValidationError
 from apps.statuses.models import Status
 
 
-def create_status(*, name: str, color: str = "", is_terminal: bool = False, sort_order: int = 0) -> Status:
+def create_status(
+    *, name: str, color: str = "", is_terminal: bool = False, sort_order: int = 0
+) -> Status:
     """Create and return a new Status reference record."""
-    return Status.objects.create(name=name, color=color, is_terminal=is_terminal, sort_order=sort_order)
+    return Status.objects.create(
+        name=name, color=color, is_terminal=is_terminal, sort_order=sort_order
+    )
 
 
 def update_status(
-    *, status: Status, name: str = None, color: str = None, is_terminal: bool = None, sort_order: int = None
+    *,
+    status: Status,
+    name: str = None,
+    color: str = None,
+    is_terminal: bool = None,
+    sort_order: int = None,
 ) -> Status:
     """
     Update a Status record. Only supplied fields (non-None) are changed.

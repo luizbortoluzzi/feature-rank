@@ -27,7 +27,9 @@ def make_category():
 
 
 def make_status():
-    return Status.objects.create(name="open_model", color="#6B7280", is_terminal=False, sort_order=0)
+    return Status.objects.create(
+        name="open_model", color="#6B7280", is_terminal=False, sort_order=0
+    )
 
 
 def make_feature(user, category, status, title="Feature"):

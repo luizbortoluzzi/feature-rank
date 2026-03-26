@@ -38,7 +38,9 @@ def make_category():
 
 
 def make_status(name="open_svc_default", sort_order=100):
-    return Status.objects.create(name=name, color="#6B7280", is_terminal=False, sort_order=sort_order)
+    return Status.objects.create(
+        name=name, color="#6B7280", is_terminal=False, sort_order=sort_order
+    )
 
 
 def make_feature(user, category, status):
@@ -63,7 +65,9 @@ class VoteFeatureRequestServiceTest(TestCase):
     def test_vote_creates_one_vote_record(self):
         """Voting creates exactly one Vote record."""
         result = vote_feature_request(feature_request=self.feature, user=self.user)
-        self.assertEqual(Vote.objects.filter(user=self.user, feature_request=self.feature).count(), 1)
+        self.assertEqual(
+            Vote.objects.filter(user=self.user, feature_request=self.feature).count(), 1
+        )
         self.assertTrue(result["has_voted"])
         self.assertEqual(result["vote_count"], 1)
         self.assertEqual(result["feature_request_id"], self.feature.pk)
@@ -75,7 +79,9 @@ class VoteFeatureRequestServiceTest(TestCase):
         """
         vote_feature_request(feature_request=self.feature, user=self.user)
         vote_feature_request(feature_request=self.feature, user=self.user)
-        self.assertEqual(Vote.objects.filter(user=self.user, feature_request=self.feature).count(), 1)
+        self.assertEqual(
+            Vote.objects.filter(user=self.user, feature_request=self.feature).count(), 1
+        )
 
     def test_duplicate_vote_returns_correct_state(self):
         """Idempotent vote returns has_voted=True and correct vote_count."""
@@ -107,7 +113,9 @@ class UnvoteFeatureRequestServiceTest(TestCase):
         """Unvoting removes the Vote record and returns has_voted=False."""
         Vote.objects.create(user=self.user, feature_request=self.feature)
         result = unvote_feature_request(feature_request=self.feature, user=self.user)
-        self.assertEqual(Vote.objects.filter(user=self.user, feature_request=self.feature).count(), 0)
+        self.assertEqual(
+            Vote.objects.filter(user=self.user, feature_request=self.feature).count(), 0
+        )
         self.assertFalse(result["has_voted"])
 
     def test_unvote_when_no_vote_exists_does_not_raise(self):
@@ -130,7 +138,9 @@ class CreateFeatureRequestServiceTest(TestCase):
         self.user = make_user("createsvuser", "createsvc@example.com")
         self.category = make_category()
         # The service looks for a status named 'open' (case-insensitive).
-        self.open_status = Status.objects.create(name="open", color="#6B7280", is_terminal=False, sort_order=10)
+        self.open_status = Status.objects.create(
+            name="open", color="#6B7280", is_terminal=False, sort_order=10
+        )
 
     def test_author_is_derived_from_user_argument(self):
         """

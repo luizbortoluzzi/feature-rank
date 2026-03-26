@@ -22,13 +22,25 @@ def _make_request(user):
 class IsAuthorOrAdminPermissionTest(TestCase):
     def setUp(self):
         self.author = User.objects.create_user(
-            username="permauthor", email="permauthor@example.com", name="Author", password="pass", is_admin=False
+            username="permauthor",
+            email="permauthor@example.com",
+            name="Author",
+            password="pass",
+            is_admin=False,
         )
         self.admin = User.objects.create_user(
-            username="permadmin", email="permadmin@example.com", name="Admin", password="pass", is_admin=True
+            username="permadmin",
+            email="permadmin@example.com",
+            name="Admin",
+            password="pass",
+            is_admin=True,
         )
         self.other = User.objects.create_user(
-            username="permother", email="permother@example.com", name="Other", password="pass", is_admin=False
+            username="permother",
+            email="permother@example.com",
+            name="Other",
+            password="pass",
+            is_admin=False,
         )
 
     def _make_obj(self, author):

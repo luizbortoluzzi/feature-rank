@@ -1,6 +1,7 @@
 .PHONY: install install-backend install-frontend dev dev-backend dev-frontend \
         lint lint-backend lint-frontend test test-backend test-frontend \
-        format format-backend backend-migrate backend-run frontend-run \
+        format format-backend format-check format-check-backend fix fix-backend \
+        backend-migrate backend-run frontend-run \
         docker-up docker-down
 
 install: install-backend install-frontend
@@ -29,9 +30,19 @@ lint-frontend:
 lint: lint-backend lint-frontend
 
 format-backend:
-	cd backend && ruff format .
+	cd backend && black apps/ config/ && ruff format apps/ config/
 
 format: format-backend
+
+format-check-backend:
+	cd backend && black --check apps/ config/ && ruff format --check apps/ config/
+
+format-check: format-check-backend
+
+fix-backend:
+	cd backend && ruff check --fix apps/ config/ && black apps/ config/
+
+fix: fix-backend
 
 test-backend:
 	cd backend && pytest

@@ -14,7 +14,10 @@ from django.test import TestCase
 
 from apps.categories.models import Category
 from apps.feature_requests.models import FeatureRequest
-from apps.feature_requests.serializers import FeatureRequestListSerializer, FeatureRequestWriteSerializer
+from apps.feature_requests.serializers import (
+    FeatureRequestListSerializer,
+    FeatureRequestWriteSerializer,
+)
 from apps.statuses.models import Status
 from apps.users.models import User
 
@@ -28,7 +31,9 @@ def make_category(name="Ser Cat"):
 
 
 def make_status(name="open_ser", sort_order=0):
-    return Status.objects.create(name=name, color="#6B7280", is_terminal=False, sort_order=sort_order)
+    return Status.objects.create(
+        name=name, color="#6B7280", is_terminal=False, sort_order=sort_order
+    )
 
 
 class FeatureRequestWriteSerializerTest(TestCase):
@@ -53,7 +58,9 @@ class FeatureRequestWriteSerializerTest(TestCase):
     def test_missing_title_raises_validation_error_in_partial_false(self):
         """rate=0 is invalid."""
         # When partial=False and rate is invalid
-        s = FeatureRequestWriteSerializer(data={"description": "desc", "rate": 3, "category_id": self.category.pk})
+        s = FeatureRequestWriteSerializer(
+            data={"description": "desc", "rate": 3, "category_id": self.category.pk}
+        )
         # The serializer has required=False on all fields (partial create)
         # but view enforces required fields separately; serializer validates constraints
         self.assertTrue(s.is_valid(), s.errors)

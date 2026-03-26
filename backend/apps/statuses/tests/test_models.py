@@ -31,5 +31,7 @@ class StatusModelTest(TestCase):
 
     def test_created_at_is_set_automatically(self):
         """created_at is set automatically on creation."""
-        s = Status.objects.create(name="timestamped_status", color="#000", is_terminal=False, sort_order=30)
+        s = Status.objects.create(
+            name="timestamped_status", color="#000", is_terminal=False, sort_order=30
+        )
         self.assertIsNotNone(s.created_at)

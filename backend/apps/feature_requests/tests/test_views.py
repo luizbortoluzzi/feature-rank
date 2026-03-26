@@ -21,7 +21,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 
 from apps.categories.models import Category
-from apps.feature_requests.models import FeatureRequest, Vote
+from apps.feature_requests.models import FeatureRequest
 from apps.statuses.models import Status
 
 User = get_user_model()
@@ -38,7 +38,9 @@ def create_category():
 
 
 def create_status(name="open", sort_order=0, is_terminal=False):
-    return Status.objects.create(name=name, color="#6B7280", is_terminal=is_terminal, sort_order=sort_order)
+    return Status.objects.create(
+        name=name, color="#6B7280", is_terminal=is_terminal, sort_order=sort_order
+    )
 
 
 def create_feature(user, category, status, title="Test Feature", rate=3):
@@ -129,7 +131,12 @@ class FeatureRequestCreateViewTest(TestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.post(
             "/api/v1/features/",
-            {"title": "Test Feature", "description": "A description", "rate": 3, "category_id": self.category.pk},
+            {
+                "title": "Test Feature",
+                "description": "A description",
+                "rate": 3,
+                "category_id": self.category.pk,
+            },
             format="json",
         )
         self.assertEqual(response.status_code, 201)

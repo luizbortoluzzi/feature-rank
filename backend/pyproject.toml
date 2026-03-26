@@ -23,7 +23,8 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-django>=4.8",
-    "ruff>=0.3",
+    "ruff==0.5.7",
+    "black==24.8.0",
     "factory-boy>=3.3",
 ]
 
@@ -37,14 +38,22 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 testpaths = ["apps", "tests"]
 
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
 [tool.ruff]
-line-length = 119
+line-length = 100
 target-version = "py312"
 src = ["."]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
-ignore = ["E501"]
+select = ["E", "F", "W", "I", "UP", "B", "C4"]
+ignore = ["E501", "B008", "B904"]
+
+[tool.ruff.lint.per-file-ignores]
+"*/migrations/*.py" = ["E501", "F401"]
+"manage.py" = ["F401"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]

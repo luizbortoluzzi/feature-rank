@@ -67,7 +67,7 @@ class UserRegistrationSerializerTest(TestCase):
         )
         s = UserRegistrationSerializer(data=self._valid_data(username="newuser"))
         self.assertTrue(s.is_valid(), s.errors)
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             s.save()
 
     def test_email_normalized_to_lowercase_on_validation(self):

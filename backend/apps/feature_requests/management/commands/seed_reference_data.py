@@ -72,10 +72,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         roles_created = 0
         for data in ROLES:
-            _, created = Role.objects.get_or_create(name=data["name"], defaults={"description": data["description"]})
+            _, created = Role.objects.get_or_create(
+                name=data["name"], defaults={"description": data["description"]}
+            )
             if created:
                 roles_created += 1
-        self.stdout.write(f"Roles: {roles_created} created, {len(ROLES) - roles_created} already existed.")
+        self.stdout.write(
+            f"Roles: {roles_created} created, {len(ROLES) - roles_created} already existed."
+        )
 
         categories_created = 0
         for data in CATEGORIES:
@@ -119,6 +123,8 @@ class Command(BaseCommand):
                 user.set_password(data["password"])
                 user.save(update_fields=["password"])
                 users_created += 1
-        self.stdout.write(f"Users: {users_created} created, {len(USERS) - users_created} already existed.")
+        self.stdout.write(
+            f"Users: {users_created} created, {len(USERS) - users_created} already existed."
+        )
 
         self.stdout.write(self.style.SUCCESS("Reference data seeding complete."))

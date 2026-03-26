@@ -23,7 +23,13 @@ See docs/architecture/backend-architecture.md for layer responsibilities.
 See docs/engineering/backend/api-conventions.md for response format standards.
 """
 
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view, inline_serializer
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
+)
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
@@ -32,8 +38,15 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from apps.feature_requests.permissions import IsAuthorOrAdmin
-from apps.feature_requests.selectors import VALID_SORT_VALUES, get_feature_request_detail, get_feature_requests_list
-from apps.feature_requests.serializers import FeatureRequestListSerializer, FeatureRequestWriteSerializer
+from apps.feature_requests.selectors import (
+    VALID_SORT_VALUES,
+    get_feature_request_detail,
+    get_feature_requests_list,
+)
+from apps.feature_requests.serializers import (
+    FeatureRequestListSerializer,
+    FeatureRequestWriteSerializer,
+)
 from apps.feature_requests.services import (
     create_feature_request,
     delete_feature_request,
@@ -67,7 +80,11 @@ def _validate_sort_param(sort_value):
         )
     if sort_value not in VALID_SORT_VALUES:
         raise ValidationError(
-            {"sort": [f"'{sort_value}' is not a valid sort value. Permitted: {sorted(VALID_SORT_VALUES)}."]}
+            {
+                "sort": [
+                    f"'{sort_value}' is not a valid sort value. Permitted: {sorted(VALID_SORT_VALUES)}."
+                ]
+            }
         )
 
 
@@ -95,7 +112,11 @@ def _parse_int_param(name: str, value: str):
             "sort=rate and sort=-rate are explicitly rejected with 400."
         ),
         parameters=[
-            OpenApiParameter("sort", str, description="Sort order. Allowed: -vote_count, vote_count, -created_at, created_at. Default: -vote_count."),
+            OpenApiParameter(
+                "sort",
+                str,
+                description="Sort order. Allowed: -vote_count, vote_count, -created_at, created_at. Default: -vote_count.",
+            ),
             OpenApiParameter("category_id", int, description="Filter by category ID."),
             OpenApiParameter("status_id", int, description="Filter by status ID."),
             OpenApiParameter("author_id", int, description="Filter by author user ID."),
@@ -127,7 +148,9 @@ def _parse_int_param(name: str, value: str):
         request=FeatureRequestWriteSerializer,
         responses={
             201: FeatureRequestListSerializer,
-            400: OpenApiResponse(description="Validation error — missing fields or invalid rate/category."),
+            400: OpenApiResponse(
+                description="Validation error — missing fields or invalid rate/category."
+            ),
             401: OpenApiResponse(description="Authentication required."),
             403: OpenApiResponse(description="Non-admin submitted status_id."),
         },
@@ -220,7 +243,9 @@ class FeatureRequestViewSet(ViewSet):
 
     def create(self, request):
         # Reject non-admin submitting status_id.
-        if "status_id" in request.data and not (request.user.is_authenticated and request.user.is_admin):
+        if "status_id" in request.data and not (
+            request.user.is_authenticated and request.user.is_admin
+        ):
             raise PermissionDenied("Only administrators may set status_id.")
 
         # author_id in request body is silently ignored per API contract.
@@ -292,11 +317,14 @@ class FeatureRequestViewSet(ViewSet):
         responses={
             200: OpenApiResponse(
                 description="Vote recorded (or already existed).",
-                response=inline_serializer("VoteResponse", fields={
-                    "feature_request_id": serializers.IntegerField(),
-                    "has_voted": serializers.BooleanField(),
-                    "vote_count": serializers.IntegerField(),
-                }),
+                response=inline_serializer(
+                    "VoteResponse",
+                    fields={
+                        "feature_request_id": serializers.IntegerField(),
+                        "has_voted": serializers.BooleanField(),
+                        "vote_count": serializers.IntegerField(),
+                    },
+                ),
             ),
             401: OpenApiResponse(description="Authentication required."),
             404: OpenApiResponse(description="Feature request not found."),
@@ -315,17 +343,25 @@ class FeatureRequestViewSet(ViewSet):
         responses={
             200: OpenApiResponse(
                 description="Vote removed (or no vote existed).",
-                response=inline_serializer("UnvoteResponse", fields={
-                    "feature_request_id": serializers.IntegerField(),
-                    "has_voted": serializers.BooleanField(),
-                    "vote_count": serializers.IntegerField(),
-                }),
+                response=inline_serializer(
+                    "UnvoteResponse",
+                    fields={
+                        "feature_request_id": serializers.IntegerField(),
+                        "has_voted": serializers.BooleanField(),
+                        "vote_count": serializers.IntegerField(),
+                    },
+                ),
             ),
             401: OpenApiResponse(description="Authentication required."),
             404: OpenApiResponse(description="Feature request not found."),
         },
     )
-    @action(detail=True, methods=["post", "delete"], url_path="vote", permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        url_path="vote",
+        permission_classes=[IsAuthenticated],
+    )
     def vote(self, request, pk=None):
         """
         POST   /api/features/{id}/vote/  — cast vote (idempotent, always 200)
@@ -336,6 +372,7 @@ class FeatureRequestViewSet(ViewSet):
         # get_object_or_404-equivalent using the selector (already annotated).
         try:
             from apps.feature_requests.models import FeatureRequest as FR
+
             feature_request = FR.objects.get(pk=pk)
         except Exception:
             raise NotFound()

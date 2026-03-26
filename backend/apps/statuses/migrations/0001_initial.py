@@ -7,24 +7,28 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Status',
+            name="Status",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('color', models.CharField(max_length=7)),
-                ('is_terminal', models.BooleanField(default=False)),
-                ('sort_order', models.IntegerField(unique=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("color", models.CharField(max_length=7)),
+                ("is_terminal", models.BooleanField(default=False)),
+                ("sort_order", models.IntegerField(unique=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'statuses',
-                'ordering': ['sort_order'],
+                "db_table": "statuses",
+                "ordering": ["sort_order"],
             },
         ),
     ]
