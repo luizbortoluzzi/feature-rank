@@ -5,21 +5,32 @@ import { CreateFeaturePage } from '../pages/CreateFeaturePage'
 import { EditFeaturePage } from '../pages/EditFeaturePage'
 import { LoginPage } from '../pages/LoginPage'
 import { ProtectedRoute } from './ProtectedRoute'
+import { AppLayout } from './AppLayout'
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <FeatureListPage />,
+    element: (
+      <AppLayout title="Feature Board" subtitle="Browse and vote on feature requests">
+        <FeatureListPage />
+      </AppLayout>
+    ),
   },
   {
     path: '/features/:id',
-    element: <FeatureDetailPage />,
+    element: (
+      <AppLayout title="Feature Detail">
+        <FeatureDetailPage />
+      </AppLayout>
+    ),
   },
   {
     path: '/features/new',
     element: (
       <ProtectedRoute>
-        <CreateFeaturePage />
+        <AppLayout title="Submit Idea" subtitle="Share a new feature request">
+          <CreateFeaturePage />
+        </AppLayout>
       </ProtectedRoute>
     ),
   },
@@ -27,7 +38,9 @@ export const router = createBrowserRouter([
     path: '/features/:id/edit',
     element: (
       <ProtectedRoute>
-        <EditFeaturePage />
+        <AppLayout title="Edit Feature Request">
+          <EditFeaturePage />
+        </AppLayout>
       </ProtectedRoute>
     ),
   },

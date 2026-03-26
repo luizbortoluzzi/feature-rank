@@ -19,11 +19,18 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    const data = error.response?.data as { error?: ApiError } | undefined
-    const apiError: ApiError = data?.error ?? {
-      code: 'unknown_error',
-      message: 'An unexpected error occurred.',
-      details: null,
+    if (error.response?.status === 401) {
+      localStorage.removeItem('access_token')
+      window.location.href = '/login'
+    }
+    const data = error.response?.data as { error?: Omit<ApiError, 'status'> } | undefined
+    const apiError: ApiError = {
+      ...(data?.error ?? {
+        code: 'unknown_error',
+        message: 'An unexpected error occurred.',
+        details: null,
+      }),
+      status: error.response?.status,
     }
     return Promise.reject(apiError)
   },

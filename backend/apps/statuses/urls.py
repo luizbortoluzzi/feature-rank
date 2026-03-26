@@ -1,3 +1,7 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-urlpatterns: list = []
+from apps.statuses.views import StatusViewSet
+
+router = DefaultRouter()
+router.register("statuses", StatusViewSet, basename="status")
+urlpatterns = router.urls

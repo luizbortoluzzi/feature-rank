@@ -12,15 +12,25 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@mantine/core": "^8.3.18",
+    "@mantine/dates": "^8.3.18",
+    "@mantine/hooks": "^8.3.18",
+    "@mantine/notifications": "^8.3.18",
+    "@tabler/icons-react": "^3.40.0",
+    "@tanstack/react-query": "^5.28.4",
+    "@tanstack/react-query-devtools": "^5.28.4",
     "axios": "^1.6.8",
+    "postcss": "^8.5.8",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.0",
-    "react-router-dom": "^6.22.3",
-    "@tanstack/react-query": "^5.28.4",
-    "@tanstack/react-query-devtools": "^5.28.4"
+    "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
+    "@testing-library/react": "^15.0.2",
+    "@testing-library/user-event": "^14.5.2",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
@@ -29,11 +39,9 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "jsdom": "^24.0.0",
     "typescript": "^5.4.2",
     "vite": "^5.2.0",
-    "vitest": "^1.4.0",
-    "@testing-library/react": "^15.0.2",
-    "@testing-library/user-event": "^14.5.2",
-    "jsdom": "^24.0.0"
+    "vitest": "^1.4.0"
   }
 }

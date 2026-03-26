@@ -143,6 +143,181 @@ Created all 6 files. `LICENSE`: MIT, copyright 2026 feature-rank contributors. `
 
 ---
 
+## [2026-03-26T18:10:00Z] – Configure Django project layer
+
+### Prompt
+You are the backend-engineer agent for this Django monorepo at /home/isam/prj/feature-rank.
+
+## What exists
+- `backend/config/settings/{base,development,production}.py` — skeleton settings
+- `backend/config/urls.py` — URL routing skeleton (apps wired, but apps have empty urls.py)
+- `backend/apps/{users,roles,categories,statuses,feature_requests}/` — all scaffolded
+  with empty models.py, views.py, serializers.py, services.py, selectors.py, urls.py
+- `AUTH_USER_MODEL = "users.User"` is declared in base.py but the User model does not exist yet
+- Database is MySQL 8.4 (switched from PostgreSQL); driver is mysqlclient
+
+## Your task: configure the Django project layer — do NOT implement business models yet
+
+Work strictly in this order. Read the relevant docs before each step.
+
+---
+
+### 1. Custom User model — apps/users/models.py
+
+Read `docs/engineering/backend/data-modeling.md` and `docs/architecture/system-overview.md` first.
+
+Create a minimal custom User model in `apps/users/models.py` that:
+- Extends `AbstractUser`
+- Adds an `is_admin` boolean field (default False) — used for permission checks
+- Keeps email as the primary identifier if the docs say so; otherwise use username
+- Has no other fields — domain fields (role FK, etc.) come later when models are implemented
+- Generates the initial migration for users only (DO NOT apply it — just create the migration file)
+
+This is a prerequisite for everything else — Django cannot start without it.
+
+---
+
+### 2. MySQL-specific database settings — config/settings/base.py
+
+Add `OPTIONS` to the DATABASES default config:
+```python
+OPTIONS: {
+    "charset": "utf8mb4",
+    "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+}
+```
+These are required for proper Unicode support and strict mode enforcement with MySQL 8.
+
+---
+
+### 3. JWT settings — config/settings/base.py
+
+Add a `SIMPLE_JWT` block. Read `docs/engineering/backend/security.md` for the
+required token lifetime policy. At minimum configure:
+- `ACCESS_TOKEN_LIFETIME` — short (e.g. 15 minutes or whatever the docs specify)
+- `REFRESH_TOKEN_LIFETIME` — longer (e.g. 7 days)
+- `ROTATE_REFRESH_TOKENS = True`
+- `BLACKLIST_AFTER_ROTATION = False` (no blacklist app added)
+- `AUTH_HEADER_TYPES = ("Bearer",)`
+- `USER_ID_FIELD = "id"` and `USER_ID_CLAIM = "user_id"`
+
+---
+
+### 4. DRF custom exception handler — config/drf_exception_handler.py
+
+The API contract (read `docs/engineering/backend/api-conventions.md`) requires all
+error responses to follow this envelope:
+```json
+{ "error": { "code": "...", "message": "...", "details": {} } }
+```
+And all success responses:
+```json
+{ "data": ..., "meta": null }
+```
+
+Create `backend/config/drf_exception_handler.py` with:
+- A custom exception handler that wraps DRF exceptions into the error envelope
+- Maps `ValidationError` → `400` with `details` populated from `exc.detail`
+- Maps `AuthenticationFailed` / `NotAuthenticated` → `401`
+- Maps `PermissionDenied` → `403`
+- Maps `NotFound` → `404`
+- All others → `500` with a generic message (no stack trace exposed)
+
+Register it in `base.py`:
+```python
+REST_FRAMEWORK = {
+    ...
+    "EXCEPTION_HANDLER": "config.drf_exception_handler.custom_exception_handler",
+}
+```
+
+Also create `backend/config/drf_renderer.py` with a custom renderer that wraps
+all successful responses in `{ "data": ..., "meta": null }`. Register it as the
+default renderer in REST_FRAMEWORK settings.
+
+---
+
+### 5. Production settings hardening — config/settings/production.py
+
+Extend the production settings with:
+- `SECURE_SSL_REDIRECT = False` (TLS is terminated at the load balancer/nginx level)
+- `SESSION_COOKIE_SECURE = True`
+- `CSRF_COOKIE_SECURE = True`
+- `SECURE_HSTS_SECONDS = 31536000`
+- `SECURE_HSTS_INCLUDE_SUBDOMAINS = True`
+- `SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")`
+- `CONN_MAX_AGE` already set via dj-database-url but verify it is 600
+- Static files: add `whitenoise.middleware.WhiteNoiseMiddleware` to MIDDLEWARE
+  (after SecurityMiddleware, before everything else) and set
+  `STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"`
+  Add `whitenoise>=6.6,<7.0` to `pyproject.toml` dependencies.
+
+---
+
+### 6. Structured logging — config/settings/base.py and development.py
+
+In `base.py`, add a `LOGGING` dict that:
+- Uses console handler only (no file handler)
+- Formats as plain text
+- Sets `django.request` logger to WARNING (avoids 4xx noise in prod)
+- Sets `django.db.backends` to WARNING (no SQL echo in prod)
+
+In `development.py`, override `LOGGING` to:
+- Set root level to DEBUG
+- Enable SQL query echo via `django.db.backends` at DEBUG level
+
+---
+
+### 7. Health check endpoint — config/urls.py
+
+Add a lightweight `GET /api/health/` endpoint that requires no auth and returns:
+```json
+{ "data": { "status": "ok" }, "meta": null }
+```
+Implement it as a simple function view in a new `backend/config/views.py` file.
+Mark it with `@api_view(["GET"])` and `@permission_classes([AllowAny])`.
+Wire it in `config/urls.py`.
+
+---
+
+### 8. urls.py — JWT auth routes
+
+Wire JWT token endpoints into `config/urls.py`:
+```python
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+```
+
+---
+
+## Constraints
+- Read all referenced docs before writing code
+- Do not implement FeatureRequest, Vote, Category, Status, or Role models — only User
+- Do not add any migration other than the initial users migration file
+- Do NOT run manage.py migrate — only generate the migration file
+- Follow `docs/engineering/backend/api-conventions.md` for response shapes
+- Follow `docs/architecture/backend-architecture.md` for layer rules
+- Keep all changes in the files named above — do not create new apps or top-level dirs
+- After all changes, run: `cd /home/isam/prj/feature-rank/backend && python manage.py check --settings=config.settings.development` and show the output
+- Also append the prompt and action taken to `/home/isam/prj/feature-rank/PROMPT_HISTORY.md` using the required format:
+
+```
+## [2026-03-26T12:30:00Z] – Configure Django project layer
+
+### Prompt
+<full prompt content>
+
+### Action Taken
+<concise description>
+```
+
+### Action Taken
+Read data-modeling.md, system-overview.md, security.md, and api-conventions.md. Updated User model in apps/users/models.py to add required `name` (CharField 150, not blank), `email` (EmailField 254, unique), `is_admin` (BooleanField, default False), and email lowercase normalization in save(). Generated initial migration 0001_initial.py for the users app. Added MySQL OPTIONS (utf8mb4 charset + STRICT_TRANS_TABLES) to DATABASES in base.py using setdefault to avoid overwriting dj_database_url fields. Added SIMPLE_JWT block (15min access, 7day refresh, rotate=True, blacklist=False, Bearer header, user_id claim). Created config/drf_exception_handler.py mapping ValidationError→400 with details, NotAuthenticated/AuthenticationFailed→401, PermissionDenied→403, NotFound→404, all others→500 with generic message. Created config/drf_renderer.py (EnvelopeRenderer) wrapping all non-error, non-paginated responses in {"data": ..., "meta": null}. Registered both in REST_FRAMEWORK in base.py. Added LOGGING dict to base.py (console handler, plain formatter, django.request and django.db.backends at WARNING). Overrode LOGGING in development.py (root DEBUG, django.db.backends DEBUG for SQL echo). Updated production.py with all required security settings plus WhiteNoise middleware inserted after SecurityMiddleware. Added whitenoise>=6.6,<7.0 to pyproject.toml dependencies. Created config/views.py with health_check function view (AllowAny). Updated config/urls.py to wire health check at /api/health/, JWT endpoints at /api/auth/token/ and /api/auth/token/refresh/. Ran `manage.py check` — 0 issues.
+
+---
+
 ## [2026-03-26T12:00:00Z] – Set up production-grade Docker configuration for the monorepo
 
 ### Prompt
@@ -282,3 +457,647 @@ Do NOT guess the stack. Read it first.
 
 ### Action Taken
 Read full project tree, confirmed Django 5 + DRF + Vite + React stack. Flagged that existing pyproject.toml used psycopg (PostgreSQL) not mysqlclient (MySQL). Created 12 files: backend/.dockerignore, frontend/.dockerignore, backend/Dockerfile (builder+runtime multi-stage, python:3.13-slim, appuser non-root, mysqlclient), backend/entrypoint.sh (Python socket wait + conditional migrate), frontend/Dockerfile (deps+builder+runner+dev stages, node:22-alpine, nginx:1.27-alpine), docker/nginx/nginx.conf (server_tokens off, gzip), docker/nginx/default.conf (security headers, SPA fallback, /healthz, asset caching), docker/mysql/01-grant-test-db.sh (creates test_<MYSQL_DATABASE>, grants app user), docker-compose.yml (full dev stack, named network feature_rank_net, mysql_data volume, healthchecks, anonymous node_modules volume), docker-compose.prod.yml (gunicorn, nginx runner, MySQL port unexposed, restart:always), .env.example (all variables, secrets blank). Updated backend/pyproject.toml: swapped psycopg[binary] for mysqlclient>=2.2 and added gunicorn>=22.0.
+
+## [2026-03-26T19:30:00Z] – Implement all backend domain models, services, selectors, and API endpoints
+
+### Prompt
+You are the backend-engineer agent for the Django monorepo at /home/isam/prj/feature-rank.
+
+## Phase 0 — Required reading (do this before writing a single line of code)
+
+Read all of the following documents in full before implementing anything. These are not optional:
+
+1. `docs/engineering/backend/data-modeling.md`
+2. `docs/domain/voting-rules.md`
+3. `docs/engineering/backend/api-conventions.md`
+4. `docs/engineering/backend/security.md`
+5. `docs/architecture/backend-architecture.md`
+6. `docs/engineering/global/testing-strategy.md`
+7. `docs/domain/feature-voting.md`
+8. `docs/architecture/system-overview.md`
+9. `backend/config/settings/base.py`
+10. `backend/apps/users/models.py`
+
+Do not skip any of these. Every implementation decision below is governed by one or more of these documents.
+
+---
+
+## Phase 1 — Domain models and migrations
+
+Implement models strictly following `docs/engineering/backend/data-modeling.md`.
+
+### apps/roles/models.py
+- `Role`: name (CharField, max 50, unique), description (TextField, blank=True), created_at (auto_now_add)
+- DB table: `roles`, ordering: `["name"]`
+
+### apps/categories/models.py
+- `Category`: name (CharField, max 100, unique), icon (CharField, max 100, blank=False), color (CharField, max 7), created_at (auto_now_add)
+- DB table: `categories`
+
+### apps/statuses/models.py
+- `Status`: name (CharField, max 100, unique), color (CharField, max 7), is_terminal (BooleanField, default False), sort_order (IntegerField, unique), created_at (auto_now_add), updated_at (auto_now)
+- DB table: `statuses`, ordering: `["sort_order"]`
+
+### apps/feature_requests/models.py
+- `FeatureRequest`: title (CharField, max 255), description (TextField), rate (IntegerField, validators=[MinValue(1), MaxValue(5)]), author (FK→User, on_delete=PROTECT), category (FK→Category, on_delete=PROTECT), status (FK→Status, on_delete=PROTECT), created_at (auto_now_add), updated_at (auto_now)
+  - DB table: `feature_requests`; no default ordering (ordering is applied in selectors)
+- `Vote`: user (FK→User, on_delete=CASCADE), feature_request (FK→FeatureRequest, on_delete=CASCADE, related_name="votes"), created_at (auto_now_add)
+  - DB table: `votes`; `unique_together = [("user", "feature_request")]` — MANDATORY
+
+After writing all models, generate migrations for all four apps in this order: roles, categories, statuses, feature_requests. Use `--settings=config.settings.test` to avoid MySQL driver issues.
+
+Do NOT run migrate.
+
+---
+
+## Phase 2 — Pagination class
+
+Create `backend/config/pagination.py` with a `StandardResultsPagination` class (PageNumberPagination):
+- `page_size = 20`, `max_page_size = 100`, `page_query_param = "page"`, `page_size_query_param = "limit"`
+- Override `get_paginated_response` to return:
+  ```json
+  { "data": [...], "meta": { "page": N, "limit": N, "total": N, "total_pages": N } }
+  ```
+
+Register it in `REST_FRAMEWORK` settings as `DEFAULT_PAGINATION_CLASS`.
+
+---
+
+## Phase 3 — Permission classes
+
+### apps/users/permissions.py
+- `IsAuthenticated` is already in DRF — do not duplicate it
+- No custom permissions needed for users
+
+### apps/categories/permissions.py
+- `IsAdminOrReadOnly`: admin users can write; anyone can read
+
+### apps/statuses/permissions.py
+- `IsAdminOrReadOnly`: same pattern
+
+### apps/feature_requests/permissions.py
+- `IsAuthorOrAdmin`: user is the author of the feature request OR is_admin=True
+- Used for edit and delete operations
+
+---
+
+## Phase 4 — Serializers
+
+### apps/users/serializers.py
+- `UserRegistrationSerializer`: fields `username`, `email`, `name`, `password` (write-only). `validate_email` normalizes to lowercase. `create` calls `register_user` service.
+- `UserMeSerializer`: read-only. Fields: `id`, `username`, `name`, `email`, `is_admin`, `date_joined`.
+
+### apps/categories/serializers.py
+- `CategorySerializer`: all fields (id, name, icon, color, created_at). Read-only for list/detail.
+
+### apps/statuses/serializers.py
+- `StatusSerializer`: all fields (id, name, color, is_terminal, sort_order, created_at, updated_at).
+
+### apps/feature_requests/serializers.py
+- `AuthorSerializer`: fields `id`, `name` only — no email
+- `CategoryNestedSerializer`: fields `id`, `name`, `icon`, `color`
+- `StatusNestedSerializer`: fields `id`, `name`, `color`, `is_terminal`
+- `FeatureRequestListSerializer`: all list fields including `vote_count` and `has_voted` as SerializerMethodField (reads annotated attrs from queryset)
+- `FeatureRequestWriteSerializer`: input serializer for create/update. Fields: `title`, `description`, `rate`, `category_id`. All `required=False` (PATCH semantics). `validate_rate`: rejects values outside 1–5. `validate_category_id`: checks Category exists.
+
+Never include `author_id`, `status_id`, or `vote_count` as writable fields on any non-admin serializer.
+
+---
+
+## Phase 5 — Selectors
+
+### apps/feature_requests/selectors.py
+Implement `get_feature_requests_list(*, user=None, category_id=None, status_id=None, author_id=None, sort=None)`:
+- Annotates `vote_count = Count("votes", distinct=True)`
+- Annotates `has_voted` using `Exists(Vote.objects.filter(user=user, feature_request=OuterRef("pk")))` — False when user is None or anonymous
+- Uses `select_related("author", "category", "status")`
+- Applies filters: `category_id`, `status_id`, `author_id` if provided
+- Applies ordering from `sort` param. Allowed values: `"-vote_count"` (default), `"vote_count"`, `"-created_at"`, `"created_at"`. Default order: `["-vote_count", "-created_at", "-id"]`. Ascending vote_count: `["vote_count", "-created_at", "-id"]`. Never include `rate` in any ordering.
+- If `sort` is an unrecognized value → raise `ValidationError`
+- Returns a queryset
+
+Implement `get_feature_request_detail(*, pk, user=None)`:
+- Same annotations as above
+- Returns a single object or raises `NotFound`
+
+### apps/categories/selectors.py
+- `get_categories_list()` → ordered queryset
+- `get_category(pk)` → single object or NotFound
+
+### apps/statuses/selectors.py
+- `get_statuses_list()` → ordered queryset
+- `get_status(pk)` → single object or NotFound
+
+### apps/users/selectors.py
+- `get_current_user(user)` → returns the user object
+
+---
+
+## Phase 6 — Services
+
+### apps/users/services.py
+- `register_user(*, username, email, name, password)`: validates email uniqueness, creates user. Raises `ValidationError` on duplicate email.
+
+### apps/categories/services.py
+- `create_category(*, name, icon, color)` → Category
+- `update_category(*, category, data: dict)` → Category
+- `delete_category(*, category)`: raises `ValidationError` if category is referenced by any FeatureRequest
+
+### apps/statuses/services.py
+- `create_status(*, name, color, is_terminal, sort_order)` → Status
+- `update_status(*, status, data: dict)` → Status
+- `delete_status(*, status)`: raises `ValidationError` if status is referenced by any FeatureRequest
+
+### apps/feature_requests/services.py
+Implement all of the following:
+
+`create_feature_request(*, user, title, description, rate, category_id)`:
+- Sets `author = user` always (never from request body)
+- Looks up `Status` with `name__iexact="open"`. Raises `ValidationError` if not found.
+- Returns created FeatureRequest
+
+`update_feature_request(*, feature_request, user, data: dict)`:
+- Silently pops `author_id` and `vote_count` from data (ignored always)
+- If `status_id` present in data AND `user.is_admin is False` → raise `PermissionDenied`
+- If `status_id` present AND user is admin → validates transition using VALID_TRANSITIONS dict
+- Updates only provided fields (PATCH semantics)
+- Returns updated FeatureRequest
+
+`delete_feature_request(*, feature_request)`:
+- Deletes the object
+
+`vote_feature_request(*, feature_request, user)`:
+- Application-layer check: if vote already exists → skip insert
+- Attempts `Vote.objects.create(...)`. Catches `IntegrityError` (concurrent duplicate) — do not re-raise.
+- Returns `{"feature_request_id": ..., "has_voted": True, "vote_count": <current count>}`
+
+`unvote_feature_request(*, feature_request, user)`:
+- Deletes vote if it exists. If no vote → do nothing (idempotent).
+- Returns `{"feature_request_id": ..., "has_voted": False, "vote_count": <current count>}`
+
+VALID_TRANSITIONS:
+```python
+{
+    "open": {"planned", "rejected"},
+    "planned": {"in progress", "rejected"},
+    "in progress": {"completed", "rejected"},
+    "completed": set(),
+    "rejected": set(),
+}
+```
+
+Status transition validation: if new status name not in allowed set for current status → raise `ValidationError`.
+
+---
+
+## Phase 7 — Views and ViewSets
+
+### apps/users/views.py
+- `RegisterView` (APIView): POST, AllowAny, calls UserRegistrationSerializer, returns 201
+- `MeView` (APIView): GET, IsAuthenticated, returns current user via UserMeSerializer
+
+### apps/categories/views.py
+- `CategoryViewSet` (ViewSet): list (GET, AllowAny), retrieve (GET, AllowAny), create (POST, IsAdminOrReadOnly), update/partial_update (PATCH, IsAdminOrReadOnly), destroy (DELETE, IsAdminOrReadOnly)
+
+### apps/statuses/views.py
+- `StatusViewSet` (ViewSet): same pattern as CategoryViewSet
+
+### apps/feature_requests/views.py
+- `FeatureRequestViewSet` (ViewSet): list, retrieve (both AllowAny), create (IsAuthenticated), partial_update (IsAuthenticated + IsAuthorOrAdmin), destroy (IsAuthenticated + IsAuthorOrAdmin)
+- In `list`: validate `sort` param — reject `"rate"` and `"-rate"` → 400 with error envelope; reject unknown sort values → 400
+- In `create`: silently pop `author_id` from request data; if `status_id` in data and user is not admin → return 403
+- In `partial_update`: if `status_id` in data and user is not admin → return 403; else pass to service
+- Vote action: `@action(detail=True, methods=["post", "delete"], url_path="vote", permission_classes=[IsAuthenticated])`
+  - POST → `vote_feature_request`, always returns 200 with `{"data": {"feature_request_id": ..., "has_voted": true, "vote_count": N}, "meta": null}`
+  - DELETE → `unvote_feature_request`, always returns 200 with same shape
+
+---
+
+## Phase 8 — URL routing
+
+### apps/users/urls.py
+- `POST /api/users/register/` → RegisterView
+- `GET /api/users/me/` → MeView
+
+### apps/categories/urls.py
+- Use DefaultRouter, register CategoryViewSet at `"categories"`
+
+### apps/statuses/urls.py
+- Use DefaultRouter, register StatusViewSet at `"statuses"`
+
+### apps/feature_requests/urls.py
+- Use DefaultRouter, register FeatureRequestViewSet at `"features"`
+- Vote action is auto-routed by the router via the `@action` decorator
+
+Wire all in `config/urls.py` under `/api/`.
+
+---
+
+## Phase 9 — Admin registration
+
+Register all models in their respective `admin.py` files:
+- roles/admin.py: RoleAdmin
+- categories/admin.py: CategoryAdmin
+- statuses/admin.py: StatusAdmin
+- feature_requests/admin.py: FeatureRequestAdmin, VoteAdmin
+
+---
+
+## Phase 10 — Seed management command
+
+Create `apps/feature_requests/management/commands/seed_reference_data.py`.
+
+This command must be idempotent (use `get_or_create`). It seeds:
+
+**Roles:**
+- member, moderator, admin
+
+**Categories:** (name, icon, color)
+- Bug Report, bug, #EF4444
+- Feature Request, sparkles, #3B82F6
+- UI/UX Improvement, palette, #8B5CF6
+- Performance, zap, #F59E0B
+- Documentation, book-open, #10B981
+
+**Statuses:** (name, color, is_terminal, sort_order)
+- open, #6B7280, False, 0
+- under review, #3B82F6, False, 1
+- planned, #8B5CF6, False, 2
+- in progress, #F59E0B, False, 3
+- completed, #10B981, True, 4
+- rejected, #EF4444, True, 5
+
+Print a summary of what was created vs already existed.
+
+---
+
+## Phase 11 — Tests
+
+Write tests for all of the following. Use Django TestCase. Tests must be in:
+- `apps/feature_requests/tests/test_models.py`
+- `apps/feature_requests/tests/test_services.py`
+- `apps/feature_requests/tests/test_selectors.py`
+- `apps/feature_requests/tests/test_views.py`
+- `apps/users/tests/test_views.py`
+
+Each test module must have a module-level docstring explaining what it tests.
+
+### Mandatory test coverage
+
+**Models:**
+- Vote DB unique constraint prevents duplicate (user, feature_request) pair
+- Different users can each vote once on the same feature
+- vote_count annotation (Count("votes")) returns correct count
+
+**Services — vote:**
+- `vote_feature_request` creates exactly one Vote record
+- Calling it twice for the same user+feature → still only one Vote record (idempotency)
+- Duplicate vote returns has_voted=True and correct vote_count
+- Self-voting (author votes their own feature) is permitted
+- Multiple users voting → vote_count increments correctly
+
+**Services — unvote:**
+- Removes existing vote, returns has_voted=False
+- Unvoting when no vote exists → returns has_voted=False, vote_count=0 (no exception)
+- Returns feature_request_id in response
+
+**Services — create:**
+- author is always set from the user argument (never from data)
+- status is always "open"
+- missing "open" status → raises ValidationError
+
+**Services — update:**
+- non-admin submitting status_id → raises PermissionDenied
+- admin can change status_id
+- author_id in data is silently ignored (author unchanged after update)
+- vote_count in data is silently stripped
+- PATCH semantics: only provided fields updated
+
+**Selectors:**
+- Default ordering: vote_count DESC → created_at DESC → id DESC
+- sort=vote_count (ascending) is respected
+- rate does NOT affect ranking (high-rate feature with fewer votes ranked lower than low-rate with more votes)
+- has_voted=True for user who voted
+- has_voted=False for user who did not vote
+- has_voted=False for anonymous (user=None)
+
+**Views:**
+- POST /api/users/register/ with valid data → 201
+- POST /api/users/register/ with duplicate email → 400
+- GET /api/users/me/ without auth → 401
+- GET /api/users/me/ with valid auth → 200 with user data
+- GET /api/features/ returns paginated list with vote_count, has_voted, nested status/category/author
+- GET /api/features/ with sort=rate → 400
+- GET /api/features/ with sort=-vote_count (valid) → 200
+- POST /api/features/ without auth → 401
+- POST /api/features/ with auth → 201, author set to authenticated user
+- POST /api/features/ with author_id in body → 201, author is still the authenticated user
+- PATCH /api/features/{id}/ by non-author, non-admin → 403
+- PATCH /api/features/{id}/ with status_id by non-admin → 403
+- DELETE /api/features/{id}/ by non-author, non-admin → 403
+- POST /api/features/{id}/vote/ → 200 with has_voted=True
+- POST /api/features/{id}/vote/ twice → 200 idempotent, still 1 Vote record
+- DELETE /api/features/{id}/vote/ → 200 with has_voted=False
+- DELETE /api/features/{id}/vote/ when no vote → 200 idempotent
+- POST /api/features/{id}/vote/ without auth → 401
+
+---
+
+## Phase 12 — Final check
+
+After all phases complete, run:
+```
+cd /home/isam/prj/feature-rank/backend && python3 manage.py check --settings=config.settings.test
+```
+
+And run:
+```
+python3 manage.py makemigrations --check --settings=config.settings.test
+```
+
+Both must pass with zero issues. If they don't, fix all issues before finishing.
+
+---
+
+## Hard constraints
+
+- `rate` must NEVER appear in any `order_by()` call. Not as a primary sort, not as a tiebreaker, nowhere.
+- `vote_count` must NEVER be stored on FeatureRequest. Always computed via Count annotation.
+- `author_id` on feature request creation always comes from `request.user`. Never from request body.
+- `status_id` changes are admin-only. Non-admin attempting to change status → 403.
+- Duplicate vote → 200 OK, not 409. Missing-vote unvote → 200 OK, not 404.
+- Vote unique constraint on `(user_id, feature_request_id)` is mandatory. Do not omit it.
+- Default test settings must use SQLite (no MySQL driver). Create `config/settings/test.py` if it doesn't exist.
+- All tests use Django TestCase. No pytest-django decorators.
+- Run all tests with: `python3 -m django test apps --settings=config.settings.test`
+
+### Action Taken
+Read all 10 required documents before writing any code. Created config/settings/test.py with SQLite in-memory database to avoid MySQL driver requirement during testing. Implemented all 5 domain models with correct field types, constraints, and on_delete behaviors per data-modeling.md. Generated migrations for roles, categories, statuses, and feature_requests apps. Created config/pagination.py with StandardResultsPagination producing {data, meta} envelope. Implemented permission classes: IsAdminOrReadOnly for categories and statuses, IsAuthorOrAdmin for feature requests. Implemented serializers for all apps including nested read serializers and separate write serializers for feature requests. Implemented selectors with vote_count/has_voted annotations, explicit select_related, and canonical ordering (vote_count DESC, created_at DESC, id DESC). Implemented services for all apps including idempotent vote/unvote (get_or_create + IntegrityError catch), status transition validation via VALID_TRANSITIONS dict, and protected field handling (author_id silently popped, status_id blocked for non-admin). Implemented views as ViewSets for all apps. Vote action (@action on FeatureRequestViewSet) always returns 200. List view rejects sort=rate/-rate with 400. Wired DefaultRouter for categories, statuses, feature_requests; manual paths for users. Registered all models in admin. Created seed_reference_data management command with get_or_create for idempotency. Wrote tests in test_models.py, test_services.py, test_selectors.py, test_views.py for feature_requests app and test_views.py for users app. Fixed test setUp to create Status(name="open") for CreateFeatureRequestServiceTest. All 57 tests pass. manage.py check clean. makemigrations --check clean.
+
+---
+
+## [2026-03-26T19:00:00Z] – Implement full React frontend
+
+### Prompt
+You are completing the frontend implementation of a Feature Voting System.
+The skeleton is already in place — directory structure, routing, AuthProvider,
+Axios instance, and TanStack Query are all configured correctly. Nothing
+structural needs to change.
+
+Read these docs before writing any code:
+- docs/architecture/frontend-architecture.md
+- docs/engineering/frontend/react-standards.md
+- docs/engineering/frontend/api-consumption.md
+- docs/engineering/frontend/state-management.md
+- docs/engineering/frontend/ui-ux-guidelines.md
+- docs/engineering/backend/api-conventions.md
+
+Also read the backend API contract to understand exact response shapes,
+field names, and error formats before typing anything.
+
+Implement in this order:
+
+1. **Types** — complete src/types/ with FeatureRequest, FeatureRequestSummary,
+   Category, Status, Vote. Field names must match the API exactly (snake_case).
+
+2. **Service layer** — implement all stub functions in auth.ts, voting.ts,
+   categories.ts, statuses.ts. features.ts is already done. No fetch/axios
+   outside services/.
+
+3. **Query keys** — define constants in each feature's queryKeys.ts. No inline
+   strings in hooks.
+
+4. **Reusable components** — build in src/components/: Button, Spinner,
+   EmptyState, ErrorMessage, Badge. Each in its own kebab-case folder with
+   index.tsx. No domain logic in these components.
+
+5. **Feature hooks** — implement hooks inside each feature's hooks/ directory:
+   useFeatureList, useFeatureDetail, useCreateFeature, useUpdateFeature,
+   useDeleteFeature, useCastVote, useRemoveVote, useCategories, useStatuses.
+   All mutations invalidate the relevant query keys on success. Vote/unvote
+   use the mutation response for the one permitted optimistic update.
+
+6. **Feature components** — build the domain-specific components inside each
+   feature's components/ directory (e.g. FeatureCard, VoteButton,
+   FeatureForm, StatusBadge, CategoryBadge).
+
+7. **Pages** — implement all 5 pages by assembling feature components + hooks.
+   Every async operation must handle loading, error, and empty states using
+   the shared components from step 4. No data fetching in pages directly.
+
+8. **Forms** — CreateFeaturePage and EditFeaturePage use React Hook Form.
+   Backend 400 error.details must map to field-level errors. Do not include
+   author_id or status_id in non-admin form payloads.
+
+9. **Route guards** — ProtectedRoute is already implemented. Verify it is
+   applied correctly to all protected pages.
+
+Constraints that must never be violated:
+- Feature list order comes from the API. Never use Array.sort() on it.
+- has_voted and vote_count come from the API only.
+- No business logic in components.
+- No API calls outside services/.
+- No inline query key strings.
+- TypeScript strict mode — no `any`.
+- Every async operation handles all 3 states: loading, error, empty.
+- Silent failures are prohibited.
+
+After completing the implementation, run `cd frontend && npx tsc --noEmit` to verify there are no TypeScript errors, and fix any that appear before finishing.
+
+### Action Taken
+Read all 6 required docs and all existing skeleton files before writing any code. Fixed PaginationMeta in types/api.ts to match the API contract exactly (page, limit, total, total_pages instead of the pre-existing Django REST Framework paginator fields). Updated services/api.ts to include status code in ApiError and handle 401 redirect. Added "types": ["vite/client"] to tsconfig.json to resolve import.meta.env. Built all reusable components in components/ (spinner, error-message, empty-state, button, badge, pagination), each in a kebab-case directory with index.tsx. Implemented all feature hooks: useFeatureList, useFeatureDetail, useCreateFeature, useUpdateFeature, useDeleteFeature in features/feature-requests/hooks/; useCastVote and useRemoveVote in features/voting/hooks/ (both with full optimistic update: snapshot → estimate → send → overwrite with VoteResponse → rollback); useCategories in features/categories/hooks/; useStatuses in features/statuses/hooks/; useLogin in features/auth/hooks/. Built domain components: StatusBadge, CategoryBadge, VoteButton, FeatureCard, FeatureListFilters, FeatureForm, LoginForm. Implemented all 5 pages: FeatureListPage (filters, pagination, loading/error/empty states, vote), FeatureDetailPage (detail view, vote, edit/delete for author/admin, 404 handling), CreateFeaturePage (RHF form, navigates to new feature on success), EditFeaturePage (pre-fills from API, navigates to detail on success), LoginPage (redirects if already authenticated). All forms map backend 400 error.details to field-level errors via setError. No author_id or status_id in non-admin payloads. Feature list never sorted. All 3 async states handled everywhere. TypeScript compiled with zero errors.
+
+---
+## [2026-03-26T12:00:00Z] – Add Mantine v7 UI framework and implement production-ready theme
+
+### Prompt
+You are a senior frontend engineer and design systems specialist working in the feature-rank monorepo.
+
+## Context
+
+The frontend is a React 18 + TypeScript + Vite app located at `frontend/`. It already has:
+- React Router v6 with 5 routes
+- TanStack Query v5
+- Axios centralized instance in `services/api.ts`
+- React Hook Form
+- AuthProvider and ProtectedRoute already implemented
+- All pages, hooks, services, and feature components already implemented
+
+You are adding **Mantine v7** as the UI framework and implementing a complete, production-ready theme.
+
+**Important:** Read the existing files before touching anything:
+- `frontend/package.json` — check current deps
+- `frontend/src/app/router.tsx` — routing setup
+- `frontend/src/app/AuthProvider.tsx` — auth context
+- `frontend/src/main.tsx` — app entry point
+- `frontend/src/components/` — existing shared components (Button, Badge, Spinner, etc.)
+- `frontend/src/features/` — existing feature components
+
+---
+
+## Task
+
+### Step 1 — Install Mantine v7
+
+Install these packages:
+```
+@mantine/core @mantine/hooks @mantine/notifications @mantine/dates
+```
+Also install the required peer dep:
+```
+postcss postcss-preset-mantine postcss-simple-vars
+```
+
+Create `frontend/postcss.config.cjs`:
+```js
+module.exports = {
+  plugins: {
+    'postcss-preset-mantine': {},
+    'postcss-simple-vars': {
+      variables: {
+        'mantine-breakpoint-xs': '36em',
+        'mantine-breakpoint-sm': '48em',
+        'mantine-breakpoint-md': '62em',
+        'mantine-breakpoint-lg': '75em',
+        'mantine-breakpoint-xl': '88em',
+      },
+    },
+  },
+};
+```
+
+Add `@import '@mantine/core/styles.css';` and `@import '@mantine/notifications/styles.css';` to `frontend/src/main.tsx` (or `index.css`) before any other styles.
+
+---
+
+### Step 2 — Create `frontend/src/styles/theme.ts`
+
+A complete Mantine theme using `createTheme`. Requirements:
+
+**Colors:**
+- Primary: indigo (use Mantine's built-in `indigo` color — it maps to `#6366F1` range)
+- Primary color key: `'indigo'`, primaryShade: `{ light: 6, dark: 4 }`
+- No custom palette overrides needed — use Mantine's defaults for indigo, green, yellow, red
+
+**Typography:**
+```ts
+fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+fontFamilyMonospace: '"JetBrains Mono", "Fira Code", monospace',
+headings: {
+  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontWeight: '600',
+  sizes: {
+    h1: { fontSize: '1.875rem', lineHeight: '1.3' },
+    h2: { fontSize: '1.5rem',   lineHeight: '1.35' },
+    h3: { fontSize: '1.25rem',  lineHeight: '1.4' },
+    h4: { fontSize: '1.125rem', lineHeight: '1.45' },
+    h5: { fontSize: '1rem',     lineHeight: '1.5' },
+    h6: { fontSize: '0.875rem', lineHeight: '1.5' },
+  },
+},
+fontSizes: { xs:'0.75rem', sm:'0.875rem', md:'0.9375rem', lg:'1rem', xl:'1.125rem' },
+lineHeights: { xs:'1.4', sm:'1.45', md:'1.55', lg:'1.6', xl:'1.65' },
+```
+
+**Spacing:** `{ xs:'0.5rem', sm:'0.75rem', md:'1rem', lg:'1.5rem', xl:'2rem' }`
+
+**Radius:** `{ xs:'4px', sm:'6px', md:'8px', lg:'12px', xl:'16px' }`, defaultRadius: `'md'`
+
+**Shadows (subtle):**
+```ts
+shadows: {
+  xs: '0 1px 2px rgba(0,0,0,0.04)',
+  sm: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
+  md: '0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04)',
+  lg: '0 10px 15px rgba(0,0,0,0.06), 0 4px 6px rgba(0,0,0,0.04)',
+  xl: '0 20px 25px rgba(0,0,0,0.06), 0 10px 10px rgba(0,0,0,0.03)',
+},
+```
+
+**Component defaults — this section is critical:** (Button, Badge, TextInput, NavLink, Table, Paper, Card, AppShell, Notification component styles)
+
+Also add: `other: { sidebarWidth: 220, headerHeight: 60 }`
+
+---
+
+### Step 3 — Update `frontend/src/main.tsx`
+
+Wrap the app with `MantineProvider` and `Notifications`.
+
+---
+
+### Step 4 — Create the AppShell layout
+
+Create `frontend/src/app/AppLayout.tsx` — the main authenticated layout using Mantine's `AppShell`.
+
+The layout must match the prototype design:
+- Left sidebar (220px wide, `AppShell.Navbar`)
+- Top header (`AppShell.Header`, 60px)
+- Main content area: `AppShell.Main` renders `children`
+
+---
+
+### Step 5 — Update the router to use AppLayout
+
+In `frontend/src/app/router.tsx`, wrap the authenticated routes (everything except `/login`) inside `AppLayout`.
+
+---
+
+### Step 6 — Replace existing primitive components with Mantine equivalents
+
+Replace spinner, button, badge, empty-state, error-message, pagination implementations to use Mantine components.
+
+---
+
+### Step 7 — Restyle the FeatureCard to match the prototype
+
+Update `features/feature-requests/components/feature-card/index.tsx` to use Mantine components with a new props interface:
+```ts
+interface FeatureCardProps {
+  feature: FeatureRequest;
+  onVote: () => void;
+  isVoting: boolean;
+}
+```
+
+---
+
+### Constraints
+
+- Install `@tabler/icons-react` for icons
+- Use Mantine v7 API throughout (CSS Modules based, not emotion)
+- No inline styles except where Mantine's `styles` prop is the right tool
+- TypeScript strict — no `any`
+- Do not break existing service/hook imports
+- After all changes, run `cd frontend && npx tsc --noEmit` and fix all TypeScript errors before finishing
+
+### Action Taken
+Read all existing files (package.json, main.tsx, router.tsx, AuthProvider.tsx, all components, feature-card, feature types, voting hooks, FeatureListPage) before making any changes. Installed @mantine/core, @mantine/hooks, @mantine/notifications, @mantine/dates, @tabler/icons-react, postcss, postcss-preset-mantine, postcss-simple-vars. Created frontend/postcss.config.cjs with Mantine breakpoint variables. Created frontend/src/styles/theme.ts with createTheme (indigo primary, Inter typography, custom spacing/radius/shadows, component defaults). Updated main.tsx to add Mantine CSS imports at the top and wrap the tree with MantineProvider and Notifications (preserving existing QueryClientProvider and AuthProvider). Created frontend/src/app/AppLayout.tsx using AppShell with 220px navbar, 60px header, nav links with Tabler icons, admin section gated on user.is_admin, user profile strip at bottom. Updated router.tsx to wrap all non-login routes in AppLayout with contextual title/subtitle props. Replaced all 6 component stubs in src/components/ with Mantine-backed implementations (Spinner→Loader, Button→MantineButton with variant/color mapping, Badge wrapper preserving CSS color prop, EmptyState using Stack/ThemeIcon/Anchor, ErrorMessage using Alert, Pagination using MantinePagination). Rewrote FeatureCard to use Mantine Card/Group/Stack/ActionIcon with integrated VoteWidget, Rating display, Avatar with initials, and the new simplified onVote: () => void props interface. Updated FeatureListPage to pass the resolved onVote callback (dispatching castVote or removeVote based on has_voted), removed unused imports (Link, Button), used Mantine layout primitives (Stack, Center). Ran npx tsc --noEmit — zero TypeScript errors.
+
+---
+
+
+## [2026-03-26T00:00:00Z] – Add Mantine design system and theme
+
+### Prompt
+ok so for frontend lets do the following instruction:
+
+You are a senior frontend engineer and design systems specialist.
+
+I am building a modern SaaS dashboard using React and Mantine. I want you to help me define and implement a complete, production-ready Mantine theme configuration that results in a clean, professional, and cohesive UI similar to modern SaaS products (linear.app, stripe dashboard, notion, etc).
+
+## Goals
+
+* Clean, minimal, modern SaaS UI
+* High readability and good visual hierarchy
+* Consistent spacing, radius, and typography
+* Subtle use of colors and shadows (no heavy UI)
+* Works well for dashboards, lists, cards, and sidebars
+* Fully supports light and dark mode
+
+[... full prompt as provided by user ...]
+
+### Action Taken
+Installed Mantine v7 (@mantine/core, @mantine/hooks, @mantine/notifications, @mantine/dates), @tabler/icons-react, and PostCSS dependencies. Created frontend/postcss.config.cjs with Mantine breakpoint variables. Created frontend/src/styles/theme.ts with full createTheme config (indigo primary, Inter typography, custom spacing/radius/shadows, component defaults). Created frontend/src/app/AppLayout.tsx with AppShell sidebar (nav links, admin section, user profile strip) and header (search + new request button). Updated main.tsx to wrap app with MantineProvider and Notifications. Updated router.tsx to wrap authenticated routes in AppLayout. Replaced all stub components (Spinner, Button, Badge, EmptyState, ErrorMessage, Pagination) with Mantine-backed implementations preserving existing import paths. Fully restyled FeatureCard to match the prototype design (vote widget, category/status badges, star rating, author footer). Updated FeatureListPage to use new FeatureCard props. tsc --noEmit passed with zero errors.
+
+---

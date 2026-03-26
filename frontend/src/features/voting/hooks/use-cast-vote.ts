@@ -1,0 +1,93 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { featureKeys } from '../../feature-requests/queryKeys'
+import { castVote } from '../../../services/voting'
+import type { FeatureRequest, FeatureRequestSummary } from '../../../types/feature'
+import type { ApiError, PaginationMeta } from '../../../types/api'
+import type { FeatureListParams } from '../../../services/features'
+
+interface UseCastVoteResult {
+  castVote: (featureId: number) => void
+  isPending: boolean
+  isError: boolean
+  error: ApiError | null
+}
+
+interface CachedListData {
+  items: FeatureRequestSummary[]
+  meta: PaginationMeta
+}
+
+export function useCastVote(params: FeatureListParams): UseCastVoteResult {
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: (featureId: number) => castVote(featureId),
+    onMutate: async (featureId: number) => {
+      await queryClient.cancelQueries({ queryKey: featureKeys.list(params) })
+      await queryClient.cancelQueries({ queryKey: featureKeys.detail(featureId) })
+
+      const previousList = queryClient.getQueryData<CachedListData>(featureKeys.list(params))
+      const previousDetail = queryClient.getQueryData<FeatureRequest>(featureKeys.detail(featureId))
+
+      if (previousList) {
+        queryClient.setQueryData<CachedListData>(featureKeys.list(params), {
+          ...previousList,
+          items: previousList.items.map((f) =>
+            f.id === featureId
+              ? { ...f, has_voted: true, vote_count: f.vote_count + 1 }
+              : f,
+          ),
+        })
+      }
+
+      if (previousDetail) {
+        queryClient.setQueryData<FeatureRequest>(featureKeys.detail(featureId), {
+          ...previousDetail,
+          has_voted: true,
+          vote_count: previousDetail.vote_count + 1,
+        })
+      }
+
+      return { previousList, previousDetail }
+    },
+    onSuccess: (voteResponse) => {
+      const { feature_request_id, has_voted, vote_count } = voteResponse
+
+      const listData = queryClient.getQueryData<CachedListData>(featureKeys.list(params))
+      if (listData) {
+        queryClient.setQueryData<CachedListData>(featureKeys.list(params), {
+          ...listData,
+          items: listData.items.map((f) =>
+            f.id === feature_request_id
+              ? { ...f, has_voted, vote_count }
+              : f,
+          ),
+        })
+      }
+
+      const detailData = queryClient.getQueryData<FeatureRequest>(featureKeys.detail(feature_request_id))
+      if (detailData) {
+        queryClient.setQueryData<FeatureRequest>(featureKeys.detail(feature_request_id), {
+          ...detailData,
+          has_voted,
+          vote_count,
+        })
+      }
+    },
+    onError: (_err, featureId, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(featureKeys.list(params), context.previousList)
+      }
+      if (context?.previousDetail) {
+        queryClient.setQueryData(featureKeys.detail(featureId), context.previousDetail)
+      }
+    },
+  })
+
+  return {
+    castVote: mutation.mutate,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+  }
+}

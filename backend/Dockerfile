@@ -2,8 +2,9 @@
 # Compiles mysqlclient and installs all Python dependencies into a virtualenv.
 FROM python:3.13-slim AS builder
 
-# Install OS build dependencies required to compile mysqlclient
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Upgrade all OS packages first to patch any known CVEs in the base image,
+# then install build dependencies required to compile mysqlclient.
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     build-essential \
     default-libmysqlclient-dev \
     pkg-config \
@@ -14,7 +15,11 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /build
-COPY pyproject.toml .
+
+# Copy the full source so setuptools can discover the package and resolve all
+# declared dependencies. Without source files, setuptools builds an empty wheel
+# and silently skips installing [project] dependencies.
+COPY . .
 
 # Install the package and all its dependencies (no dev extras in the image)
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -24,9 +29,12 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Minimal image containing only the runtime MySQL shared library and the venv.
 FROM python:3.13-slim AS runtime
 
-# Install only the MySQL runtime shared library (no build tools)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libmysqlclient21 \
+# Upgrade all OS packages to patch CVEs in the base image, then install
+# only the MySQL-compatible runtime shared library (no build tools).
+# python:3.13-slim is based on Debian trixie which ships libmariadb3 instead
+# of libmysqlclient21. mysqlclient links against it transparently.
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    libmariadb3 \
   && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user for running the application

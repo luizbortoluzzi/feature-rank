@@ -66,20 +66,20 @@ services:
       start_period: 30s
 
   # ── Vite frontend — dev server with hot-reload ─────────────────────────────
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-      target: dev
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules  # anonymous volume: preserves container node_modules, never shadowed by host bind mount
-    ports:
-      - "5173:5173"
-    networks:
-      - feature_rank_net
-    depends_on:
-      backend:
-        condition: service_started
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: frontend/Dockerfile
+  #     target: dev
+  #   environment:
+  #     VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules  # anonymous volume: preserves container node_modules, never shadowed by host bind mount
+  #   ports:
+  #     - "5173:5173"
+  #   networks:
+  #     - feature_rank_net
+  #   depends_on:
+  #     backend:
+  #       condition: service_started

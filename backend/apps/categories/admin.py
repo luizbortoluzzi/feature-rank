@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register Category model here once implemented.
+from apps.categories.models import Category
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ["name", "icon", "color"]
