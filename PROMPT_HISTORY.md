@@ -2058,3 +2058,19 @@ ok but we need to set to for create/delete/update in status page and the categor
 
 ### Action Taken
 Completed wiring of useNotify into all status mutation hooks (use-create-status.ts, use-update-status.ts, use-delete-status.ts): added `const notify = useNotify()` calls and onSuccess/onError notification callbacks to each. Category hooks were completed in the prior session.
+
+## [2026-03-27T00:00:00Z] – Login page background gradient effect
+
+### Prompt
+ok, now for the login page we need to do some effect in the background outside the card, maybe some gradient combination
+
+### Action Taken
+Replaced the plain gray-0 background on the login page outer container with a soft indigo/violet/purple radial gradient base plus four absolutely-positioned blurred orbs (top-left, bottom-right, mid-right, bottom-left) to create a layered depth effect that complements the card's left-panel gradient.
+
+## [2026-03-27T00:01:00Z] – Pre-fill login form with admin credentials
+
+### Prompt
+great now its possible to load the page with the login form pre filled with the admin@example.com and the password admin1234?
+
+### Action Taken
+Updated login form defaultValues to username="admin" and password="admin1234". Also added admin user creation (username=admin, email=admin@example.com, password=admin1234, is_admin=True) to the seed_demo_data management command so the account always exists after seeding.

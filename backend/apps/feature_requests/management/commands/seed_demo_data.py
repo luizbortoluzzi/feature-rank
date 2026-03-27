@@ -433,6 +433,22 @@ class Command(BaseCommand):
                 "Reference data not found. Run `python manage.py seed_reference_data` first."
             )
 
+        # --- Admin user ---
+        admin, admin_created = User.objects.get_or_create(
+            username="admin",
+            defaults={
+                "email": "admin@example.com",
+                "name": "Admin",
+                "is_admin": True,
+            },
+        )
+        if admin_created:
+            admin.set_password("admin1234")
+            admin.save(update_fields=["password"])
+        self.stdout.write(
+            f"Admin user: {'created' if admin_created else 'already existed'} (username=admin, password=admin1234)."
+        )
+
         # --- Users ---
         users_created = 0
         user_objects = []

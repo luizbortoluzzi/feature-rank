@@ -88,8 +88,8 @@ export function LoginPage() {
     formState: { errors },
   } = useForm<LoginPayload>({
     defaultValues: {
-      username: '',
-      password: '',
+      username: 'admin',
+      password: 'admin1234',
     },
   })
 
@@ -126,9 +126,64 @@ export function LoginPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'var(--mantine-color-gray-0)',
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 40%, #EDE9FE 70%, #E0E7FF 100%)',
       }}
     >
+      {/* Decorative background orbs */}
+      <Box
+        style={{
+          position: 'absolute',
+          top: '-120px',
+          left: '-100px',
+          width: '480px',
+          height: '480px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.10) 60%, transparent 100%)',
+          filter: 'blur(40px)',
+          pointerEvents: 'none',
+        }}
+      />
+      <Box
+        style={{
+          position: 'absolute',
+          bottom: '-140px',
+          right: '-80px',
+          width: '520px',
+          height: '520px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(139,92,246,0.22) 0%, rgba(99,102,241,0.10) 60%, transparent 100%)',
+          filter: 'blur(50px)',
+          pointerEvents: 'none',
+        }}
+      />
+      <Box
+        style={{
+          position: 'absolute',
+          top: '40%',
+          right: '10%',
+          width: '260px',
+          height: '260px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%)',
+          filter: 'blur(30px)',
+          pointerEvents: 'none',
+        }}
+      />
+      <Box
+        style={{
+          position: 'absolute',
+          bottom: '15%',
+          left: '8%',
+          width: '200px',
+          height: '200px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)',
+          filter: 'blur(28px)',
+          pointerEvents: 'none',
+        }}
+      />
       <Box
         maw={960}
         w="100%"
