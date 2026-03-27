@@ -2,20 +2,20 @@ import { useState } from 'react'
 import { Stack, Group, Title, Text, TextInput, Button, Box, Center, Paper, Modal } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconSearch, IconPlus } from '@tabler/icons-react'
-import { useStatusList } from '../features/statuses/hooks/use-status-list'
-import { useCreateStatus } from '../features/statuses/hooks/use-create-status'
-import { useUpdateStatus } from '../features/statuses/hooks/use-update-status'
-import { useDeleteStatus } from '../features/statuses/hooks/use-delete-status'
-import { StatusTable } from '../features/statuses/components/status-table'
+import { useStatusList } from '../../features/statuses/hooks/use-status-list'
+import { useCreateStatus } from '../../features/statuses/hooks/use-create-status'
+import { useUpdateStatus } from '../../features/statuses/hooks/use-update-status'
+import { useDeleteStatus } from '../../features/statuses/hooks/use-delete-status'
+import { StatusTable } from '../../features/statuses/components/status-table'
 import {
   StatusFormModal,
   type StatusFormFields,
-} from '../features/statuses/components/status-form-modal'
-import { Spinner } from '../components/spinner'
-import { ErrorMessage } from '../components/error-message'
-import { EmptyState } from '../components/empty-state'
-import { Pagination } from '../components/pagination'
-import type { Status } from '../types/status'
+} from '../../features/statuses/components/status-form-modal'
+import { Spinner } from '../../components/spinner'
+import { ErrorMessage } from '../../components/error-message'
+import { EmptyState } from '../../components/empty-state'
+import { Pagination } from '../../components/pagination'
+import type { Status } from '../../types/status'
 
 export function StatusesPage() {
   const [page, setPage] = useState(1)

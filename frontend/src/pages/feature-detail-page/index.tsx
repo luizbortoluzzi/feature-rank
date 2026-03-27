@@ -19,16 +19,16 @@ import {
   IconBolt,
   IconShare2,
 } from '@tabler/icons-react'
-import { useCurrentUser } from '../app/AuthProvider'
-import { useFeatureDetail } from '../features/feature-requests/hooks/use-feature-detail'
-import { useDeleteFeature } from '../features/feature-requests/hooks/use-delete-feature'
-import { useCastVote } from '../features/voting/hooks/use-cast-vote'
-import { useRemoveVote } from '../features/voting/hooks/use-remove-vote'
-import { StatusBadge } from '../features/statuses/components/status-badge'
-import { CategoryBadge } from '../features/categories/components/category-badge'
-import { Spinner } from '../components/spinner'
-import { ErrorMessage } from '../components/error-message'
-import { formatDate, formatRelativeDate } from '../utils/formatDate'
+import { useCurrentUser } from '../../app/AuthProvider'
+import { useFeatureDetail } from '../../features/feature-requests/hooks/use-feature-detail'
+import { useDeleteFeature } from '../../features/feature-requests/hooks/use-delete-feature'
+import { useCastVote } from '../../features/voting/hooks/use-cast-vote'
+import { useRemoveVote } from '../../features/voting/hooks/use-remove-vote'
+import { StatusBadge } from '../../features/statuses/components/status-badge'
+import { CategoryBadge } from '../../features/categories/components/category-badge'
+import { Spinner } from '../../components/spinner'
+import { ErrorMessage } from '../../components/error-message'
+import { formatDate, formatRelativeDate } from '../../utils/formatDate'
 
 function getPriorityLabel(rate: number): string {
   if (rate === 5) return 'Critical'

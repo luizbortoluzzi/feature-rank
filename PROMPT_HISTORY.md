@@ -1843,3 +1843,28 @@ to:
 
 ### Action Taken
 Added `avatar_url: string | null` to `AuthUser` in `frontend/src/types/user.ts` and to `FeatureAuthor` in `frontend/src/types/feature.ts`. Updated the navbar Avatar in `frontend/src/app/AppLayout.tsx` and the author Avatar in `frontend/src/pages/FeatureDetailPage.tsx` to pass `src={..avatar_url ?? undefined}`, falling back to initials children when the field is null.
+
+## [2026-03-26T00:04:00Z] – Implement large demo data seed (Option A)
+
+### Prompt
+ok so lets go with option A
+
+### Action Taken
+Added avatar_url field to User model with migration 0002_user_avatar_url. Exposed avatar_url in UserMeSerializer and AuthorSerializer. Created seed_demo_data management command with 20 demo users (pravatar.cc avatars), 60 curated feature requests across all categories/statuses with backdated timestamps, and realistic vote distribution. Added make seed-demo target to Makefile.
+
+## [2026-03-26T00:01:00Z] — Reorganize pages into kebab-case folders
+
+### Prompt
+ok, now I would like to improve the organization of this pages here /home/isam/prj/feature-rank/frontend/src/pages, I guess it would be better to have a separated folder for each one with the folder name as the component in kebab-case and inside each folder we export an index.tsx file
+
+### Action Taken
+Moved each page from a flat `.tsx` file to a kebab-case folder with `index.tsx`:
+- `CategoriesPage.tsx` → `categories-page/index.tsx`
+- `EditFeaturePage.tsx` → `edit-feature-page/index.tsx`
+- `FeatureDetailPage.tsx` → `feature-detail-page/index.tsx`
+- `FeatureListPage.tsx` → `feature-list-page/index.tsx`
+- `LoginPage.tsx` → `login-page/index.tsx`
+- `StatusesPage.tsx` → `statuses-page/index.tsx`
+- `UsersPage.tsx` → `users-page/index.tsx`
+
+Updated all relative imports inside each page file from `../` to `../../` (one level deeper). Updated `router.tsx` to import from the new folder paths. Build: ✓ zero TypeScript errors.

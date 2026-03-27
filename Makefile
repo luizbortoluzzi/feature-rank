@@ -1,7 +1,7 @@
 .PHONY: install install-backend install-frontend dev dev-backend dev-frontend \
         lint lint-backend lint-frontend test test-backend test-frontend \
         format format-backend format-check format-check-backend fix fix-backend \
-        backend-seed backend-seed-features backend-migrate backend-run frontend-run \
+        backend-seed backend-seed-features seed-demo backend-migrate backend-run frontend-run \
         docker-up docker-down
 
 install: install-backend install-frontend
@@ -57,6 +57,9 @@ backend-seed:
 
 backend-seed-features:
 	docker compose exec -T backend python manage.py seed_features
+
+seed-demo:
+	docker compose exec -T backend python manage.py seed_demo_data
 
 backend-migrate:
 	cd backend && python manage.py migrate

@@ -26,9 +26,9 @@ import {
   IconBrandGithub,
   IconAlertCircle,
 } from '@tabler/icons-react'
-import { useCurrentUser } from '../app/AuthProvider'
-import { useLogin } from '../features/auth/hooks/use-login'
-import type { LoginPayload } from '../services/auth'
+import { useCurrentUser } from '../../app/AuthProvider'
+import { useLogin } from '../../features/auth/hooks/use-login'
+import type { LoginPayload } from '../../services/auth'
 
 const GoogleIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24">

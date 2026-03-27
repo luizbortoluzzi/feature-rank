@@ -1,16 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { Stack, Box, Title, Text, Anchor, Center } from '@mantine/core'
-import { useFeatureDetail } from '../features/feature-requests/hooks/use-feature-detail'
-import { useUpdateFeature } from '../features/feature-requests/hooks/use-update-feature'
-import { useCategories } from '../features/categories/hooks/use-categories'
-import { useStatuses } from '../features/statuses/hooks/use-statuses'
-import { useCurrentUser } from '../app/AuthProvider'
+import { useFeatureDetail } from '../../features/feature-requests/hooks/use-feature-detail'
+import { useUpdateFeature } from '../../features/feature-requests/hooks/use-update-feature'
+import { useCategories } from '../../features/categories/hooks/use-categories'
+import { useStatuses } from '../../features/statuses/hooks/use-statuses'
+import { useCurrentUser } from '../../app/AuthProvider'
 import {
   FeatureForm,
   type FeatureFormFields,
-} from '../features/feature-requests/components/feature-form'
-import { Spinner } from '../components/spinner'
-import { ErrorMessage } from '../components/error-message'
+} from '../../features/feature-requests/components/feature-form'
+import { Spinner } from '../../components/spinner'
+import { ErrorMessage } from '../../components/error-message'
 
 export function EditFeaturePage() {
   const { id } = useParams<{ id: string }>()
