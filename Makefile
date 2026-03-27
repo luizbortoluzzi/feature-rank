@@ -11,7 +11,8 @@
         lint lint-backend lint-frontend \
         format format-backend \
         fix fix-backend \
-        test test-backend test-frontend
+        test test-backend test-frontend \
+        pre-commit-install pre-commit-run
 
 # ── Default ───────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,10 @@ help:
 	@echo "    test              Run all tests (backend + frontend)"
 	@echo "    test-backend      Run backend tests with pytest"
 	@echo "    test-frontend     Run frontend tests with vitest"
+	@echo ""
+	@echo "  Pre-commit"
+	@echo "    pre-commit-install  Install pre-commit hooks into .git/hooks"
+	@echo "    pre-commit-run      Run all hooks against all files"
 	@echo ""
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
@@ -142,3 +147,11 @@ test-backend:
 
 test-frontend:
 	cd frontend && npm run test -- --run
+
+# ── Pre-commit ────────────────────────────────────────────────────────────────
+
+pre-commit-install:
+	pre-commit install && pre-commit install --hook-type commit-msg
+
+pre-commit-run:
+	pre-commit run --all-files

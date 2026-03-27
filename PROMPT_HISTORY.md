@@ -2138,3 +2138,26 @@ ok now we will need to refactor, fix, improve and organize the makefile
 
 ### Action Taken
 Rewrote Makefile: added help target with descriptions, removed duplicate targets (backend-run/frontend-run merged into dev-backend/dev-frontend), grouped targets into sections (Setup, Docker, Development, Database, Code quality, Testing) with separator comments, added missing targets (logs, restart, ps, makemigrations, shell), fixed make → $(MAKE) in recursive dev call, expanded format and fix to cover both layers (format-backend, fix-backend with frontend stubs ready), standardized seed target names (seed/seed-demo), cleaned up .PHONY declaration.
+
+## [2026-03-27T00:10:00Z] – Set up pre-commit hooks
+
+### Prompt
+ok, now we need to setup the pre-commit hook in our repo
+
+### Action Taken
+Rewrote .pre-commit-config.yaml: updated pre-commit-hooks to v4.6.0, added check-toml and --maxkb=500 on large-files check, added black hook (rev 24.8.0 matching pyproject.toml), fixed ruff rev from v0.3.0 to v0.5.7 (matching pyproject.toml), added local hooks for frontend ESLint and TypeScript type-check scoped to frontend/src/**.(ts|tsx). Added pre-commit-install and pre-commit-run targets to Makefile.
+
+## [2026-03-27T00:11:00Z] – Add conventional commits pre-commit hook
+
+### Prompt
+i guess we can set this too:
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, chore, test, refactor, docs, ci, build, perf]
+
+### Action Taken
+Added conventional-pre-commit hook (v3.4.0) to .pre-commit-config.yaml with commit-msg stage and the specified allowed types. Updated pre-commit-install Makefile target to also run `pre-commit install --hook-type commit-msg` so the commit-msg hook is registered alongside the pre-commit hook.

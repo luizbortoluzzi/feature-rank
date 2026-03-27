@@ -1,19 +1,66 @@
 repos:
+
+  # ── General file hygiene ──────────────────────────────────────────────────
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
+      - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
+        args: [--maxkb=500]
 
+  # ── Backend — black (formatting) ─────────────────────────────────────────
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        files: ^backend/
+        language_version: python3.12
+
+  # ── Backend — ruff (linting + import sorting) ────────────────────────────
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.0
+    rev: v0.5.7
     hooks:
       - id: ruff
         args: [--fix]
         files: ^backend/
       - id: ruff-format
         files: ^backend/
+
+  # ── Commit message — Conventional Commits ────────────────────────────────
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - chore
+          - test
+          - refactor
+          - docs
+          - ci
+          - build
+          - perf
+
+  # ── Frontend — ESLint + TypeScript ───────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: frontend-lint
+        name: ESLint (frontend)
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        pass_filenames: false
+        files: ^frontend/src/.*\.(ts|tsx)$
+
+      - id: frontend-typecheck
+        name: TypeScript type check (frontend)
+        entry: bash -c 'cd frontend && npm run type-check'
+        language: system
+        pass_filenames: false
+        files: ^frontend/src/.*\.(ts|tsx)$
