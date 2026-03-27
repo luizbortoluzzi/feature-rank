@@ -28,7 +28,7 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="light">
-      <Notifications position="top-right" />
+      <Notifications position="top-center" />
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>

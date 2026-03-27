@@ -96,7 +96,8 @@ class StatusViewSet(ViewSet):
         return [AllowAny(), IsAdminOrReadOnly()]
 
     def list(self, request):
-        qs = get_statuses_list()
+        search = request.query_params.get("search")
+        qs = get_statuses_list(search=search)
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = StatusSerializer(page, many=True)

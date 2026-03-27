@@ -12,9 +12,12 @@ from django.db.models import Count
 from apps.statuses.models import Status
 
 
-def get_statuses_list():
+def get_statuses_list(*, search: str | None = None):
     """Return all statuses ordered by sort_order, annotated with usage_count."""
-    return Status.objects.annotate(usage_count=Count("feature_requests")).order_by("sort_order")
+    qs = Status.objects.annotate(usage_count=Count("feature_requests")).order_by("sort_order")
+    if search:
+        qs = qs.filter(name__icontains=search)
+    return qs
 
 
 def get_status(*, pk) -> Status:
