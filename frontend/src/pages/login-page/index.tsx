@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
+import { useMediaQuery } from '@mantine/hooks'
 import {
   Alert,
   Anchor,
@@ -79,6 +80,7 @@ const AVATAR_ITEMS = [
 export function LoginPage() {
   const { user, isLoading } = useCurrentUser()
   const loginMutation = useLogin()
+  const isMobile = useMediaQuery('(max-width: 62em)')
 
   const {
     register,
@@ -124,11 +126,14 @@ export function LoginPage() {
       style={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: isMobile ? 'flex-start' : 'center',
         justifyContent: 'center',
+        padding: isMobile ? '24px 16px' : 0,
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 40%, #EDE9FE 70%, #E0E7FF 100%)',
+        background: isMobile
+          ? 'linear-gradient(135deg, #5B21B6 0%, #4338CA 50%, #6366F1 100%)'
+          : 'linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 40%, #EDE9FE 70%, #E0E7FF 100%)',
       }}
     >
       {/* Decorative background orbs */}
@@ -140,7 +145,9 @@ export function LoginPage() {
           width: '480px',
           height: '480px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.10) 60%, transparent 100%)',
+          background: isMobile
+            ? 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.10) 60%, transparent 100%)',
           filter: 'blur(40px)',
           pointerEvents: 'none',
         }}
@@ -153,7 +160,9 @@ export function LoginPage() {
           width: '520px',
           height: '520px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.22) 0%, rgba(99,102,241,0.10) 60%, transparent 100%)',
+          background: isMobile
+            ? 'radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(139,92,246,0.22) 0%, rgba(99,102,241,0.10) 60%, transparent 100%)',
           filter: 'blur(50px)',
           pointerEvents: 'none',
         }}
@@ -166,7 +175,9 @@ export function LoginPage() {
           width: '260px',
           height: '260px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%)',
+          background: isMobile
+            ? 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%)',
           filter: 'blur(30px)',
           pointerEvents: 'none',
         }}
@@ -179,7 +190,9 @@ export function LoginPage() {
           width: '200px',
           height: '200px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)',
+          background: isMobile
+            ? 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%)',
           filter: 'blur(28px)',
           pointerEvents: 'none',
         }}
@@ -188,21 +201,23 @@ export function LoginPage() {
         maw={960}
         w="100%"
         mx="auto"
+        px={isMobile ? 'md' : 0}
         style={{
-          borderRadius: 'var(--mantine-radius-lg)',
-          boxShadow: 'var(--mantine-shadow-md)',
+          borderRadius: isMobile ? 0 : 'var(--mantine-radius-lg)',
+          boxShadow: isMobile ? 'none' : 'var(--mantine-shadow-md)',
           overflow: 'hidden',
           display: 'flex',
+          minHeight: isMobile ? '100vh' : undefined,
         }}
       >
-        {/* Left panel */}
+        {/* Left panel — hidden on mobile */}
         <Box
           style={{
             width: '45%',
             background:
               'linear-gradient(135deg, #5B21B6 0%, #4338CA 50%, #6366F1 100%)',
             padding: 40,
-            display: 'flex',
+            display: isMobile ? 'none' : 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
           }}
@@ -313,12 +328,14 @@ export function LoginPage() {
         {/* Right panel */}
         <Box
           style={{
-            width: '55%',
+            width: isMobile ? '100%' : '55%',
             backgroundColor: 'white',
-            padding: 40,
+            padding: isMobile ? 24 : 40,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
+            borderRadius: isMobile ? 'var(--mantine-radius-lg)' : undefined,
+            boxShadow: isMobile ? 'var(--mantine-shadow-md)' : undefined,
           }}
         >
           <Stack gap="lg">

@@ -2074,3 +2074,19 @@ great now its possible to load the page with the login form pre filled with the 
 
 ### Action Taken
 Updated login form defaultValues to username="admin" and password="admin1234". Also added admin user creation (username=admin, email=admin@example.com, password=admin1234, is_admin=True) to the seed_demo_data management command so the account always exists after seeding.
+
+## [2026-03-27T00:02:00Z] – Make login page responsive
+
+### Prompt
+ok great, so now we need to turn the login page responsive
+
+### Action Taken
+Added useMediaQuery('(max-width: 62em)') from @mantine/hooks. On mobile: left panel is hidden (display:none), right panel expands to 100% width with rounded corners and shadow of its own, outer wrapper aligns to top with 24px vertical / 16px horizontal padding, card container loses its shadow/radius (right panel takes over). Desktop layout unchanged.
+
+## [2026-03-27T00:03:00Z] – Improve mobile login page contrast
+
+### Prompt
+ok but in mobile the card and the background are too similar how can we improve that?
+
+### Action Taken
+On mobile, switched the page background from the light indigo/violet gradient to the same deep gradient as the left panel (135deg, #5B21B6 → #4338CA → #6366F1). Updated the four decorative orbs to use white semi-transparent radial gradients on mobile so they remain visible on the dark background.
