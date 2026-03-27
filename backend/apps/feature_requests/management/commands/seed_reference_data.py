@@ -49,12 +49,12 @@ ROLES = [
 ]
 
 CATEGORIES = [
-    {"name": "UI", "icon": "palette", "color": "#3B82F6"},
-    {"name": "Performance", "icon": "zap", "color": "#F59E0B"},
-    {"name": "API", "icon": "code", "color": "#10B981"},
-    {"name": "Security", "icon": "shield", "color": "#EF4444"},
-    {"name": "Developer Experience", "icon": "terminal", "color": "#8B5CF6"},
-    {"name": "Other", "icon": "dots-horizontal", "color": "#6B7280"},
+    {"name": "UI", "icon": "Palette", "color": "#3B82F6"},
+    {"name": "Performance", "icon": "Zap", "color": "#F59E0B"},
+    {"name": "API", "icon": "Code2", "color": "#10B981"},
+    {"name": "Security", "icon": "Shield", "color": "#EF4444"},
+    {"name": "Developer Experience", "icon": "Terminal", "color": "#8B5CF6"},
+    {"name": "Other", "icon": "MoreHorizontal", "color": "#6B7280"},
 ]
 
 STATUSES = [
@@ -82,15 +82,18 @@ class Command(BaseCommand):
         )
 
         categories_created = 0
+        categories_updated = 0
         for data in CATEGORIES:
-            _, created = Category.objects.get_or_create(
+            _, created = Category.objects.update_or_create(
                 name=data["name"],
                 defaults={"icon": data["icon"], "color": data["color"]},
             )
             if created:
                 categories_created += 1
+            else:
+                categories_updated += 1
         self.stdout.write(
-            f"Categories: {categories_created} created, {len(CATEGORIES) - categories_created} already existed."
+            f"Categories: {categories_created} created, {categories_updated} updated."
         )
 
         statuses_created = 0

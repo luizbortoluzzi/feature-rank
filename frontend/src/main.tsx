@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App } from './App'
 import { theme } from './styles/theme'
 
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

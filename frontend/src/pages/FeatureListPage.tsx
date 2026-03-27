@@ -84,7 +84,7 @@ export function FeatureListPage() {
           <Button
             leftSection={<IconPlus size={16} />}
             radius="md"
-            color="indigo"
+            variant="gradient"
             onClick={() => navigate('/features/new')}
           >
             New Request

@@ -42,7 +42,7 @@ export const router = createBrowserRouter([
   {
     path: '/features/:id',
     element: (
-      <AppLayout title="Feature Detail">
+      <AppLayout>
         <FeatureDetailPage />
       </AppLayout>
     ),
@@ -61,7 +61,7 @@ export const router = createBrowserRouter([
     path: '/categories',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Categories">
+        <AppLayout>
           <CategoriesPage />
         </AppLayout>
       </ProtectedRoute>
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
     path: '/statuses',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Statuses">
+        <AppLayout>
           <StatusesPage />
         </AppLayout>
       </ProtectedRoute>

@@ -116,7 +116,9 @@ class StatusViewSet(ViewSet):
         status_obj = create_status(
             name=serializer.validated_data["name"],
             color=serializer.validated_data.get("color", ""),
+            description=serializer.validated_data.get("description", ""),
             is_terminal=serializer.validated_data.get("is_terminal", False),
+            is_active=serializer.validated_data.get("is_active", True),
             sort_order=serializer.validated_data.get("sort_order", 0),
         )
         response_serializer = StatusSerializer(status_obj)
@@ -133,7 +135,9 @@ class StatusViewSet(ViewSet):
             status=status_obj,
             name=serializer.validated_data.get("name"),
             color=serializer.validated_data.get("color"),
+            description=serializer.validated_data.get("description"),
             is_terminal=serializer.validated_data.get("is_terminal"),
+            is_active=serializer.validated_data.get("is_active"),
             sort_order=serializer.validated_data.get("sort_order"),
         )
         response_serializer = StatusSerializer(updated)

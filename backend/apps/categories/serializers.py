@@ -20,7 +20,12 @@ class CategorySerializer(serializers.ModelSerializer):
     Used for both read (list/retrieve) and admin write (create/update) operations.
     """
 
+    feature_count = serializers.SerializerMethodField()
+
+    def get_feature_count(self, obj) -> int:
+        return getattr(obj, "feature_count", 0)
+
     class Meta:
         model = Category
-        fields = ["id", "name", "icon", "color", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        fields = ["id", "name", "description", "icon", "color", "is_active", "feature_count", "created_at"]
+        read_only_fields = ["id", "feature_count", "created_at"]

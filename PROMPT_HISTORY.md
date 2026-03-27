@@ -1521,3 +1521,205 @@ Rewrote four files to match the prototype:
 3. router.tsx: Removed title/subtitle from /features/new AppLayout.
 4. services/features.ts: Added status_id?: number to CreateFeaturePayload.
 Also updated EditFeaturePage.tsx to pass new required props (statuses, isAdmin, isLoadingStatuses) to FeatureForm and convert category_id to string. TypeScript check passed with no errors.
+
+## [2026-03-26T10:00:00Z] – Implement backend changes for Categories admin page feature
+
+### Prompt
+Implement backend changes for the Categories admin page feature in /home/isam/prj/feature-rank.
+
+## Changes required
+
+### 1. Update `backend/apps/categories/models.py`
+Add two new fields to the Category model:
+- `description = models.CharField(max_length=500, blank=True, default='')`
+- `is_active = models.BooleanField(default=True)`
+
+Keep all existing fields unchanged: id, name, icon, color, created_at.
+
+### 2. Create migration `backend/apps/categories/migrations/0002_category_description_is_active.py`
+Generate a migration for the two new fields. Use today's date (2026-03-26) in the migration timestamp. Dependencies: `[("categories", "0001_initial")]`
+
+### 3. Update `backend/apps/categories/serializers.py`
+Add to CategorySerializer:
+- `description` and `is_active` in the fields list: `["id", "name", "description", "icon", "color", "is_active", "feature_count", "created_at"]`
+- Add `feature_count` as a SerializerMethodField: `def get_feature_count(self, obj) -> int: return getattr(obj, 'feature_count', 0)`
+- Update `read_only_fields` to: `["id", "feature_count", "created_at"]`
+
+**Important:** Do NOT change `CategoryNestedSerializer` in `feature_requests/serializers.py` — it must remain `["id", "name", "icon", "color"]` only.
+
+### 4. Update `backend/apps/categories/selectors.py`
+Update `get_categories_list` to:
+- Accept an optional `search: str | None = None` keyword argument
+- Annotate `feature_count=Count('feature_requests', distinct=True)` (import Count from django.db.models)
+- Apply `filter(name__icontains=search)` when search is provided
+- Keep ordering by name
+
+Keep `get_category` unchanged.
+
+### 5. Update `backend/apps/categories/services.py`
+Update service functions to handle new fields:
+- `create_category`: add `description: str = ""` and `is_active: bool = True` params, pass them to `Category.objects.create(...)`
+- `update_category`: add `description: str | None = None` and `is_active: bool | None = None` params, update them if not None
+- `delete_category`: unchanged
+
+### 6. Update `backend/apps/categories/views.py`
+Update the `list` method to:
+- Extract search param: `search = request.query_params.get('search') or None`
+- Pass it to selector: `qs = get_categories_list(search=search)`
+
+Update the `create` method to pass new fields and update `partial_update` to pass new fields.
+
+Actually for retrieve: update `get_category` to also annotate feature_count so it's consistent.
+
+Write all changes now.
+
+### Action Taken
+Updated 6 files across the categories app:
+1. `backend/apps/categories/models.py` — added `description` (CharField max_length=500, blank, default='') and `is_active` (BooleanField, default=True) fields.
+2. `backend/apps/categories/migrations/0002_category_description_is_active.py` — created migration with AddField operations for both new fields, depending on 0001_initial.
+3. `backend/apps/categories/serializers.py` — added `feature_count` SerializerMethodField using getattr fallback, expanded fields list to include description, is_active, feature_count, updated read_only_fields.
+4. `backend/apps/categories/selectors.py` — updated `get_categories_list` to accept optional `search` kwarg, annotate `feature_count` via Count, apply name__icontains filter when search is provided; updated `get_category` to also annotate `feature_count`.
+5. `backend/apps/categories/services.py` — extended `create_category` with description and is_active params; extended `update_category` with description and is_active params (None-guarded updates).
+6. `backend/apps/categories/views.py` — list now extracts search param and passes to selector; create and partial_update pass new fields; both create and partial_update re-fetch via `get_category(pk=...)` after mutation so the response serializer receives the annotated instance with a correct feature_count.
+
+## [2026-03-26T23:58:00Z] – Implement Categories admin page matching screenshot
+
+### Prompt
+Lets implement this page of Categories in frontend, the result should be the same as the image
+
+### Action Taken
+Implemented the full Categories admin page (full-stack change):
+
+Backend (6 files):
+- `backend/apps/categories/models.py` — added `description` (CharField, max_length=500, blank, default='') and `is_active` (BooleanField, default=True) fields
+- `backend/apps/categories/migrations/0002_category_description_is_active.py` — migration for both new fields
+- `backend/apps/categories/serializers.py` — added `description`, `is_active`, and `feature_count` (SerializerMethodField) to CategorySerializer
+- `backend/apps/categories/selectors.py` — updated `get_categories_list` to accept optional `search` kwarg, annotate `feature_count` via Count; updated `get_category` to also annotate feature_count
+- `backend/apps/categories/services.py` — added `description` and `is_active` params to `create_category` and `update_category`
+- `backend/apps/categories/views.py` — pass search param to selector; pass new fields in create/partial_update
+
+Frontend (9 files):
+- `frontend/src/types/category.ts` — added `CategoryListItem` interface extending `Category` with description, is_active, feature_count, created_at
+- `frontend/src/services/categories.ts` — added `getCategoryList`, `createCategory`, `updateCategory`, `deleteCategory` service functions with proper types
+- `frontend/src/features/categories/queryKeys.ts` — added `list(params)` query key
+- `frontend/src/features/categories/hooks/use-category-list.ts` — new paginated list hook
+- `frontend/src/features/categories/hooks/use-create-category.ts` — create mutation hook
+- `frontend/src/features/categories/hooks/use-update-category.ts` — update mutation hook
+- `frontend/src/features/categories/hooks/use-delete-category.ts` — delete mutation hook
+- `frontend/src/features/categories/index.ts` — updated exports
+- `frontend/src/pages/CategoriesPage.tsx` — full implementation: page header with search + New Category button, table with CATEGORY NAME/DESCRIPTION/FEATURES/STATUS/CREATED/ACTIONS columns, create/edit modal forms, delete confirmation modal, loading/error/empty states, pagination footer
+- `frontend/src/app/router.tsx` — removed `title="Categories"` from AppLayout (page renders own header)
+
+## [2026-03-26T00:00:00Z] – Implement feature request detail page redesign
+
+### Prompt
+Rewrite the feature request detail page to match the prototype layout shown below. The page is at `frontend/src/pages/FeatureDetailPage.tsx`.
+
+## Prototype Layout Description
+
+The page has:
+1. **Page header**: back arrow (←) on the left, feature title + "Feature Request #FR-{id}" subtitle, Share button + Edit button on the right
+2. **Two-column layout** (main ~65%, sidebar ~35%)
+   - **Main column**: A Paper card containing:
+     - Left: large vote box (border, chevron-up icon, big vote count number, "votes" text below)
+     - Right of vote box: category badge, status badge, priority badge (rate-based), then author avatar+name+timestamps
+     - Divider
+     - Feature description (whitespace preserved)
+     - Delete button (if canDelete) at bottom of card
+   - **Sidebar column**: 
+     - "Status & Details" card: Current Status (StatusBadge), Priority (rate-as-priority badge), Category (CategoryBadge), Posted date, Last Updated date
+     - "Engagement" card: shows Votes count (the only API-available engagement metric)
+
+## Priority mapping for `rate` field (display only, no logic):
+- rate 5 → "Critical" 
+- rate 4 → "High Priority"
+- rate 3 → "Medium Priority"
+- rate 1-2 → "Low Priority"
+Use `IconBolt` with `color="orange"` Badge for priority display.
+
+## Relative date formatting:
+Add `formatRelativeDate(isoString: string): string` to `frontend/src/utils/formatDate.ts` that returns relative text like "5 days ago", "2 hours ago", "just now", etc. using basic math (no external library).
+
+## Implementation rules:
+- Use Mantine components: `Grid`, `Paper`, `Group`, `Stack`, `Text`, `Title`, `Badge`, `Avatar`, `ActionIcon`, `Divider`, `UnstyledButton`
+- Use `@tabler/icons-react`: `IconArrowLeft`, `IconChevronUp`, `IconBolt`, `IconShare2`  
+- Use existing components: `StatusBadge`, `CategoryBadge`, `Spinner`, `ErrorMessage`, `Button`
+- The vote box is an `UnstyledButton` (or similar) styled as a bordered box - clicking it votes/unvotes
+- If user is not authenticated, show the vote box as static display (no click)
+- The Share button copies `window.location.href` to clipboard
+- Keep all three states: loading (Spinner), error (ErrorMessage + 404 special case), success
+
+## Files to change:
+1. `frontend/src/utils/formatDate.ts` — add `formatRelativeDate` export
+2. `frontend/src/pages/FeatureDetailPage.tsx` — full rewrite
+3. `frontend/src/app/router.tsx` — remove `title="Feature Detail"` from the `/features/:id` route (since the page manages its own header now)
+
+## API fields available on `FeatureRequest`:
+- `id`, `title`, `description`, `rate` (1-5), `vote_count`, `has_voted`
+- `author: { id, name }`
+- `category: { id, name, color, icon }`
+- `status: { id, name, color, is_terminal }`
+- `created_at`, `updated_at` (ISO strings)
+
+## Important constraints:
+- Do NOT include fields not in the API (no comments count, views, followers, top voters, target release, estimated effort)
+- vote_count and has_voted come from API only
+- Use `useCastVote(emptyParams)` and `useRemoveVote(emptyParams)` as the current page does
+- Keep 404 error handling and general error handling
+- Keep isOwner/canEdit/canDelete logic
+- The `isTerminal` check for disabling votes: if `feature.status.is_terminal` is true, disable voting
+
+## After implementing, also append to `PROMPT_HISTORY.md` at project root:
+
+```
+## [2026-03-26T00:00:00Z] – Implement feature request detail page redesign
+
+### Prompt
+let create the feature request details page in our frontend, the result should be equal the prototype image
+
+### Action Taken
+Rewrote FeatureDetailPage.tsx with two-column layout (main content + sidebar) matching prototype design. Added formatRelativeDate to utils/formatDate.ts. Updated router.tsx to remove hardcoded title from detail route. Implemented large vote box, author avatar with initials, priority badge from rate field, Status & Details sidebar card, and Engagement sidebar card.
+```
+
+### Action Taken
+Rewrote FeatureDetailPage.tsx with two-column layout (main content + sidebar) matching prototype design. Added formatRelativeDate to utils/formatDate.ts. Updated router.tsx to remove hardcoded title from detail route. Implemented large vote box, author avatar with initials, priority badge from rate field, Status & Details sidebar card, and Engagement sidebar card.
+
+## [2026-03-27T00:08:00Z] – Implement Status List admin page
+
+### Prompt
+lets implement the Status page in our frontend, the result should be exactly as the image prototype
+
+### Action Taken
+Implemented full-stack Status List admin page matching the prototype. Backend: added `description` (TextField) and `is_active` (BooleanField) to Status model with migration 0002, updated StatusSerializer to include `description`, `is_active`, `usage_count` (via SerializerMethodField), updated selectors to annotate `usage_count` via Count, updated services and views to pass new fields through the create/update flow, added tests for all new fields (52 total, all passing). Frontend: extended Status type with new fields, expanded services/statuses.ts with getStatusList/createStatus/updateStatus/deleteStatus, expanded statusKeys with list/detail keys, created use-status-list/use-create-status/use-update-status/use-delete-status hooks, created status-table component with colored dot + color swatch + description + usage count + active toggle + edit/delete actions, created status-form-modal component with React Hook Form + ColorInput, implemented full StatusesPage with header (title/subtitle/search/+button), table wrapped in Paper, showing X-Y of Z footer text + Pagination, inline delete confirmation modal. Also fixed pre-existing TypeScript type errors in categories hooks (mutate function signatures). Build passes with 0 errors.
+
+## [2026-03-27T00:15:00Z] – Install lucide-react icon library
+
+### Prompt
+ok, lets install the lucied-react lib to andle the icons
+
+### Action Taken
+Installed lucide-react (^1.7.0) in the frontend via npm install.
+
+## [2026-03-27T00:20:00Z] – Update seeds to use lucide-react icon names
+
+### Prompt
+ok, now lets update the seeds to use icons from this library
+
+### Action Taken
+Updated CATEGORIES in seed_reference_data.py to use lucide-react component names (Palette, Zap, Code2, Shield, Terminal, MoreHorizontal). Updated CategoryIcon component in CategoriesPage.tsx to dynamically resolve and render lucide-react icons by name using `LucideIcons[name]`, with a text fallback for unknown names. Build passes with 0 errors.
+
+## [2026-03-27T00:25:00Z] – Fix lucide-react missing in Docker container
+
+### Prompt
+[plugin:vite:import-analysis] Failed to resolve import "lucide-react" from "src/pages/CategoriesPage.tsx". Does the file exist?
+
+### Action Taken
+The frontend runs in Docker (feature-rank-frontend-1 container). lucide-react was only installed in the local node_modules, not inside the container. Ran `docker exec feature-rank-frontend-1 npm install lucide-react` to install it inside the running container.
+
+## [2026-03-27T01:36:00Z] – Fix category icons showing as black text instead of icon
+
+### Prompt
+aqui não está sendo mostrado o ícone corretamente, só aparece um texto em preto
+
+### Action Taken
+Root cause: seed_reference_data used get_or_create which does not update existing records, so the database still had old lowercase icon names ("palette", "zap", etc.) instead of lucide-react PascalCase names ("Palette", "Zap", etc.). Fixed by changing Category seeding to use update_or_create so icon names are always kept in sync with the seed data. Re-ran make backend-seed which updated all 6 categories in the database.

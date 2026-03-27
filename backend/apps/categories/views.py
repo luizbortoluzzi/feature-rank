@@ -94,7 +94,8 @@ class CategoryViewSet(ViewSet):
         return [AllowAny(), IsAdminOrReadOnly()]
 
     def list(self, request):
-        qs = get_categories_list()
+        search = request.query_params.get("search") or None
+        qs = get_categories_list(search=search)
         paginator = StandardResultsPagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = CategorySerializer(page, many=True)
@@ -113,10 +114,13 @@ class CategoryViewSet(ViewSet):
         serializer.is_valid(raise_exception=True)
         category = create_category(
             name=serializer.validated_data["name"],
+            description=serializer.validated_data.get("description", ""),
             icon=serializer.validated_data.get("icon", ""),
             color=serializer.validated_data.get("color", ""),
+            is_active=serializer.validated_data.get("is_active", True),
         )
-        response_serializer = CategorySerializer(category)
+        annotated = get_category(pk=category.pk)
+        response_serializer = CategorySerializer(annotated)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     def partial_update(self, request, pk=None):
@@ -126,13 +130,16 @@ class CategoryViewSet(ViewSet):
             raise NotFound()
         serializer = CategorySerializer(category, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        updated = update_category(
+        update_category(
             category=category,
             name=serializer.validated_data.get("name"),
+            description=serializer.validated_data.get("description"),
             icon=serializer.validated_data.get("icon"),
             color=serializer.validated_data.get("color"),
+            is_active=serializer.validated_data.get("is_active"),
         )
-        response_serializer = CategorySerializer(updated)
+        annotated = get_category(pk=category.pk)
+        response_serializer = CategorySerializer(annotated)
         return Response(response_serializer.data)
 
     def destroy(self, request, pk=None):

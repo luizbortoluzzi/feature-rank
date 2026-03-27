@@ -17,13 +17,23 @@ from rest_framework.exceptions import ValidationError
 from apps.categories.models import Category
 
 
-def create_category(*, name: str, icon: str = "", color: str = "") -> Category:
+def create_category(
+    *, name: str, description: str = "", icon: str = "", color: str = "", is_active: bool = True
+) -> Category:
     """Create and return a new Category reference record."""
-    return Category.objects.create(name=name, icon=icon, color=color)
+    return Category.objects.create(
+        name=name, description=description, icon=icon, color=color, is_active=is_active
+    )
 
 
 def update_category(
-    *, category: Category, name: str = None, icon: str = None, color: str = None
+    *,
+    category: Category,
+    name: str = None,
+    description: str = None,
+    icon: str = None,
+    color: str = None,
+    is_active: bool = None,
 ) -> Category:
     """
     Update a Category record. Only supplied fields (non-None) are changed.
@@ -31,10 +41,14 @@ def update_category(
     """
     if name is not None:
         category.name = name
+    if description is not None:
+        category.description = description
     if icon is not None:
         category.icon = icon
     if color is not None:
         category.color = color
+    if is_active is not None:
+        category.is_active = is_active
     category.save()
     return category
 
