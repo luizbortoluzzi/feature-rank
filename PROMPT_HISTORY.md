@@ -2237,3 +2237,37 @@ yes, lets do the phase four
 
 ### Action Taken
 Ran type-check (tsc --noEmit — passed), ESLint (passed after fixing unused Group import in categories-page and replacing 4 `any` types in styles/theme.ts with MantineTheme), and existing test suite (no test files existed — exit code 1). Created test infrastructure: added matchMedia mock to test-setup.ts, created src/test/render.tsx with renderWithMantine utility. Wrote 4 test files (29 tests total): use-is-mobile.test.ts (4 tests), category-table.test.tsx (8 tests), category-form-modal.test.tsx (9 tests), login-form.test.tsx (8 tests). Fixed test failure in category-form-modal caused by jsdom native constraint validation intercepting button click — changed to fireEvent.submit on the form element. All 29 tests pass.
+
+## [2026-03-27T00:00:00Z] – Generate polished root README.md
+
+### Prompt
+You are acting as a senior software engineer, software architect, and technical writer.
+
+Your task is to deeply inspect this monorepo, understand how it works, and then produce a polished, professional, high-quality `README.md` for the root of the repository.
+
+This is a technical challenge submission for a software engineering job application, so the README must feel thoughtful, complete, and impressive to experienced reviewers.
+
+## Primary Objective
+
+Do **not** generate the README immediately.
+
+First, perform a full repository analysis so you can understand:
+
+* the overall purpose of the project
+* the architecture and boundaries between backend and frontend
+* how the application is configured and run
+* development workflows
+* Docker and compose setup
+* testing, linting, formatting, and tooling
+* environment variables
+* database initialization and seed flows
+* CI/CD or automation workflows
+* supporting documentation inside `/docs`
+* important engineering decisions that can be inferred from the codebase
+
+After that analysis, generate a complete and polished `README.md` at the root of the repository.
+
+[... full prompt as received ...]
+
+### Action Taken
+Performed a comprehensive repository analysis using an Explore agent, covering: Makefile (40+ targets), docker-compose.yml and docker-compose.prod.yml, .env.example, backend pyproject.toml, entrypoint.sh, all five Django apps and their layer structure, both management commands (seed_reference_data, seed_demo_data), frontend package.json and vite.config.ts, GitHub Actions CI workflow, all docs/ subdirectories, Dockerfile configurations for backend (multi-stage) and frontend (4-stage), nginx configuration, and MySQL init scripts. Generated and wrote a complete, polished README.md covering: project overview, full tech stack table, architecture (layer boundaries, data flow, containerization), project structure tree, prerequisites, environment variable reference, development and demo mode run instructions, database setup, all Makefile commands, testing, code quality, CI/CD pipeline summary, docs directory guide, key engineering decisions, future improvements, and contributing guidelines.
