@@ -93,8 +93,6 @@ export const theme = createTheme({
       styles: {
         root: {
           fontWeight: 600,
-          // height: rem(46),
-          // paddingInline: rem(20),
           transition: 'transform 120ms ease, box-shadow 120ms ease',
         },
       },
@@ -238,15 +236,5 @@ export const theme = createTheme({
         },
       },
     },
-  },
-
-  other: {
-    sidebarWidth: 220,
-    headerHeight: 60,
-    cardRadius: rem(28),
-    sectionRadius: rem(24),
-    inputRadius: rem(999),
-    buttonRadius: rem(999),
-    brandGradient: 'linear-gradient(135deg, #6c3df0 0%, #7f56ff 45%, #926bff 100%)',
   },
 })

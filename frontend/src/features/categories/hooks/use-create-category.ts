@@ -5,7 +5,7 @@ import type { CategoryListItem } from '../../../types/category'
 import type { ApiError } from '../../../types/api'
 
 interface UseCreateCategoryResult {
-  createCategory: ReturnType<typeof useMutation<CategoryListItem, unknown, CreateCategoryPayload>>['mutate']
+  createCategory: ReturnType<typeof useMutation<CategoryListItem, ApiError, CreateCategoryPayload>>['mutate']
   isPending: boolean
   error: ApiError | null
 }
@@ -23,6 +23,6 @@ export function useCreateCategory(): UseCreateCategoryResult {
   return {
     createCategory: mutate,
     isPending,
-    error: error ? (error as unknown as ApiError) : null,
+    error: error ?? null,
   }
 }

@@ -11,6 +11,7 @@ import {
   ActionIcon,
   Divider,
   UnstyledButton,
+  Button,
 } from '@mantine/core'
 import {
   IconArrowLeft,
@@ -27,9 +28,7 @@ import { StatusBadge } from '../features/statuses/components/status-badge'
 import { CategoryBadge } from '../features/categories/components/category-badge'
 import { Spinner } from '../components/spinner'
 import { ErrorMessage } from '../components/error-message'
-import { Button } from '../components/button'
 import { formatDate, formatRelativeDate } from '../utils/formatDate'
-import type { ApiError } from '../types/api'
 
 function getPriorityLabel(rate: number): string {
   if (rate === 5) return 'Critical'
@@ -53,10 +52,9 @@ export function FeatureDetailPage() {
   const { user } = useCurrentUser()
   const navigate = useNavigate()
 
-  const emptyParams = {}
   const { feature, isLoading, isError, error } = useFeatureDetail(featureId)
-  const { castVote, isPending: isCastingVote } = useCastVote(emptyParams)
-  const { removeVote, isPending: isRemovingVote } = useRemoveVote(emptyParams)
+  const { castVote, isPending: isCastingVote } = useCastVote()
+  const { removeVote, isPending: isRemovingVote } = useRemoveVote()
   const {
     deleteFeature,
     isPending: isDeleting,
@@ -97,14 +95,13 @@ export function FeatureDetailPage() {
   }
 
   if (isError) {
-    const apiError = error as ApiError | null
-    if (apiError?.status === 404) {
+    if (error?.status === 404) {
       return (
         <main style={{ maxWidth: 960, margin: '0 auto', padding: '48px 16px' }}>
           <Stack align="center" gap="sm">
             <Title order={2} fz="xl">Feature not found</Title>
             <Text c="dimmed" fz="sm">This feature request no longer exists.</Text>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/features')}>
+            <Button variant="subtle" color="gray" size="sm" onClick={() => navigate('/features')}>
               Back to feature list
             </Button>
           </Stack>
@@ -150,15 +147,13 @@ export function FeatureDetailPage() {
         </Group>
 
         <Group gap="sm" mt={2}>
-          <Button variant="secondary" size="sm" onClick={handleShare} aria-label="Share this feature request">
-            <Group gap={6}>
-              <IconShare2 size={14} />
-              Share
-            </Group>
+          <Button variant="light" color="gray" size="sm" onClick={handleShare} aria-label="Share this feature request" leftSection={<IconShare2 size={14} />}>
+            Share
           </Button>
           {canEdit && (
             <Button
-              variant="secondary"
+              variant="light"
+              color="gray"
               size="sm"
               onClick={() => navigate(`/features/${feature.id}/edit`)}
             >
@@ -257,7 +252,7 @@ export function FeatureDetailPage() {
                 </Group>
 
                 <Group gap="sm" wrap="nowrap">
-                  <Avatar size={32} radius="xl" color="indigo">
+                  <Avatar size={32} radius="xl" color="indigo" src={feature.author.avatar_url ?? undefined}>
                     {authorInitials}
                   </Avatar>
                   <Stack gap={0}>
@@ -291,11 +286,11 @@ export function FeatureDetailPage() {
                 )}
                 <Group justify="flex-end">
                   <Button
-                    variant="danger"
+                    variant="filled"
+                    color="red"
                     size="sm"
                     onClick={handleDelete}
-                    isLoading={isDeleting}
-                    disabled={isDeleting}
+                    loading={isDeleting}
                   >
                     Delete
                   </Button>

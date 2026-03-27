@@ -10,7 +10,7 @@ interface UpdateStatusMutationArgs {
 }
 
 interface UseUpdateStatusResult {
-  updateStatus: ReturnType<typeof useMutation<Status, unknown, UpdateStatusMutationArgs>>['mutate']
+  updateStatus: ReturnType<typeof useMutation<Status, ApiError, UpdateStatusMutationArgs>>['mutate']
   isPending: boolean
   isError: boolean
   error: ApiError | null
@@ -32,7 +32,7 @@ export function useUpdateStatus(): UseUpdateStatusResult {
     updateStatus: mutation.mutate,
     isPending: mutation.isPending,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
     data: mutation.data,
   }
 }

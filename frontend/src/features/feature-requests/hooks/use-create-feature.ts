@@ -5,7 +5,7 @@ import type { FeatureRequest } from '../../../types/feature'
 import type { ApiError } from '../../../types/api'
 
 interface UseCreateFeatureResult {
-  createFeature: (payload: CreateFeaturePayload) => void
+  createFeature: ReturnType<typeof useMutation<FeatureRequest, ApiError, CreateFeaturePayload>>['mutate']
   isPending: boolean
   isError: boolean
   error: ApiError | null
@@ -26,7 +26,7 @@ export function useCreateFeature(): UseCreateFeatureResult {
     createFeature: mutation.mutate,
     isPending: mutation.isPending,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
     data: mutation.data,
   }
 }

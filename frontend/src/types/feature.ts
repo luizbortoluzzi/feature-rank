@@ -4,6 +4,7 @@ import type { Status } from './status'
 export interface FeatureAuthor {
   id: number
   name: string
+  avatar_url: string | null
 }
 
 export interface FeatureRequestSummary {

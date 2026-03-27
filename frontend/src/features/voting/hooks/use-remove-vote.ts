@@ -17,19 +17,23 @@ interface CachedListData {
   meta: PaginationMeta
 }
 
-export function useRemoveVote(params: FeatureListParams): UseRemoveVoteResult {
+export function useRemoveVote(params?: FeatureListParams): UseRemoveVoteResult {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
     mutationFn: (featureId: number) => removeVote(featureId),
     onMutate: async (featureId: number) => {
-      await queryClient.cancelQueries({ queryKey: featureKeys.list(params) })
+      if (params) {
+        await queryClient.cancelQueries({ queryKey: featureKeys.list(params) })
+      }
       await queryClient.cancelQueries({ queryKey: featureKeys.detail(featureId) })
 
-      const previousList = queryClient.getQueryData<CachedListData>(featureKeys.list(params))
+      const previousList = params
+        ? queryClient.getQueryData<CachedListData>(featureKeys.list(params))
+        : undefined
       const previousDetail = queryClient.getQueryData<FeatureRequest>(featureKeys.detail(featureId))
 
-      if (previousList) {
+      if (previousList && params) {
         queryClient.setQueryData<CachedListData>(featureKeys.list(params), {
           ...previousList,
           items: previousList.items.map((f) =>
@@ -53,14 +57,16 @@ export function useRemoveVote(params: FeatureListParams): UseRemoveVoteResult {
     onSuccess: (voteResponse) => {
       const { feature_request_id, has_voted, vote_count } = voteResponse
 
-      const listData = queryClient.getQueryData<CachedListData>(featureKeys.list(params))
-      if (listData) {
-        queryClient.setQueryData<CachedListData>(featureKeys.list(params), {
-          ...listData,
-          items: listData.items.map((f) =>
-            f.id === feature_request_id ? { ...f, has_voted, vote_count } : f,
-          ),
-        })
+      if (params) {
+        const listData = queryClient.getQueryData<CachedListData>(featureKeys.list(params))
+        if (listData) {
+          queryClient.setQueryData<CachedListData>(featureKeys.list(params), {
+            ...listData,
+            items: listData.items.map((f) =>
+              f.id === feature_request_id ? { ...f, has_voted, vote_count } : f,
+            ),
+          })
+        }
       }
 
       const detailData = queryClient.getQueryData<FeatureRequest>(
@@ -75,7 +81,7 @@ export function useRemoveVote(params: FeatureListParams): UseRemoveVoteResult {
       }
     },
     onError: (_err, featureId, context) => {
-      if (context?.previousList) {
+      if (context?.previousList && params) {
         queryClient.setQueryData(featureKeys.list(params), context.previousList)
       }
       if (context?.previousDetail) {
@@ -88,6 +94,6 @@ export function useRemoveVote(params: FeatureListParams): UseRemoveVoteResult {
     removeVote: mutation.mutate,
     isPending: mutation.isPending,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
   }
 }

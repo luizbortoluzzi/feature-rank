@@ -10,7 +10,7 @@ interface UpdateFeatureMutationArgs {
 }
 
 interface UseUpdateFeatureResult {
-  updateFeature: (args: UpdateFeatureMutationArgs) => void
+  updateFeature: ReturnType<typeof useMutation<FeatureRequest, ApiError, UpdateFeatureMutationArgs>>['mutate']
   isPending: boolean
   isError: boolean
   error: ApiError | null
@@ -32,7 +32,7 @@ export function useUpdateFeature(): UseUpdateFeatureResult {
     updateFeature: mutation.mutate,
     isPending: mutation.isPending,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
     data: mutation.data,
   }
 }

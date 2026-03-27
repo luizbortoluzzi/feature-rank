@@ -4,7 +4,7 @@ import { deleteStatus } from '../../../services/statuses'
 import type { ApiError } from '../../../types/api'
 
 interface UseDeleteStatusResult {
-  deleteStatus: ReturnType<typeof useMutation<void, unknown, number>>['mutate']
+  deleteStatus: ReturnType<typeof useMutation<void, ApiError, number>>['mutate']
   isPending: boolean
   deletingId: number | null
   isError: boolean
@@ -25,8 +25,8 @@ export function useDeleteStatus(): UseDeleteStatusResult {
   return {
     deleteStatus: mutation.mutate,
     isPending: mutation.isPending,
-    deletingId: mutation.isPending ? (mutation.variables as number) : null,
+    deletingId: mutation.isPending ? mutation.variables : null,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
   }
 }

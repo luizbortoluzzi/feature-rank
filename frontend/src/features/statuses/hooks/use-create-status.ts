@@ -5,7 +5,7 @@ import type { Status } from '../../../types/status'
 import type { ApiError } from '../../../types/api'
 
 interface UseCreateStatusResult {
-  createStatus: ReturnType<typeof useMutation<Status, unknown, CreateStatusPayload>>['mutate']
+  createStatus: ReturnType<typeof useMutation<Status, ApiError, CreateStatusPayload>>['mutate']
   isPending: boolean
   isError: boolean
   error: ApiError | null
@@ -26,7 +26,7 @@ export function useCreateStatus(): UseCreateStatusResult {
     createStatus: mutation.mutate,
     isPending: mutation.isPending,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
     data: mutation.data,
   }
 }

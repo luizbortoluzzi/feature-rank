@@ -23,6 +23,6 @@ export function useStatusList(params: StatusListParams): UseStatusListResult {
     meta: data?.meta ?? null,
     isLoading,
     isError,
-    error: isError ? (error as unknown as ApiError) : null,
+    error: isError ? error : null,
   }
 }

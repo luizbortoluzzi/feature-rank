@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { FeatureListPage } from '../pages/FeatureListPage'
 import { FeatureDetailPage } from '../pages/FeatureDetailPage'
-import { CreateFeaturePage } from '../pages/CreateFeaturePage'
 import { EditFeaturePage } from '../pages/EditFeaturePage'
 import { LoginPage } from '../pages/LoginPage'
 import { CategoriesPage } from '../pages/CategoriesPage'
@@ -25,16 +24,6 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <AppLayout>
           <FeatureListPage />
-        </AppLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/features/new',
-    element: (
-      <ProtectedRoute>
-        <AppLayout>
-          <CreateFeaturePage />
         </AppLayout>
       </ProtectedRoute>
     ),

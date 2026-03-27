@@ -3,25 +3,12 @@ import { IconArrowUp, IconStar, IconStarFilled, IconClock } from '@tabler/icons-
 import type { FeatureRequestSummary } from '../../../../types/feature'
 import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
+import { formatRelativeDate } from '../../../../utils/formatDate'
 
 interface FeatureCardProps {
   feature: FeatureRequestSummary
   isVoting: boolean
   onVote: () => void
-}
-
-function formatRelativeDate(isoString: string): string {
-  const diffMs = Date.now() - new Date(isoString).getTime()
-  const diffDays = Math.floor(diffMs / 86_400_000)
-  if (diffDays === 0) return 'today'
-  if (diffDays === 1) return '1 day ago'
-  if (diffDays < 7) return `${diffDays} days ago`
-  const diffWeeks = Math.floor(diffDays / 7)
-  if (diffWeeks === 1) return '1 week ago'
-  if (diffWeeks < 5) return `${diffWeeks} weeks ago`
-  const diffMonths = Math.floor(diffDays / 30)
-  if (diffMonths === 1) return '1 month ago'
-  return `${diffMonths} months ago`
 }
 
 function StarRating({ value }: { value: number }) {

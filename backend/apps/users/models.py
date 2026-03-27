@@ -20,6 +20,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=150)
     email = models.EmailField(max_length=254, unique=True)
     is_admin = models.BooleanField(default=False)
+    avatar_url = models.URLField(max_length=500, blank=True, null=True)
 
     class Meta:
         db_table = "users"

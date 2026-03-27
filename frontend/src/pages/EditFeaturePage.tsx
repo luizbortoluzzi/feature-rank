@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Stack, Box, Title, Text, Anchor, Center } from '@mantine/core'
 import { useFeatureDetail } from '../features/feature-requests/hooks/use-feature-detail'
 import { useUpdateFeature } from '../features/feature-requests/hooks/use-update-feature'
 import { useCategories } from '../features/categories/hooks/use-categories'
@@ -11,7 +11,6 @@ import {
 } from '../features/feature-requests/components/feature-form'
 import { Spinner } from '../components/spinner'
 import { ErrorMessage } from '../components/error-message'
-import type { ApiError } from '../types/api'
 
 export function EditFeaturePage() {
   const { id } = useParams<{ id: string }>()
@@ -25,89 +24,87 @@ export function EditFeaturePage() {
     isError: isFeatureError,
     error: featureError,
   } = useFeatureDetail(featureId)
-  const { updateFeature, isPending, isError, error, data } = useUpdateFeature()
+  const { updateFeature, isPending, isError, error } = useUpdateFeature()
   const { categories, isLoading: isLoadingCategories } = useCategories()
   const { statuses, isLoading: isLoadingStatuses } = useStatuses()
 
-  useEffect(() => {
-    if (data) {
-      navigate(`/features/${data.id}`)
-    }
-  }, [data, navigate])
-
   function handleSubmit(fields: FeatureFormFields) {
-    updateFeature({
-      id: featureId,
-      payload: {
-        title: fields.title,
-        description: fields.description,
-        rate: fields.rate,
-        category_id: Number(fields.category_id),
+    updateFeature(
+      {
+        id: featureId,
+        payload: {
+          title: fields.title,
+          description: fields.description,
+          rate: fields.rate,
+          category_id: Number(fields.category_id),
+        },
       },
-    })
+      { onSuccess: (updated) => navigate(`/features/${updated.id}`) },
+    )
   }
 
   if (isLoadingFeature) {
     return (
-      <main className="max-w-2xl mx-auto px-4 py-12 flex justify-center">
+      <Center py="xl">
         <Spinner size="lg" label="Loading feature request…" />
-      </main>
+      </Center>
     )
   }
 
   if (isFeatureError) {
-    const apiError = featureError as ApiError | null
-    if (apiError?.status === 404) {
+    if (featureError?.status === 404) {
       return (
-        <main className="max-w-2xl mx-auto px-4 py-12">
-          <div className="text-center">
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">Feature not found</h1>
-            <p className="text-gray-500 mb-4">This feature request no longer exists.</p>
-            <Link to="/" className="text-blue-600 hover:text-blue-700 underline text-sm">
-              Back to feature list
-            </Link>
-          </div>
-        </main>
+        <Stack align="center" gap="sm" py="xl">
+          <Title order={3}>Feature not found</Title>
+          <Text c="dimmed" fz="sm">This feature request no longer exists.</Text>
+          <Anchor fz="sm" onClick={() => navigate('/features')}>Back to feature list</Anchor>
+        </Stack>
       )
     }
-    return (
-      <main className="max-w-2xl mx-auto px-4 py-12">
-        <ErrorMessage error={featureError} />
-      </main>
-    )
+    return <ErrorMessage error={featureError} />
   }
 
   if (!feature) return null
 
+  const canEdit = user && (user.id === feature.author.id || user.is_admin)
+  if (!canEdit) {
+    return (
+      <Stack align="center" gap="sm" py="xl">
+        <Title order={3}>Access denied</Title>
+        <Text c="dimmed" fz="sm">You don't have permission to edit this feature request.</Text>
+        <Anchor fz="sm" onClick={() => navigate(`/features/${feature.id}`)}>Back to feature</Anchor>
+      </Stack>
+    )
+  }
+
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
-      <nav aria-label="Breadcrumb" className="mb-6">
-        <Link
-          to={`/features/${feature.id}`}
-          className="text-sm text-blue-600 hover:text-blue-700 underline"
-        >
-          ← Back to feature
-        </Link>
-      </nav>
+    <Box maw={672} mx="auto">
+      <Stack gap="lg">
+        <Box>
+          <Anchor fz="sm" onClick={() => navigate(`/features/${feature.id}`)}>
+            ← Back to feature
+          </Anchor>
+        </Box>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Feature Request</h1>
+        <Title order={2}>Edit Feature Request</Title>
 
-      <FeatureForm
-        defaultValues={{
-          title: feature.title,
-          description: feature.description,
-          rate: feature.rate,
-          category_id: String(feature.category.id),
-        }}
-        categories={categories}
-        statuses={statuses}
-        isAdmin={user?.is_admin ?? false}
-        isLoadingCategories={isLoadingCategories}
-        isLoadingStatuses={isLoadingStatuses}
-        isPending={isPending}
-        submitError={isError ? error : null}
-        onSubmit={handleSubmit}
-      />
-    </main>
+        <FeatureForm
+          defaultValues={{
+            title: feature.title,
+            description: feature.description,
+            rate: feature.rate,
+            category_id: String(feature.category.id),
+          }}
+          categories={categories}
+          statuses={statuses}
+          isAdmin={user?.is_admin ?? false}
+          isLoadingCategories={isLoadingCategories}
+          isLoadingStatuses={isLoadingStatuses}
+          isPending={isPending}
+          submitError={isError ? error : null}
+          onSubmit={handleSubmit}
+        />
+      </Stack>
+    </Box>
   )
 }

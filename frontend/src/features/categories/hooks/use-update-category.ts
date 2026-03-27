@@ -9,7 +9,7 @@ interface UpdateCategoryArgs {
 }
 
 interface UseUpdateCategoryResult {
-  updateCategory: ReturnType<typeof useMutation<unknown, unknown, UpdateCategoryArgs>>['mutate']
+  updateCategory: ReturnType<typeof useMutation<unknown, ApiError, UpdateCategoryArgs>>['mutate']
   isPending: boolean
   error: ApiError | null
 }
@@ -27,6 +27,6 @@ export function useUpdateCategory(): UseUpdateCategoryResult {
   return {
     updateCategory: mutate,
     isPending,
-    error: error ? (error as unknown as ApiError) : null,
+    error: error ?? null,
   }
 }

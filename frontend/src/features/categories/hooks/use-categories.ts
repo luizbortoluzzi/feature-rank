@@ -22,6 +22,6 @@ export function useCategories(): UseCategoriesResult {
     categories: data ?? [],
     isLoading,
     isError,
-    error: isError ? (error as unknown as ApiError) : null,
+    error: isError ? error : null,
   }
 }

@@ -239,6 +239,11 @@ export function FeatureForm({
 
         {/* Buttons row */}
         <Group gap="sm">
+          <Tooltip label="Coming soon">
+            <Button variant="default" disabled>
+              Save as Draft
+            </Button>
+          </Tooltip>
           <Button
             type="submit"
             color="indigo"
@@ -248,11 +253,6 @@ export function FeatureForm({
           >
             Submit Feature Request
           </Button>
-          <Tooltip label="Coming soon">
-            <Button variant="default" disabled>
-              Save as Draft
-            </Button>
-          </Tooltip>
         </Group>
       </Stack>
     </form>

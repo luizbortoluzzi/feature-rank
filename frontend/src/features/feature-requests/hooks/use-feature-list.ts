@@ -23,6 +23,6 @@ export function useFeatureList(params: FeatureListParams): UseFeatureListResult 
     meta: data?.meta ?? null,
     isLoading,
     isError,
-    error: isError ? (error as unknown as ApiError) : null,
+    error: isError ? error : null,
   }
 }

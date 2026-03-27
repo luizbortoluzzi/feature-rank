@@ -4,7 +4,7 @@ import { deleteFeature } from '../../../services/features'
 import type { ApiError } from '../../../types/api'
 
 interface UseDeleteFeatureResult {
-  deleteFeature: (id: number) => void
+  deleteFeature: ReturnType<typeof useMutation<void, ApiError, number>>['mutate']
   isPending: boolean
   isError: boolean
   error: ApiError | null
@@ -25,6 +25,6 @@ export function useDeleteFeature(): UseDeleteFeatureResult {
     deleteFeature: mutation.mutate,
     isPending: mutation.isPending,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
   }
 }

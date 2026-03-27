@@ -2,7 +2,6 @@ import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useCurrentUser } from '../../../app/AuthProvider'
 import { login, type LoginPayload } from '../../../services/auth'
-import type { ApiError } from '../../../types/api'
 
 export function useLogin() {
   const navigate = useNavigate()
@@ -20,6 +19,6 @@ export function useLogin() {
     login: mutation.mutate,
     isPending: mutation.isPending,
     isError: mutation.isError,
-    error: mutation.isError ? (mutation.error as unknown as ApiError) : null,
+    error: mutation.isError ? mutation.error : null,
   }
 }

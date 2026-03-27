@@ -131,7 +131,7 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
           <>
             <Divider mt="auto" mb="sm" />
             <Group gap="sm" px={4} wrap="nowrap">
-              <Avatar size={32} radius="xl" color="indigo">
+              <Avatar size={32} radius="xl" color="indigo" src={user.avatar_url ?? undefined}>
                 {userInitials}
               </Avatar>
               <Box style={{ flex: 1, minWidth: 0 }}>

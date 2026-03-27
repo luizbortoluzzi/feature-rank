@@ -23,6 +23,6 @@ export function useCategoryList(params?: CategoryListParams): UseCategoryListRes
     meta: data?.meta ?? null,
     isLoading,
     isError,
-    error: isError ? (error as unknown as ApiError) : null,
+    error: isError ? error : null,
   }
 }

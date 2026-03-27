@@ -1,27 +1,28 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Stack, Group, Title, Text, TextInput, Button, Box, Center } from '@mantine/core'
+import { useState, useEffect } from 'react'
+import { Stack, Group, Title, Text, TextInput, Button, Box, Center, Modal } from '@mantine/core'
 import { IconSearch, IconPlus } from '@tabler/icons-react'
 import { useCurrentUser } from '../app/AuthProvider'
 import { useFeatureList } from '../features/feature-requests/hooks/use-feature-list'
+import { useCreateFeature } from '../features/feature-requests/hooks/use-create-feature'
 import { useCastVote } from '../features/voting/hooks/use-cast-vote'
 import { useRemoveVote } from '../features/voting/hooks/use-remove-vote'
 import { useCategories } from '../features/categories/hooks/use-categories'
 import { useStatuses } from '../features/statuses/hooks/use-statuses'
 import { FeatureCard } from '../features/feature-requests/components/feature-card'
 import { FeatureListFilters } from '../features/feature-requests/components/feature-list-filters'
+import { FeatureForm, type FeatureFormFields } from '../features/feature-requests/components/feature-form'
 import { Spinner } from '../components/spinner'
 import { ErrorMessage } from '../components/error-message'
 import { EmptyState } from '../components/empty-state'
 import { Pagination } from '../components/pagination'
 
 export function FeatureListPage() {
-  const navigate = useNavigate()
   const { user } = useCurrentUser()
   const [page, setPage] = useState(1)
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined)
   const [statusId, setStatusId] = useState<number | undefined>(undefined)
   const [search, setSearch] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
 
   const params = {
     page,
@@ -35,6 +36,11 @@ export function FeatureListPage() {
   const { statuses, isLoading: isLoadingStatuses } = useStatuses()
   const { castVote, isPending: isCastingVote } = useCastVote(params)
   const { removeVote, isPending: isRemovingVote } = useRemoveVote(params)
+  const { createFeature, isPending: isCreating, isError: isCreateError, error: createError, data: createdFeature } = useCreateFeature()
+
+  useEffect(() => {
+    if (createdFeature) setModalOpen(false)
+  }, [createdFeature])
 
   const isVoting = isCastingVote || isRemovingVote
   const hasActiveFilters = categoryId !== undefined || statusId !== undefined || search !== ''
@@ -61,6 +67,19 @@ export function FeatureListPage() {
     setPage(1)
   }
 
+  function handleCreateSubmit(fields: FeatureFormFields) {
+    const payload: { title: string; description: string; rate: number; category_id: number; status_id?: number } = {
+      title: fields.title,
+      description: fields.description,
+      rate: fields.rate,
+      category_id: Number(fields.category_id),
+    }
+    if (user?.is_admin && fields.status_id) {
+      payload.status_id = Number(fields.status_id)
+    }
+    createFeature(payload)
+  }
+
   return (
     <Stack gap="md">
       {/* Page header */}
@@ -85,7 +104,7 @@ export function FeatureListPage() {
             leftSection={<IconPlus size={16} />}
             radius="md"
             variant="gradient"
-            onClick={() => navigate('/features/new')}
+            onClick={() => setModalOpen(true)}
           >
             New Request
           </Button>
@@ -124,7 +143,7 @@ export function FeatureListPage() {
             hasActiveFilters
               ? { label: 'Clear filters', onClick: handleClearFilters }
               : user
-                ? { label: 'Submit the first feature request', href: '/features/new' }
+                ? { label: 'Submit the first feature request', onClick: () => setModalOpen(true) }
                 : undefined
           }
         />
@@ -150,6 +169,27 @@ export function FeatureListPage() {
           {meta && <Pagination meta={meta} onPageChange={setPage} />}
         </Stack>
       )}
+
+      {/* Create feature modal */}
+      <Modal
+        opened={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="New Feature Request"
+        size="lg"
+        centered
+        styles={{ inner: { scrollbarWidth: 'thin', scrollbarColor: 'var(--mantine-color-gray-4) transparent' } }}
+      >
+        <FeatureForm
+          categories={categories}
+          statuses={statuses}
+          isAdmin={user?.is_admin ?? false}
+          isLoadingCategories={isLoadingCategories}
+          isLoadingStatuses={isLoadingStatuses}
+          isPending={isCreating}
+          submitError={isCreateError ? createError : null}
+          onSubmit={handleCreateSubmit}
+        />
+      </Modal>
     </Stack>
   )
 }

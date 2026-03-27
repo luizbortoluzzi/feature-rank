@@ -1723,3 +1723,123 @@ aqui não está sendo mostrado o ícone corretamente, só aparece um texto em pr
 
 ### Action Taken
 Root cause: seed_reference_data used get_or_create which does not update existing records, so the database still had old lowercase icon names ("palette", "zap", etc.) instead of lucide-react PascalCase names ("Palette", "Zap", etc.). Fixed by changing Category seeding to use update_or_create so icon names are always kept in sync with the seed data. Re-ran make backend-seed which updated all 6 categories in the database.
+
+## [2026-03-26T00:00:00Z] – Move create feature request from page to modal
+
+### Prompt
+Ok, now I think that doesnt make any sens to have a separated page for create new feature request, i guess we can follow the other pages and use the form in the modal in the lst page, do it the changes
+
+### Action Taken
+Moved the create feature request flow from the dedicated CreateFeaturePage into a Modal on FeatureListPage. Updated FeatureListPage to add modal state, useCreateFeature hook, handleCreateSubmit handler, and a Mantine Modal containing the FeatureForm. Changed the "New Request" button and empty state action to open the modal instead of navigating. Removed the /features/new route from router.tsx, deleted CreateFeaturePage.tsx.
+
+## [2026-03-26T00:01:00Z] – Invert modal buttons and fix scrollbar
+
+### Prompt
+ok but we need to invert the buttons position and improve that weird scroll bar
+
+### Action Taken
+Swapped button order in FeatureForm so "Save as Draft" appears first and "Submit Feature Request" second. Added scrollAreaComponent={ScrollArea.Autosize} to the Modal in FeatureListPage to replace the browser's default scrollbar with Mantine's styled scroll area.
+
+## [2026-03-26T00:02:00Z] – Fix double scrollbar in create feature modal
+
+### Prompt
+now it has two scrollbar, one inside and other outside the modal, look the image
+
+### Action Taken
+Removed scrollAreaComponent={ScrollArea.Autosize} which was creating a second scrollbar inside the modal's own scroll container. Replaced with a styles prop on the modal body using scrollbar-width: thin and scrollbar-color to produce a single slim native scrollbar.
+
+## [2026-03-26T00:03:00Z] – Fix double scrollbar root cause in modal
+
+### Prompt
+the problem it is in this component with the overflow-y setted
+
+### Action Taken
+Moved scrollbar styling from styles.body to styles.inner. The mantine-Modal-inner div already has overflow-y: auto from Mantine defaults — adding overflow-y: auto on the body created a second scroll container. Targeting inner applies the thin scrollbar to the actual scroll container without duplicating overflow.
+
+## [2026-03-26T00:00:00Z] — Frontend audit improvements
+
+### Prompt
+ok, lets start the improvements process, go ahead
+
+### Action Taken
+Implemented all P0 and P1 improvements from the frontend audit report:
+
+1. **TanStack Query error type augmentation** — Added `declare module '@tanstack/react-query' { interface Register { defaultError: ApiError } }` to `main.tsx`. Removed all 17 `error as unknown as ApiError` casts across every hook file.
+2. **Dead code deleted** — Removed `features/voting/components/vote-button/index.tsx` (never imported), `hooks/usePagination.ts` (never called), `components/button/index.tsx` (wrapper with minimal value, single consumer updated), and `theme.other` block (properties never consumed).
+3. **`formatRelativeDate` duplication fixed** — Deleted the private inferior copy in `feature-card/index.tsx`; now imports the canonical version from `utils/formatDate.ts`.
+4. **`EditFeaturePage` rewritten with Mantine** — Replaced all Tailwind `className` usage with Mantine layout components (`Box`, `Stack`, `Title`, `Text`, `Anchor`, `Center`). Added an ownership guard: redirects non-owners (non-admin users who aren't the author) to the detail page before rendering the form. Replaced `useEffect` redirect with `onSuccess` callback in `updateFeature`.
+5. **Mutate function types fixed in feature request hooks** — `createFeature`, `updateFeature`, and `deleteFeature` now use `ReturnType<typeof useMutation<...>>['mutate']` type, consistent with status hooks.
+6. **`Pagination` component simplified** — Stripped the outer `Group` wrapper and the "Page X of Y" `Text` node; now renders only `MantinePagination` controls. Pages control their own info text.
+7. **Vote hooks made context-independent** — Made `params` optional in `useCastVote` and `useRemoveVote`. When absent, list cache optimistic update is skipped (detail page still gets full optimistic update). Removed `emptyParams = {}` workaround from `FeatureDetailPage`.
+8. **`FeatureDetailPage` updated** — Replaced `import { Button } from '../components/button'` with Mantine `Button` directly. Updated all variant/prop names (`ghost`→`subtle/gray`, `secondary`→`light/gray`, `danger`→`filled/red`, `isLoading`→`loading`). Removed `ApiError` cast from 404 check.
+
+Build: ✓ zero TypeScript errors, built in 5.42s.
+
+## [2026-03-26T00:01:00Z] — Add avatar_url to AuthUser, FeatureAuthor, and Avatar components
+
+### Prompt
+The backend is adding an `avatar_url` field (nullable string) to the User model. Update the frontend to consume it.
+
+## Changes needed
+
+### 1. `frontend/src/types/user.ts`
+Add `avatar_url` field:
+```ts
+export interface AuthUser {
+  id: number
+  username: string
+  name: string
+  email: string
+  is_admin: boolean
+  avatar_url: string | null
+}
+```
+
+### 2. `frontend/src/types/feature.ts`
+Add `avatar_url` to `FeatureAuthor`:
+```ts
+export interface FeatureAuthor {
+  id: number
+  name: string
+  avatar_url: string | null
+}
+```
+
+### 3. `frontend/src/app/AppLayout.tsx`
+The current Avatar uses initials only. Update it to show the `avatar_url` image when available, falling back to initials when null.
+
+Mantine's `Avatar` accepts a `src` prop. Change the Avatar in the user profile strip at the bottom of the navbar from:
+```tsx
+<Avatar size={32} radius="xl" color="indigo">
+  {userInitials}
+</Avatar>
+```
+to:
+```tsx
+<Avatar size={32} radius="xl" color="indigo" src={user.avatar_url ?? undefined}>
+  {userInitials}
+</Avatar>
+```
+
+### 4. `frontend/src/pages/FeatureDetailPage.tsx`
+The author Avatar currently uses initials only. Update it to use `avatar_url` when available.
+
+Change:
+```tsx
+<Avatar size={32} radius="xl" color="indigo">
+  {authorInitials}
+</Avatar>
+```
+to:
+```tsx
+<Avatar size={32} radius="xl" color="indigo" src={feature.author.avatar_url ?? undefined}>
+  {authorInitials}
+</Avatar>
+```
+
+(The `authorInitials` still works as the fallback when src is null/undefined — Mantine renders children as fallback when src fails to load or is undefined.)
+
+## That's all — only these 4 small targeted changes. Do not modify anything else.
+
+### Action Taken
+Added `avatar_url: string | null` to `AuthUser` in `frontend/src/types/user.ts` and to `FeatureAuthor` in `frontend/src/types/feature.ts`. Updated the navbar Avatar in `frontend/src/app/AppLayout.tsx` and the author Avatar in `frontend/src/pages/FeatureDetailPage.tsx` to pass `src={..avatar_url ?? undefined}`, falling back to initials children when the field is null.
