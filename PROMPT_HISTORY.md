@@ -2161,3 +2161,11 @@ i guess we can set this too:
 
 ### Action Taken
 Added conventional-pre-commit hook (v3.4.0) to .pre-commit-config.yaml with commit-msg stage and the specified allowed types. Updated pre-commit-install Makefile target to also run `pre-commit install --hook-type commit-msg` so the commit-msg hook is registered alongside the pre-commit hook.
+
+## [2026-03-27T00:12:00Z] – Unified CI workflow
+
+### Prompt
+now we need to set this ci: [template provided]. i realized that in current project we have two separated files: backend, frontend. I guess we can adapt the old one to this current mode
+
+### Action Taken
+Deleted backend-ci.yml and frontend-ci.yml. Created unified .github/workflows/ci.yml with four jobs: structure (required files/dirs check, removed scripts/ which doesn't exist), pre-commit (skips frontend-lint and frontend-typecheck via SKIP env var since those run in frontend-quality), frontend-quality (type-check, lint, format:check, tests with --run flag, build), backend-tests (libmysqlclient-dev, pip install -e ".[dev]", ruff lint+format check, pytest with coverage). Added pytest-cov>=5.0 to backend pyproject.toml dev dependencies.
