@@ -2208,3 +2208,24 @@ Executed Phase 2 component extraction and god-component reduction:
 6. Rewrote `CategoriesPage` from 540 lines to ~130 lines — now only handles state, data fetching, and event wiring.
 7. Extracted `LoginForm` (right panel) → `pages/login-page/login-form/index.tsx` (owns form state, error mapping, social buttons, footer; receives onSubmit/isPending/error/isMobile as props).
 8. Rewrote `LoginPage` from 486 lines to ~130 lines — now handles auth guard, layout shell, background orbs, and left panel only.
+
+## [2026-03-27T01:00:00Z] – Phase 3 architecture cleanup
+
+### Prompt
+ok, now let's done the phase three
+
+### Action Taken
+Executed Phase 3 architecture cleanup — type system consolidation and barrel file standardization:
+
+1. Collapsed FeatureRequest/FeatureRequestSummary type duplication:
+   - Renamed `FeatureRequestSummary` interface to `FeatureRequest` in types/feature.ts
+   - Removed the `type FeatureRequest = FeatureRequestSummary` alias (was a confusing indirection)
+   - Updated CachedListData.items to use `FeatureRequest` directly
+   - Updated 3 files that still referenced the old name: services/features.ts, use-feature-list.ts, feature-card/index.tsx
+   - Verified no remaining FeatureRequestSummary references
+
+2. Standardized all feature barrel files:
+   - features/categories/index.ts: added missing `useCategories` export
+   - features/feature-requests/index.ts: was exporting only featureKeys; now exports all 5 hooks (useFeatureList, useFeatureDetail, useCreateFeature, useUpdateFeature, useDeleteFeature)
+   - features/voting/index.ts: was empty (export {}); now exports useCastVote and useRemoveVote
+   - features/auth/index.ts: added useLogin export alongside existing authKeys

@@ -8,7 +8,7 @@ export interface FeatureAuthor {
   avatar_url: string | null
 }
 
-export interface FeatureRequestSummary {
+export interface FeatureRequest {
   id: number
   title: string
   description: string
@@ -22,9 +22,7 @@ export interface FeatureRequestSummary {
   updated_at: string
 }
 
-export type FeatureRequest = FeatureRequestSummary
-
 export interface CachedListData {
-  items: FeatureRequestSummary[]
+  items: FeatureRequest[]
   meta: PaginationMeta
 }

@@ -1,4 +1,5 @@
 export { categoryKeys } from './queryKeys'
+export { useCategories } from './hooks/use-categories'
 export { useCategoryList } from './hooks/use-category-list'
 export { useCreateCategory } from './hooks/use-create-category'
 export { useUpdateCategory } from './hooks/use-update-category'

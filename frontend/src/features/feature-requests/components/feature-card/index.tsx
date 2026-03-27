@@ -1,12 +1,12 @@
 import { Group, Paper, Stack, Text, Title, Avatar } from '@mantine/core'
 import { IconArrowUp, IconCheck, IconStar, IconStarFilled, IconClock } from '@tabler/icons-react'
-import type { FeatureRequestSummary } from '../../../../types/feature'
+import type { FeatureRequest } from '../../../../types/feature'
 import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
 import { formatRelativeDate } from '../../../../utils/formatDate'
 
 interface FeatureCardProps {
-  feature: FeatureRequestSummary
+  feature: FeatureRequest
   isVoting: boolean
   onVote: () => void
 }
