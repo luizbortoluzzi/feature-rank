@@ -3,6 +3,7 @@ import { featureKeys } from '../queryKeys'
 import { createFeature, type CreateFeaturePayload } from '../../../services/features'
 import type { FeatureRequest } from '../../../types/feature'
 import type { ApiError } from '../../../types/api'
+import { useNotify } from '../../../hooks/useNotify'
 
 interface UseCreateFeatureResult {
   createFeature: ReturnType<typeof useMutation<FeatureRequest, ApiError, CreateFeaturePayload>>['mutate']
@@ -14,11 +15,16 @@ interface UseCreateFeatureResult {
 
 export function useCreateFeature(): UseCreateFeatureResult {
   const queryClient = useQueryClient()
+  const notify = useNotify()
 
   const mutation = useMutation({
     mutationFn: (payload: CreateFeaturePayload) => createFeature(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: featureKeys.all })
+      notify.success('Feature request submitted!', 'Your request has been added to the board.')
+    },
+    onError: (err: ApiError) => {
+      notify.error('Failed to submit feature request', err)
     },
   })
 

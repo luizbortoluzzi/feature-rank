@@ -2026,3 +2026,35 @@ and we must display the chips of each category with its own color
 
 ### Action Taken
 Updated CategoryBadge to use category.color for background (color + 18 alpha), text, and border (color + 30 alpha), matching the same pattern already used by StatusBadge.
+
+## [2026-03-27T00:04:00Z] – Fix search in feature list
+
+### Prompt
+ok now we need to fix the search in the searchbar in the features list page
+
+### Action Taken
+Root cause: the selector had no search parameter and the view never read the search query param. Added search parameter to get_feature_requests_list selector (Q filter on title__icontains OR description__icontains). View now reads the search query param and passes it to the selector. Added search to OpenAPI docs.
+
+## [2026-03-27T00:05:00Z] – Bold sidebar nav links with gradient active state and rounded borders
+
+### Prompt
+ok now in the side bar i guess we need to setup bold the options and the filled color of the selected option must be the same gradient of the theme and with rounded borders
+
+### Action Taken
+Updated both regular and admin NavLinks in AppLayout: labels are now bold (fontWeight 600 via styles.label), active state shows indigo-to-violet gradient via inline style prop, rounded corners via styles.root borderRadius. Used variant="filled" + color="indigo" as the base. radius prop removed (not supported by NavLink in this Mantine version) in favour of styles.root.borderRadius.
+
+## [2026-03-27T00:06:00Z] – Add notification system for mutation feedback
+
+### Prompt
+ok, great, now we will need a notification system to display the alerts to the user based in actions response
+
+### Action Taken
+Created useNotify hook in hooks/useNotify.ts wrapping @mantine/notifications with success (green, 3s) and error (red, 5s) helpers. Wired success+error notifications into use-create-feature, use-update-feature, use-delete-feature. Wired error-only notifications into use-cast-vote and use-remove-vote (vote success is visually indicated by the button state change).
+
+## [2026-03-26T00:00:00Z] – Wire notifications into status mutation hooks
+
+### Prompt
+ok but we need to set to for create/delete/update in status page and the categories too
+
+### Action Taken
+Completed wiring of useNotify into all status mutation hooks (use-create-status.ts, use-update-status.ts, use-delete-status.ts): added `const notify = useNotify()` calls and onSuccess/onError notification callbacks to each. Category hooks were completed in the prior session.

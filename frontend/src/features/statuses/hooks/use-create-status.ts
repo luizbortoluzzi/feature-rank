@@ -3,6 +3,7 @@ import { statusKeys } from '../queryKeys'
 import { createStatus, type CreateStatusPayload } from '../../../services/statuses'
 import type { Status } from '../../../types/status'
 import type { ApiError } from '../../../types/api'
+import { useNotify } from '../../../hooks/useNotify'
 
 interface UseCreateStatusResult {
   createStatus: ReturnType<typeof useMutation<Status, ApiError, CreateStatusPayload>>['mutate']
@@ -14,11 +15,16 @@ interface UseCreateStatusResult {
 
 export function useCreateStatus(): UseCreateStatusResult {
   const queryClient = useQueryClient()
+  const notify = useNotify()
 
   const mutation = useMutation({
     mutationFn: (payload: CreateStatusPayload) => createStatus(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: statusKeys.all })
+      notify.success('Status created.')
+    },
+    onError: (err: ApiError) => {
+      notify.error('Failed to create status', err)
     },
   })
 

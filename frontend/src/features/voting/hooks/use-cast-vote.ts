@@ -4,6 +4,7 @@ import { castVote } from '../../../services/voting'
 import type { FeatureRequest, FeatureRequestSummary } from '../../../types/feature'
 import type { ApiError, PaginationMeta } from '../../../types/api'
 import type { FeatureListParams } from '../../../services/features'
+import { useNotify } from '../../../hooks/useNotify'
 
 interface UseCastVoteResult {
   castVote: (featureId: number) => void
@@ -19,6 +20,7 @@ interface CachedListData {
 
 export function useCastVote(params?: FeatureListParams): UseCastVoteResult {
   const queryClient = useQueryClient()
+  const notify = useNotify()
 
   const mutation = useMutation({
     mutationFn: (featureId: number) => castVote(featureId),
@@ -78,13 +80,14 @@ export function useCastVote(params?: FeatureListParams): UseCastVoteResult {
         })
       }
     },
-    onError: (_err, featureId, context) => {
+    onError: (err: ApiError, featureId, context) => {
       if (context?.previousList && params) {
         queryClient.setQueryData(featureKeys.list(params), context.previousList)
       }
       if (context?.previousDetail) {
         queryClient.setQueryData(featureKeys.detail(featureId), context.previousDetail)
       }
+      notify.error('Vote failed', err)
     },
   })
 

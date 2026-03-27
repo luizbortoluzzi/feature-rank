@@ -3,6 +3,7 @@ import { statusKeys } from '../queryKeys'
 import { updateStatus, type UpdateStatusPayload } from '../../../services/statuses'
 import type { Status } from '../../../types/status'
 import type { ApiError } from '../../../types/api'
+import { useNotify } from '../../../hooks/useNotify'
 
 interface UpdateStatusMutationArgs {
   id: number
@@ -19,12 +20,17 @@ interface UseUpdateStatusResult {
 
 export function useUpdateStatus(): UseUpdateStatusResult {
   const queryClient = useQueryClient()
+  const notify = useNotify()
 
   const mutation = useMutation({
     mutationFn: ({ id, payload }: UpdateStatusMutationArgs) => updateStatus(id, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: statusKeys.all })
       queryClient.invalidateQueries({ queryKey: statusKeys.detail(data.id) })
+      notify.success('Status updated.')
+    },
+    onError: (err: ApiError) => {
+      notify.error('Failed to update status', err)
     },
   })
 

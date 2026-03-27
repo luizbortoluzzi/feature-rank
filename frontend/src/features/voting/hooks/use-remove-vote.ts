@@ -4,6 +4,7 @@ import { removeVote } from '../../../services/voting'
 import type { FeatureRequest, FeatureRequestSummary } from '../../../types/feature'
 import type { ApiError, PaginationMeta } from '../../../types/api'
 import type { FeatureListParams } from '../../../services/features'
+import { useNotify } from '../../../hooks/useNotify'
 
 interface UseRemoveVoteResult {
   removeVote: (featureId: number) => void
@@ -19,6 +20,7 @@ interface CachedListData {
 
 export function useRemoveVote(params?: FeatureListParams): UseRemoveVoteResult {
   const queryClient = useQueryClient()
+  const notify = useNotify()
 
   const mutation = useMutation({
     mutationFn: (featureId: number) => removeVote(featureId),
@@ -80,13 +82,14 @@ export function useRemoveVote(params?: FeatureListParams): UseRemoveVoteResult {
         })
       }
     },
-    onError: (_err, featureId, context) => {
+    onError: (err: ApiError, featureId, context) => {
       if (context?.previousList && params) {
         queryClient.setQueryData(featureKeys.list(params), context.previousList)
       }
       if (context?.previousDetail) {
         queryClient.setQueryData(featureKeys.detail(featureId), context.previousDetail)
       }
+      notify.error('Could not remove vote', err)
     },
   })
 

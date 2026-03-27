@@ -120,6 +120,7 @@ def _parse_int_param(name: str, value: str):
             OpenApiParameter("category_id", int, description="Filter by category ID."),
             OpenApiParameter("status_id", int, description="Filter by status ID."),
             OpenApiParameter("author_id", int, description="Filter by author user ID."),
+            OpenApiParameter("search", str, description="Case-insensitive search across title and description."),
             OpenApiParameter("page", int, description="Page number (1-indexed). Default: 1."),
             OpenApiParameter("limit", int, description="Items per page. Max 100. Default: 20."),
         ],
@@ -223,12 +224,14 @@ class FeatureRequestViewSet(ViewSet):
         category_id = _parse_int_param("category_id", request.query_params.get("category_id"))
         status_id = _parse_int_param("status_id", request.query_params.get("status_id"))
         author_id = _parse_int_param("author_id", request.query_params.get("author_id"))
+        search = request.query_params.get("search") or None
 
         qs = get_feature_requests_list(
             user=request.user,
             category_id=category_id,
             status_id=status_id,
             author_id=author_id,
+            search=search,
             sort=sort,
         )
         paginator = StandardResultsPagination()

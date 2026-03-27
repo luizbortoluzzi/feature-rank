@@ -81,17 +81,25 @@ export function AppLayout({ children }: AppLayoutProps) {
         </Group>
 
         {/* Nav links */}
-        {navLinks.map((link) => (
-          <NavLink
-            key={link.path}
-            label={link.label}
-            leftSection={<link.icon size={18} stroke={1.5} />}
-            active={isActive(link.path, location.pathname)}
-            onClick={() => navigate(link.path)}
-            variant="light"
-            mb={2}
-          />
-        ))}
+        {navLinks.map((link) => {
+          const active = isActive(link.path, location.pathname)
+          return (
+            <NavLink
+              key={link.path}
+              label={link.label}
+              leftSection={<link.icon size={18} stroke={1.5} />}
+              active={active}
+              onClick={() => navigate(link.path)}
+              variant="filled"
+              color="indigo"
+              mb={2}
+              styles={{ label: { fontWeight: 600 }, root: { borderRadius: 'var(--mantine-radius-md)' } }}
+              style={active ? {
+                background: 'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
+              } : undefined}
+            />
+          )
+        })}
 
         {/* Admin section */}
         {user?.is_admin && (
@@ -109,17 +117,25 @@ export function AppLayout({ children }: AppLayoutProps) {
                 },
               }}
             />
-            {adminLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                label={link.label}
-                leftSection={<link.icon size={18} stroke={1.5} />}
-                active={isActive(link.path, location.pathname)}
-                onClick={() => navigate(link.path)}
-                variant="light"
-                mb={2}
-              />
-            ))}
+            {adminLinks.map((link) => {
+              const active = isActive(link.path, location.pathname)
+              return (
+                <NavLink
+                  key={link.path}
+                  label={link.label}
+                  leftSection={<link.icon size={18} stroke={1.5} />}
+                  active={active}
+                  onClick={() => navigate(link.path)}
+                  variant="filled"
+                  color="indigo"
+                  mb={2}
+                  styles={{ label: { fontWeight: 600 }, root: { borderRadius: 'var(--mantine-radius-md)' } }}
+                  style={active ? {
+                    background: 'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
+                  } : undefined}
+                />
+              )
+            })}
           </>
         )}
         {/* User profile strip */}
