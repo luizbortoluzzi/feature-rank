@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Stack, Group, TextInput, Button, Center } from '@mantine/core'
+import { Stack, TextInput, Button, Center } from '@mantine/core'
 import { IconSearch, IconPlus, IconTag } from '@tabler/icons-react'
 import { useIsMobile } from '../../hooks/use-is-mobile'
 import { PageHeader } from '../../components/page-header'

@@ -2229,3 +2229,11 @@ Executed Phase 3 architecture cleanup — type system consolidation and barrel f
    - features/feature-requests/index.ts: was exporting only featureKeys; now exports all 5 hooks (useFeatureList, useFeatureDetail, useCreateFeature, useUpdateFeature, useDeleteFeature)
    - features/voting/index.ts: was empty (export {}); now exports useCastVote and useRemoveVote
    - features/auth/index.ts: added useLogin export alongside existing authKeys
+
+## [2026-03-27T14:55:00Z] – Phase 4: verification and test coverage
+
+### Prompt
+yes, lets do the phase four
+
+### Action Taken
+Ran type-check (tsc --noEmit — passed), ESLint (passed after fixing unused Group import in categories-page and replacing 4 `any` types in styles/theme.ts with MantineTheme), and existing test suite (no test files existed — exit code 1). Created test infrastructure: added matchMedia mock to test-setup.ts, created src/test/render.tsx with renderWithMantine utility. Wrote 4 test files (29 tests total): use-is-mobile.test.ts (4 tests), category-table.test.tsx (8 tests), category-form-modal.test.tsx (9 tests), login-form.test.tsx (8 tests). Fixed test failure in category-form-modal caused by jsdom native constraint validation intercepting button click — changed to fireEvent.submit on the form element. All 29 tests pass.

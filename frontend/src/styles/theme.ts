@@ -1,4 +1,4 @@
-import { createTheme, rem } from '@mantine/core'
+import { createTheme, rem, type MantineTheme } from '@mantine/core'
 
 export const theme = createTheme({
   primaryColor: 'brand',
@@ -183,12 +183,7 @@ export const theme = createTheme({
         verticalSpacing: 'md',
         horizontalSpacing: 'lg',
       },
-      styles: (theme: {
-        radius: { xl: any }
-        white: any
-        colors: { gray: any[] }
-        fontSizes: { sm: any }
-      }) => ({
+      styles: (theme: MantineTheme) => ({
         table: {
           borderCollapse: 'separate',
           borderSpacing: 0,
