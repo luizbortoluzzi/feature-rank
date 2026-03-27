@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Stack, TextInput, Button, Center, Modal } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { IconSearch, IconPlus, IconLayoutList } from '@tabler/icons-react'
 import { PageHeader } from '../../components/page-header'
 import { useCurrentUser } from '../../app/AuthProvider'
@@ -19,6 +20,7 @@ import { Pagination } from '../../components/pagination'
 
 export function FeatureListPage() {
   const { user } = useCurrentUser()
+  const isMobile = useMediaQuery('(max-width: 48em)')
   const [page, setPage] = useState(1)
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined)
   const [statusId, setStatusId] = useState<number | undefined>(undefined)
@@ -35,15 +37,13 @@ export function FeatureListPage() {
   const { features, meta, isLoading, isError, error } = useFeatureList(params)
   const { categories, isLoading: isLoadingCategories } = useCategories()
   const { statuses, isLoading: isLoadingStatuses } = useStatuses()
-  const { castVote, isPending: isCastingVote } = useCastVote(params)
-  const { removeVote, isPending: isRemovingVote } = useRemoveVote(params)
+  const { castVote, votingId } = useCastVote(params)
+  const { removeVote, removingId } = useRemoveVote(params)
   const { createFeature, isPending: isCreating, isError: isCreateError, error: createError, data: createdFeature } = useCreateFeature()
 
   useEffect(() => {
     if (createdFeature) setModalOpen(false)
   }, [createdFeature])
-
-  const isVoting = isCastingVote || isRemovingVote
   const hasActiveFilters = categoryId !== undefined || statusId !== undefined || search !== ''
 
   function handleClearFilters() {
@@ -96,12 +96,13 @@ export function FeatureListPage() {
               size="sm"
               value={search}
               onChange={(e) => handleSearchChange(e.currentTarget.value)}
-              style={{ minWidth: 220 }}
+              style={isMobile ? { width: '100%' } : { minWidth: 220 }}
             />
             <Button
               leftSection={<IconPlus size={16} />}
               radius="md"
               variant="gradient"
+              fullWidth={isMobile}
               onClick={() => setModalOpen(true)}
             >
               New Request
@@ -154,7 +155,7 @@ export function FeatureListPage() {
             <FeatureCard
               key={feature.id}
               feature={feature}
-              isVoting={isVoting}
+              isVoting={feature.id === votingId || feature.id === removingId}
               onVote={() => {
                 if (feature.has_voted) {
                   removeVote(feature.id)

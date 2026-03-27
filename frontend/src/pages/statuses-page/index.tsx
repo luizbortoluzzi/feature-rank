@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Stack, Group, Text, TextInput, Button, Center, Modal } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks'
+import { useDisclosure, useMediaQuery } from '@mantine/hooks'
 import { IconSearch, IconPlus, IconCircleDot } from '@tabler/icons-react'
 import { PageHeader } from '../../components/page-header'
 import { useStatusList } from '../../features/statuses/hooks/use-status-list'
@@ -18,6 +18,7 @@ import { EmptyState } from '../../components/empty-state'
 import type { Status } from '../../types/status'
 
 export function StatusesPage() {
+  const isMobile = useMediaQuery('(max-width: 48em)')
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [isFormOpen, { open: openForm, close: closeForm }] = useDisclosure(false)
@@ -123,12 +124,13 @@ export function StatusesPage() {
               size="sm"
               value={search}
               onChange={(e) => handleSearchChange(e.currentTarget.value)}
-              style={{ minWidth: 220 }}
+              style={isMobile ? { width: '100%' } : { minWidth: 220 }}
             />
             <Button
               leftSection={<IconPlus size={16} />}
               radius="md"
               variant="gradient"
+              fullWidth={isMobile}
               onClick={handleOpenCreate}
             >
               New Status

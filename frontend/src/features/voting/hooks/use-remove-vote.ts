@@ -9,6 +9,7 @@ import { useNotify } from '../../../hooks/useNotify'
 interface UseRemoveVoteResult {
   removeVote: (featureId: number) => void
   isPending: boolean
+  removingId: number | null
   isError: boolean
   error: ApiError | null
 }
@@ -57,6 +58,7 @@ export function useRemoveVote(params?: FeatureListParams): UseRemoveVoteResult {
       return { previousList, previousDetail }
     },
     onSuccess: (voteResponse) => {
+      notify.success('Vote removed.')
       const { feature_request_id, has_voted, vote_count } = voteResponse
 
       if (params) {
@@ -96,6 +98,7 @@ export function useRemoveVote(params?: FeatureListParams): UseRemoveVoteResult {
   return {
     removeVote: mutation.mutate,
     isPending: mutation.isPending,
+    removingId: mutation.isPending ? (mutation.variables ?? null) : null,
     isError: mutation.isError,
     error: mutation.isError ? mutation.error : null,
   }

@@ -9,6 +9,7 @@ import { useNotify } from '../../../hooks/useNotify'
 interface UseCastVoteResult {
   castVote: (featureId: number) => void
   isPending: boolean
+  votingId: number | null
   isError: boolean
   error: ApiError | null
 }
@@ -55,6 +56,7 @@ export function useCastVote(params?: FeatureListParams): UseCastVoteResult {
       return { previousList, previousDetail }
     },
     onSuccess: (voteResponse) => {
+      notify.success('Vote added!')
       const { feature_request_id, has_voted, vote_count } = voteResponse
 
       if (params) {
@@ -94,6 +96,7 @@ export function useCastVote(params?: FeatureListParams): UseCastVoteResult {
   return {
     castVote: mutation.mutate,
     isPending: mutation.isPending,
+    votingId: mutation.isPending ? (mutation.variables ?? null) : null,
     isError: mutation.isError,
     error: mutation.isError ? mutation.error : null,
   }

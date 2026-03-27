@@ -4,12 +4,14 @@ import {
   AppShell,
   Avatar,
   ActionIcon,
+  Burger,
   Group,
   Text,
   NavLink,
   Box,
   Divider,
 } from '@mantine/core'
+import { useDisclosure, useMediaQuery } from '@mantine/hooks'
 import {
   IconLayoutList,
   IconTag,
@@ -44,6 +46,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useCurrentUser()
+  const [opened, { toggle, close }] = useDisclosure()
+  const isMobile = useMediaQuery('(max-width: 48em)') // Mantine 'sm' breakpoint
 
   const userInitials = user
     ? user.name
@@ -54,31 +58,64 @@ export function AppLayout({ children }: AppLayoutProps) {
         .slice(0, 2)
     : '?'
 
+  function handleNavigate(path: string) {
+    navigate(path)
+    close()
+  }
+
   return (
     <AppShell
-      navbar={{ width: 240, breakpoint: 'sm' }}
+      navbar={{ width: 240, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      header={{ height: 60, collapsed: !isMobile }}
       padding="md"
     >
-      <AppShell.Navbar p="sm">
-        {/* Brand */}
-        <Group gap="sm" mb="xl" mt="xs">
-          <Box
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 6,
-              backgroundColor: 'var(--mantine-color-indigo-6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <IconStack2 size={20} color="white" />
-          </Box>
-          <Text fw={700} fz="md">
-            Feature Rank
-          </Text>
+      {/* Mobile header */}
+      <AppShell.Header>
+        <Group h="100%" px="md" justify="space-between">
+          <Group gap="xs">
+            <Box
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                backgroundColor: 'var(--mantine-color-indigo-6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconStack2 size={20} color="white" />
+            </Box>
+            <Text fw={700} fz="md">
+              Feature Rank
+            </Text>
+          </Group>
+          <Burger opened={opened} onClick={toggle} size="sm" aria-label="Toggle navigation" />
         </Group>
+      </AppShell.Header>
+
+      <AppShell.Navbar p="sm">
+        {/* Brand — desktop only (hidden on mobile since header shows it) */}
+        {!isMobile && (
+          <Group gap="sm" mb="xl" mt="xs">
+            <Box
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                backgroundColor: 'var(--mantine-color-indigo-6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconStack2 size={20} color="white" />
+            </Box>
+            <Text fw={700} fz="md">
+              Feature Rank
+            </Text>
+          </Group>
+        )}
 
         {/* Nav links */}
         {navLinks.map((link) => {
@@ -89,7 +126,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               label={link.label}
               leftSection={<link.icon size={18} stroke={1.5} />}
               active={active}
-              onClick={() => navigate(link.path)}
+              onClick={() => handleNavigate(link.path)}
               variant="filled"
               color="indigo"
               mb={2}
@@ -125,7 +162,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   label={link.label}
                   leftSection={<link.icon size={18} stroke={1.5} />}
                   active={active}
-                  onClick={() => navigate(link.path)}
+                  onClick={() => handleNavigate(link.path)}
                   variant="filled"
                   color="indigo"
                   mb={2}
@@ -138,6 +175,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             })}
           </>
         )}
+
         {/* User profile strip */}
         {user && (
           <>

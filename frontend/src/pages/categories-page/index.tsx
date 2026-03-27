@@ -9,12 +9,14 @@ import {
   Box,
   Center,
   Table,
+  Paper,
   Badge,
   ActionIcon,
   Modal,
   Switch,
   ColorInput,
 } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import {
   IconSearch,
   IconPlus,
@@ -36,6 +38,7 @@ import { useDeleteCategory } from '../../features/categories/hooks/use-delete-ca
 import { Spinner } from '../../components/spinner'
 import { ErrorMessage } from '../../components/error-message'
 import { EmptyState } from '../../components/empty-state'
+import { Pagination } from '../../components/pagination'
 import { formatDate } from '../../utils/formatDate'
 import type { CategoryListItem } from '../../types/category'
 import type { CreateCategoryPayload, UpdateCategoryPayload } from '../../services/categories'
@@ -218,6 +221,7 @@ function DeleteConfirmModal({
 
 export function CategoriesPage() {
   const { user } = useCurrentUser()
+  const isMobile = useMediaQuery('(max-width: 48em)')
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
 
@@ -384,12 +388,13 @@ export function CategoriesPage() {
               size="sm"
               value={search}
               onChange={(e) => handleSearchChange(e.currentTarget.value)}
-              style={{ minWidth: 220 }}
+              style={isMobile ? { width: '100%' } : { minWidth: 220 }}
             />
             {user?.is_admin && (
               <Button
                 leftSection={<IconPlus size={16} />}
                 radius="md"
+                fullWidth={isMobile}
                 onClick={() => setCreateModalOpen(true)}
               >
                 New Category
@@ -425,11 +430,76 @@ export function CategoriesPage() {
         />
       )}
 
-      {/* Table */}
-      {!isLoading && !isError && categories.length > 0 && (
+      {/* Table (desktop) */}
+      {!isLoading && !isError && categories.length > 0 && !isMobile && (
         <DataTable columns={columns} meta={meta} onPageChange={setPage} itemLabel="categories">
           {rows}
         </DataTable>
+      )}
+
+      {/* Card list (mobile) */}
+      {!isLoading && !isError && categories.length > 0 && isMobile && (
+        <Stack gap="sm">
+          {categories.map((category) => (
+            <Paper key={category.id} p="md" radius="md" withBorder>
+              <Stack gap="xs">
+                <Group justify="space-between" wrap="nowrap" align="flex-start">
+                  <Group gap="sm" wrap="nowrap">
+                    <CategoryIcon icon={category.icon} color={category.color} />
+                    <Box>
+                      <Text fw={600} fz="sm">{category.name}</Text>
+                      <Text fz="xs" c="dimmed">{category.feature_count} requests</Text>
+                    </Box>
+                  </Group>
+                  <Badge
+                    size="sm"
+                    variant="light"
+                    radius="sm"
+                    style={{
+                      backgroundColor: category.is_active ? '#2f9e4418' : '#868e9618',
+                      color: category.is_active ? '#2f9e44' : '#868e96',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {category.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </Group>
+
+                {category.description && (
+                  <Text fz="xs" c="dimmed" lineClamp={2}>{category.description}</Text>
+                )}
+
+                {user?.is_admin && (
+                  <Group justify="flex-end" gap={4} mt={4}>
+                    <ActionIcon
+                      variant="subtle"
+                      color="gray"
+                      size="md"
+                      aria-label={`Edit ${category.name}`}
+                      onClick={() => setEditTarget(category)}
+                    >
+                      <IconPencil size={16} />
+                    </ActionIcon>
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      size="md"
+                      aria-label={`Delete ${category.name}`}
+                      onClick={() => setDeleteTarget(category)}
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
+                )}
+              </Stack>
+            </Paper>
+          ))}
+          {meta && meta.total_pages > 1 && (
+            <Group justify="center">
+              <Pagination meta={meta} onPageChange={setPage} />
+            </Group>
+          )}
+        </Stack>
       )}
 
       {/* Create modal */}

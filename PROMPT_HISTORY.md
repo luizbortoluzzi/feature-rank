@@ -2090,3 +2090,43 @@ ok but in mobile the card and the background are too similar how can we improve 
 
 ### Action Taken
 On mobile, switched the page background from the light indigo/violet gradient to the same deep gradient as the left panel (135deg, #5B21B6 → #4338CA → #6366F1). Updated the four decorative orbs to use white semi-transparent radial gradients on mobile so they remain visible on the dark background.
+
+## [2026-03-27T00:04:00Z] – Make dashboard layout responsive
+
+### Prompt
+ok, now we need to turn the features page responsive, I guess we need to start by the dashboard layout
+
+### Action Taken
+Rewrote AppLayout.tsx to be responsive: added useDisclosure for mobile nav toggle, useMediaQuery for sm breakpoint detection. Added AppShell.Header (collapsed on desktop, visible on mobile) with Burger button and brand. Navbar now uses collapsed: { mobile: !opened } so it slides in/out on mobile. Brand in navbar is hidden on mobile (header shows it instead). Nav links call close() after navigation to auto-dismiss the drawer.
+
+## [2026-03-27T00:05:00Z] – Fix vote button flash on other cards
+
+### Prompt
+ok, great, but I just realised a wrong behaviour when I click to vote in a feature, when I click to vote the other features that I already voted flash in the vote button
+
+### Action Taken
+Root cause: isVoting was a single global boolean (isCastingVote || isRemovingVote) applied to every FeatureCard, so all cards dimmed when any vote was in flight. Fixed by exposing votingId/removingId (mutation.variables when isPending) from useCastVote and useRemoveVote. Updated FeatureListPage to pass isVoting={feature.id === votingId || feature.id === removingId} so only the specific card being voted on shows the pending state.
+
+## [2026-03-27T00:06:00Z] – Notify user on vote toggle
+
+### Prompt
+great and I guess that it would be interesting to notify the user when it toggle a vote
+
+### Action Taken
+Added notify.success('Vote added!') to onSuccess in use-cast-vote.ts and notify.success('Vote removed.') to onSuccess in use-remove-vote.ts.
+
+## [2026-03-27T00:07:00Z] – Full-width fields on mobile feature list page
+
+### Prompt
+great, now I guess that for mobile it would be better if we left this fields with 100% width
+
+### Action Taken
+Updated PageHeader to stack actions below the title on mobile (useMediaQuery sm). Updated FeatureListPage search input to width 100% and button to fullWidth on mobile. Updated FeatureListFilters to use Stack instead of Group on mobile with width 100% on both selects and fullWidth on clear button.
+
+## [2026-03-27T00:08:00Z] – Responsive data tables (categories & statuses)
+
+### Prompt
+great, now for this screen i guess we will need to have an approach to turn the data table responsive, usually we use a list view in a mobile mode
+
+### Action Taken
+Categories page: added useMediaQuery, full-width search/button on mobile, conditionally renders Paper card list instead of DataTable on mobile (icon+name+badge, description, admin actions). Added Pagination import for the mobile card list. Statuses page: added useMediaQuery, full-width search/button on mobile. StatusTable component: added useMediaQuery, renders a Paper card list on mobile (color swatch+name, active switch, usage count, edit/delete actions) and the existing DataTable on desktop.

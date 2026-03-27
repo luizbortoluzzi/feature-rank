@@ -1,6 +1,8 @@
-import { Table, Group, Text, ActionIcon, Switch, Box } from '@mantine/core'
+import { Table, Group, Stack, Paper, Text, ActionIcon, Switch, Box } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { IconPencil, IconTrash } from '@tabler/icons-react'
 import { DataTable, type DataTableColumn } from '../../../../components/data-table'
+import { Pagination } from '../../../../components/pagination'
 import type { Status } from '../../../../types/status'
 import type { PaginationMeta } from '../../../../types/api'
 
@@ -34,6 +36,82 @@ export function StatusTable({
   meta,
   onPageChange,
 }: StatusTableProps) {
+  const isMobile = useMediaQuery('(max-width: 48em)')
+
+  if (isMobile) {
+    return (
+      <Stack gap="sm">
+        {statuses.map((status) => (
+          <Paper key={status.id} p="md" radius="md" withBorder>
+            <Stack gap="xs">
+              <Group justify="space-between" wrap="nowrap" align="center">
+                <Group gap="sm" wrap="nowrap">
+                  <Box
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 6,
+                      backgroundColor: status.color,
+                      border: '1px solid rgba(0,0,0,0.1)',
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Box>
+                    <Text fw={600} fz="sm">{status.name}</Text>
+                    <Text fz="xs" ff="monospace" c="dimmed">{status.color}</Text>
+                  </Box>
+                </Group>
+                <Switch
+                  checked={status.is_active}
+                  onChange={() => onToggleActive(status)}
+                  disabled={togglingId === status.id}
+                  color="indigo"
+                  aria-label={`Toggle active state for ${status.name}`}
+                />
+              </Group>
+
+              {status.description && (
+                <Text fz="xs" c="dimmed" lineClamp={2}>{status.description}</Text>
+              )}
+
+              <Group justify="space-between" align="center" mt={4}>
+                <Text fz="xs" c="dimmed">
+                  <Text span fw={600} c="dark" fz="xs">{status.usage_count}</Text> features
+                </Text>
+                <Group gap={4}>
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="md"
+                    onClick={() => onEdit(status)}
+                    aria-label={`Edit ${status.name}`}
+                  >
+                    <IconPencil size={16} />
+                  </ActionIcon>
+                  <ActionIcon
+                    variant="subtle"
+                    color="red"
+                    size="md"
+                    onClick={() => onDelete(status)}
+                    loading={deletingId === status.id}
+                    aria-label={`Delete ${status.name}`}
+                  >
+                    <IconTrash size={16} />
+                  </ActionIcon>
+                </Group>
+              </Group>
+            </Stack>
+          </Paper>
+        ))}
+        {meta && meta.total_pages > 1 && onPageChange && (
+          <Group justify="center">
+            <Pagination meta={meta} onPageChange={onPageChange} />
+          </Group>
+        )}
+      </Stack>
+    )
+  }
+
   return (
     <DataTable columns={COLUMNS} meta={meta} onPageChange={onPageChange} itemLabel="statuses">
       {statuses.map((status) => (

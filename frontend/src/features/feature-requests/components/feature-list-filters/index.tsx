@@ -1,4 +1,5 @@
-import { Group, Select, Button } from '@mantine/core'
+import { Group, Stack, Select, Button } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import type { Category } from '../../../../types/category'
 import type { Status } from '../../../../types/status'
 
@@ -25,6 +26,7 @@ export function FeatureListFilters({
   onStatusChange,
   onClearFilters,
 }: FeatureListFiltersProps) {
+  const isMobile = useMediaQuery('(max-width: 48em)')
   const hasActiveFilters = selectedCategoryId !== undefined || selectedStatusId !== undefined
   const categoryData = [
     { value: '', label: 'All categories' },
@@ -35,8 +37,10 @@ export function FeatureListFilters({
     ...statuses.map((s) => ({ value: String(s.id), label: s.name })),
   ]
 
+  const Wrapper = isMobile ? Stack : Group
+
   return (
-    <Group gap="sm" mb="md" wrap="wrap">
+    <Wrapper gap="sm" mb="md" {...(!isMobile && { wrap: 'wrap' })}>
       <Select
         placeholder="All categories"
         data={categoryData}
@@ -47,7 +51,7 @@ export function FeatureListFilters({
         disabled={isLoadingCategories}
         radius="md"
         size="sm"
-        style={{ minWidth: 160 }}
+        style={isMobile ? { width: '100%' } : { minWidth: 160 }}
         clearable
       />
       <Select
@@ -60,7 +64,7 @@ export function FeatureListFilters({
         disabled={isLoadingStatuses}
         radius="md"
         size="sm"
-        style={{ minWidth: 160 }}
+        style={isMobile ? { width: '100%' } : { minWidth: 160 }}
         clearable
       />
       {hasActiveFilters && (
@@ -69,11 +73,12 @@ export function FeatureListFilters({
           color="gray"
           size="sm"
           radius="md"
+          fullWidth={isMobile}
           onClick={onClearFilters}
         >
           Clear filters
         </Button>
       )}
-    </Group>
+    </Wrapper>
   )
 }
