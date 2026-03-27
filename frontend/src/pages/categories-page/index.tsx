@@ -2,7 +2,6 @@ import { useState } from 'react'
 import {
   Stack,
   Group,
-  Title,
   Text,
   TextInput,
   Textarea,
@@ -22,7 +21,9 @@ import {
   IconPencil,
   IconTrash,
   IconSelector,
+  IconTag,
 } from '@tabler/icons-react'
+import { PageHeader } from '../../components/page-header'
 import { useForm } from 'react-hook-form'
 import * as LucideIcons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -363,35 +364,33 @@ export function CategoriesPage() {
 
   return (
     <Stack gap="md">
-      {/* Page header */}
-      <Group justify="space-between" align="flex-end">
-        <Box>
-          <Title order={2}>Categories</Title>
-          <Text c="dimmed" fz="sm" mt={2}>
-            Manage feature request categories
-          </Text>
-        </Box>
-        <Group gap="sm">
-          <TextInput
-            placeholder="Search categories..."
-            leftSection={<IconSearch size={16} />}
-            radius="md"
-            size="sm"
-            value={search}
-            onChange={(e) => handleSearchChange(e.currentTarget.value)}
-            style={{ minWidth: 220 }}
-          />
-          {user?.is_admin && (
-            <Button
-              leftSection={<IconPlus size={16} />}
+      <PageHeader
+        icon={IconTag}
+        title="Categories"
+        subtitle="Manage feature request categories"
+        actions={
+          <>
+            <TextInput
+              placeholder="Search categories..."
+              leftSection={<IconSearch size={16} />}
               radius="md"
-              onClick={() => setCreateModalOpen(true)}
-            >
-              New Category
-            </Button>
-          )}
-        </Group>
-      </Group>
+              size="sm"
+              value={search}
+              onChange={(e) => handleSearchChange(e.currentTarget.value)}
+              style={{ minWidth: 220 }}
+            />
+            {user?.is_admin && (
+              <Button
+                leftSection={<IconPlus size={16} />}
+                radius="md"
+                onClick={() => setCreateModalOpen(true)}
+              >
+                New Category
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* Loading */}
       {isLoading && (

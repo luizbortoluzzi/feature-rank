@@ -40,7 +40,7 @@ export const router = createBrowserRouter([
     path: '/features/:id/edit',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Edit Feature">
+        <AppLayout>
           <EditFeaturePage />
         </AppLayout>
       </ProtectedRoute>
@@ -70,7 +70,7 @@ export const router = createBrowserRouter([
     path: '/admin/users',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Users">
+        <AppLayout>
           <UsersPage />
         </AppLayout>
       </ProtectedRoute>

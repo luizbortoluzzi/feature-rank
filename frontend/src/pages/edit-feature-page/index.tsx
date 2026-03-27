@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { Stack, Box, Title, Text, Anchor, Center } from '@mantine/core'
+import { Stack, Box, Text, Anchor, Center } from '@mantine/core'
+import { IconPencil } from '@tabler/icons-react'
+import { PageHeader } from '../../components/page-header'
 import { useFeatureDetail } from '../../features/feature-requests/hooks/use-feature-detail'
 import { useUpdateFeature } from '../../features/feature-requests/hooks/use-update-feature'
 import { useCategories } from '../../features/categories/hooks/use-categories'
@@ -55,7 +57,7 @@ export function EditFeaturePage() {
     if (featureError?.status === 404) {
       return (
         <Stack align="center" gap="sm" py="xl">
-          <Title order={3}>Feature not found</Title>
+          <Text fw={600} fz="lg">Feature not found</Text>
           <Text c="dimmed" fz="sm">This feature request no longer exists.</Text>
           <Anchor fz="sm" onClick={() => navigate('/features')}>Back to feature list</Anchor>
         </Stack>
@@ -70,7 +72,7 @@ export function EditFeaturePage() {
   if (!canEdit) {
     return (
       <Stack align="center" gap="sm" py="xl">
-        <Title order={3}>Access denied</Title>
+        <Text fw={600} fz="lg">Access denied</Text>
         <Text c="dimmed" fz="sm">You don't have permission to edit this feature request.</Text>
         <Anchor fz="sm" onClick={() => navigate(`/features/${feature.id}`)}>Back to feature</Anchor>
       </Stack>
@@ -78,33 +80,35 @@ export function EditFeaturePage() {
   }
 
   return (
-    <Box maw={672} mx="auto">
-      <Stack gap="lg">
-        <Box>
-          <Anchor fz="sm" onClick={() => navigate(`/features/${feature.id}`)}>
-            ← Back to feature
-          </Anchor>
-        </Box>
+    <>
+      <PageHeader icon={IconPencil} title="Edit Feature Request" />
 
-        <Title order={2}>Edit Feature Request</Title>
+      <Box maw={672} mx="auto">
+        <Stack gap="lg">
+          <Box>
+            <Anchor fz="sm" onClick={() => navigate(`/features/${feature.id}`)}>
+              ← Back to feature
+            </Anchor>
+          </Box>
 
-        <FeatureForm
-          defaultValues={{
-            title: feature.title,
-            description: feature.description,
-            rate: feature.rate,
-            category_id: String(feature.category.id),
-          }}
-          categories={categories}
-          statuses={statuses}
-          isAdmin={user?.is_admin ?? false}
-          isLoadingCategories={isLoadingCategories}
-          isLoadingStatuses={isLoadingStatuses}
-          isPending={isPending}
-          submitError={isError ? error : null}
-          onSubmit={handleSubmit}
-        />
-      </Stack>
-    </Box>
+          <FeatureForm
+            defaultValues={{
+              title: feature.title,
+              description: feature.description,
+              rate: feature.rate,
+              category_id: String(feature.category.id),
+            }}
+            categories={categories}
+            statuses={statuses}
+            isAdmin={user?.is_admin ?? false}
+            isLoadingCategories={isLoadingCategories}
+            isLoadingStatuses={isLoadingStatuses}
+            isPending={isPending}
+            submitError={isError ? error : null}
+            onSubmit={handleSubmit}
+          />
+        </Stack>
+      </Box>
+    </>
   )
 }

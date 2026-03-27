@@ -9,8 +9,6 @@ import {
   NavLink,
   Box,
   Divider,
-  Title,
-  Stack,
 } from '@mantine/core'
 import {
   IconLayoutList,
@@ -24,8 +22,6 @@ import { useCurrentUser } from './AuthProvider'
 
 interface AppLayoutProps {
   children: ReactNode
-  title?: string
-  subtitle?: string
 }
 
 const navLinks = [
@@ -44,7 +40,7 @@ function isActive(path: string, locationPathname: string): boolean {
   return locationPathname.startsWith(path)
 }
 
-export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
+export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useCurrentUser()
@@ -156,17 +152,7 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
         )}
       </AppShell.Navbar>
 
-      <AppShell.Main>
-        {title && (
-          <Stack gap={4} mb="lg">
-            <Title order={2}>{title}</Title>
-            {subtitle && (
-              <Text c="dimmed" fz="sm">
-                {subtitle}
-              </Text>
-            )}
-          </Stack>
-        )}
+      <AppShell.Main style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>
         {children}
       </AppShell.Main>
     </AppShell>

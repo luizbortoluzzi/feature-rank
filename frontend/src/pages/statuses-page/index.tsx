@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Stack, Group, Title, Text, TextInput, Button, Box, Center, Paper, Modal } from '@mantine/core'
+import { Stack, Group, Text, TextInput, Button, Center, Paper, Modal } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconSearch, IconPlus } from '@tabler/icons-react'
+import { IconSearch, IconPlus, IconCircleDot } from '@tabler/icons-react'
+import { PageHeader } from '../../components/page-header'
 import { useStatusList } from '../../features/statuses/hooks/use-status-list'
 import { useCreateStatus } from '../../features/statuses/hooks/use-create-status'
 import { useUpdateStatus } from '../../features/statuses/hooks/use-update-status'
@@ -113,34 +114,32 @@ export function StatusesPage() {
 
   return (
     <Stack gap="md">
-      {/* Page header */}
-      <Group justify="space-between" align="flex-end">
-        <Box>
-          <Title order={2}>Status List</Title>
-          <Text c="dimmed" fz="sm" mt={2}>
-            Manage feature request statuses
-          </Text>
-        </Box>
-        <Group gap="sm">
-          <TextInput
-            placeholder="Search status..."
-            leftSection={<IconSearch size={16} />}
-            radius="md"
-            size="sm"
-            value={search}
-            onChange={(e) => handleSearchChange(e.currentTarget.value)}
-            style={{ minWidth: 220 }}
-          />
-          <Button
-            leftSection={<IconPlus size={16} />}
-            radius="md"
-            variant='gradient'
-            onClick={handleOpenCreate}
-          >
-            New Status
-          </Button>
-        </Group>
-      </Group>
+      <PageHeader
+        icon={IconCircleDot}
+        title="Status List"
+        subtitle="Manage feature request statuses"
+        actions={
+          <>
+            <TextInput
+              placeholder="Search status..."
+              leftSection={<IconSearch size={16} />}
+              radius="md"
+              size="sm"
+              value={search}
+              onChange={(e) => handleSearchChange(e.currentTarget.value)}
+              style={{ minWidth: 220 }}
+            />
+            <Button
+              leftSection={<IconPlus size={16} />}
+              radius="md"
+              variant="gradient"
+              onClick={handleOpenCreate}
+            >
+              New Status
+            </Button>
+          </>
+        }
+      />
 
       {isLoading && (
         <Center py="xl">

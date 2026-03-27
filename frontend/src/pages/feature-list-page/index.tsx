@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Stack, Group, Title, Text, TextInput, Button, Box, Center, Modal } from '@mantine/core'
-import { IconSearch, IconPlus } from '@tabler/icons-react'
+import { Stack, TextInput, Button, Center, Modal } from '@mantine/core'
+import { IconSearch, IconPlus, IconLayoutList } from '@tabler/icons-react'
+import { PageHeader } from '../../components/page-header'
 import { useCurrentUser } from '../../app/AuthProvider'
 import { useFeatureList } from '../../features/feature-requests/hooks/use-feature-list'
 import { useCreateFeature } from '../../features/feature-requests/hooks/use-create-feature'
@@ -82,34 +83,32 @@ export function FeatureListPage() {
 
   return (
     <Stack gap="md">
-      {/* Page header */}
-      <Group justify="space-between" align="flex-end">
-        <Box>
-          <Title order={2}>Feature Rank List</Title>
-          <Text c="dimmed" fz="sm" mt={2}>
-            Browse and vote on feature requests
-          </Text>
-        </Box>
-        <Group gap="sm">
-          <TextInput
-            placeholder="Search features..."
-            leftSection={<IconSearch size={16} />}
-            radius="md"
-            size="sm"
-            value={search}
-            onChange={(e) => handleSearchChange(e.currentTarget.value)}
-            style={{ minWidth: 220 }}
-          />
-          <Button
-            leftSection={<IconPlus size={16} />}
-            radius="md"
-            variant="gradient"
-            onClick={() => setModalOpen(true)}
-          >
-            New Request
-          </Button>
-        </Group>
-      </Group>
+      <PageHeader
+        icon={IconLayoutList}
+        title="Feature Rank List"
+        subtitle="Browse and vote on feature requests"
+        actions={
+          <>
+            <TextInput
+              placeholder="Search features..."
+              leftSection={<IconSearch size={16} />}
+              radius="md"
+              size="sm"
+              value={search}
+              onChange={(e) => handleSearchChange(e.currentTarget.value)}
+              style={{ minWidth: 220 }}
+            />
+            <Button
+              leftSection={<IconPlus size={16} />}
+              radius="md"
+              variant="gradient"
+              onClick={() => setModalOpen(true)}
+            >
+              New Request
+            </Button>
+          </>
+        }
+      />
 
       {/* Filters */}
       <FeatureListFilters

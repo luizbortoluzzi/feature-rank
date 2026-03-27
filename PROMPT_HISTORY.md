@@ -1868,3 +1868,46 @@ Moved each page from a flat `.tsx` file to a kebab-case folder with `index.tsx`:
 - `UsersPage.tsx` → `users-page/index.tsx`
 
 Updated all relative imports inside each page file from `../` to `../../` (one level deeper). Updated `router.tsx` to import from the new folder paths. Build: ✓ zero TypeScript errors.
+
+## [2026-03-26T00:02:00Z] — Create standard PageHeader component
+
+### Prompt
+ok, now lets create a standard header component to be used in dashboard layout to keep the same appearance in all the pages, I was thinking something with the image prototype
+
+### Action Taken
+Created `components/page-header/index.tsx` — a reusable `PageHeader` component with:
+- `icon?: ElementType` — optional Tabler icon rendered in an indigo-tinted box (36×36, border-radius 8)
+- `title: string` — rendered as `Title order={2} fz="xl"`
+- `subtitle?: string` — rendered as `Text c="dimmed" fz="sm"`
+- `actions?: ReactNode` — right-side slot for search inputs and buttons, wrapped in `Group gap="sm"`
+
+Updated all pages to use it:
+- `feature-list-page` — `IconLayoutList` icon, title + subtitle, search + gradient "New Request" button
+- `statuses-page` — `IconCircleDot` icon, title + subtitle, search + gradient "New Status" button
+- `categories-page` — `IconTag` icon, title + subtitle, search + conditional "New Category" button
+- `users-page` — `IconUsers` icon, title + subtitle, no actions (placeholder page)
+- `edit-feature-page` — `IconPencil` icon, title only, no actions
+
+Removed the `title`/`subtitle` props and corresponding rendering block from `AppLayout` (pages now own their headers entirely). Removed stale `title` props from `router.tsx` for edit and users routes. Cleaned up unused imports (`Group`, `Title`, `Box`, `Text`, `Stack`) from each page's Mantine import list. Build: ✓ zero TypeScript errors.
+
+## [2026-03-26T00:10:00Z] — Dashboard layout: gray content area + PageHeader border-bottom
+
+### Prompt
+ok but I would like that the dashboard layout had that gray/dark background in the part of the content and the header had the border bottom as can you see in the image
+
+### Action Taken
+Applied two visual changes to match the prototype:
+1. `app/AppLayout.tsx` — added `style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}` to `AppShell.Main` so the entire content area has a light gray background.
+2. `components/page-header/index.tsx` — added full-width breakout styling to the header wrapper: negative margins on top/left/right (`calc(-1 * var(--mantine-spacing-md))`) to counteract the AppShell.Main padding, white background, `borderBottom: '1px solid var(--mantine-color-gray-2)'`, and padding restored inside. Bottom margin (`var(--mantine-spacing-md)`) creates spacing to the content below.
+3. `pages/edit-feature-page/index.tsx` — restructured so `PageHeader` is at the Fragment root level (outside the `Box maw={672}` constrained container) so the breakout negative margins span the full main area rather than just the 672px box. Back link moved inside the constrained Stack below the header.
+
+## [2026-03-26T00:20:00Z] — PageHeader: match sidebar background color + ensure border-bottom
+
+### Prompt
+ok but i want the header background in the same color of the sidebar background and um a border bottom as you can see in tha image
+
+### Action Taken
+Fixed two issues in `components/page-header/index.tsx`:
+1. Corrected a JSX syntax error introduced in the previous edit — the closing `>` on the outer `Group` opening tag was missing, which would cause a compile error.
+2. Changed `backgroundColor: 'white'` to `backgroundColor: 'var(--mantine-color-body)'` so the PageHeader uses the same CSS variable as Mantine's `AppShell.Navbar`, guaranteeing they always render the same background color (defaults to white, but respects theme overrides).
+The `borderBottom: '1px solid var(--mantine-color-gray-2)'` was already in place.
