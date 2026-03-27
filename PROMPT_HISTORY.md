@@ -2130,3 +2130,11 @@ great, now for this screen i guess we will need to have an approach to turn the 
 
 ### Action Taken
 Categories page: added useMediaQuery, full-width search/button on mobile, conditionally renders Paper card list instead of DataTable on mobile (icon+name+badge, description, admin actions). Added Pagination import for the mobile card list. Statuses page: added useMediaQuery, full-width search/button on mobile. StatusTable component: added useMediaQuery, renders a Paper card list on mobile (color swatch+name, active switch, usage count, edit/delete actions) and the existing DataTable on desktop.
+
+## [2026-03-27T00:09:00Z] – Refactor and organize Makefile
+
+### Prompt
+ok now we will need to refactor, fix, improve and organize the makefile
+
+### Action Taken
+Rewrote Makefile: added help target with descriptions, removed duplicate targets (backend-run/frontend-run merged into dev-backend/dev-frontend), grouped targets into sections (Setup, Docker, Development, Database, Code quality, Testing) with separator comments, added missing targets (logs, restart, ps, makemigrations, shell), fixed make → $(MAKE) in recursive dev call, expanded format and fix to cover both layers (format-backend, fix-backend with frontend stubs ready), standardized seed target names (seed/seed-demo), cleaned up .PHONY declaration.
