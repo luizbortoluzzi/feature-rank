@@ -18,7 +18,6 @@ import {
   IconTag,
   IconCircleDot,
   IconUsers,
-  IconStack2,
   IconLogout,
 } from '@tabler/icons-react'
 import { useCurrentUser } from './AuthProvider'
@@ -78,24 +77,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Mobile header */}
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Group gap="xs">
-            <Box
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                backgroundColor: 'var(--mantine-color-indigo-6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <IconStack2 size={20} color="white" />
-            </Box>
-            <Text fw={700} fz="md">
-              Feature Rank
-            </Text>
-          </Group>
+          <img src="/logo.svg" alt="Feature Rank" style={{ width: 200 }} />
           <Burger opened={opened} onClick={toggle} size="sm" aria-label="Toggle navigation" />
         </Group>
       </AppShell.Header>
@@ -103,23 +85,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       <AppShell.Navbar p="sm">
         {/* Brand — desktop only (hidden on mobile since header shows it) */}
         {!isMobile && (
-          <Group gap="sm" mb="xl" mt="xs">
-            <Box
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                backgroundColor: 'var(--mantine-color-indigo-6)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <IconStack2 size={20} color="white" />
-            </Box>
-            <Text fw={700} fz="md">
-              Feature Rank
-            </Text>
+          <Group gap="sm" mb="xl" mt="xs" justify="center">
+            <img src="/logo.svg" alt="Feature Rank" style={{ width: '95%' }} />
           </Group>
         )}
 
