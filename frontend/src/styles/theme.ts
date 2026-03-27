@@ -161,7 +161,11 @@ export const theme = createTheme({
         withBorder: true,
       },
     },
-
+    Box: {
+      defaultProps: {
+        shadow: 'sm',
+      },
+    },
     Card: {
       defaultProps: {
         radius: 'xl',
@@ -174,12 +178,17 @@ export const theme = createTheme({
     Table: {
       defaultProps: {
         highlightOnHover: true,
-        withTableBorder: true,
+        withTableBorder: false,
         withColumnBorders: false,
         verticalSpacing: 'md',
         horizontalSpacing: 'lg',
       },
-      styles: (theme: { radius: { xl: any }; white: any; colors: { gray: any[] }; fontSizes: { sm: any } }) => ({
+      styles: (theme: {
+        radius: { xl: any }
+        white: any
+        colors: { gray: any[] }
+        fontSizes: { sm: any }
+      }) => ({
         table: {
           borderCollapse: 'separate',
           borderSpacing: 0,

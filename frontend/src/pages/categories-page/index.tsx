@@ -20,10 +20,10 @@ import {
   IconPlus,
   IconPencil,
   IconTrash,
-  IconSelector,
   IconTag,
 } from '@tabler/icons-react'
 import { PageHeader } from '../../components/page-header'
+import { DataTable, type DataTableColumn } from '../../components/data-table'
 import { useForm } from 'react-hook-form'
 import * as LucideIcons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -35,7 +35,6 @@ import { useDeleteCategory } from '../../features/categories/hooks/use-delete-ca
 import { Spinner } from '../../components/spinner'
 import { ErrorMessage } from '../../components/error-message'
 import { EmptyState } from '../../components/empty-state'
-import { Pagination } from '../../components/pagination'
 import { formatDate } from '../../utils/formatDate'
 import type { CategoryListItem } from '../../types/category'
 import type { CreateCategoryPayload, UpdateCategoryPayload } from '../../services/categories'
@@ -272,8 +271,14 @@ export function CategoriesPage() {
     })
   }
 
-  const showingFrom = meta ? (meta.page - 1) * meta.limit + 1 : 0
-  const showingTo = meta ? Math.min(meta.page * meta.limit, meta.total) : 0
+  const columns: DataTableColumn[] = [
+    { key: 'name', label: 'Category Name', sortable: true },
+    { key: 'description', label: 'Description' },
+    { key: 'features', label: 'Features', sortable: true },
+    { key: 'status', label: 'Status' },
+    { key: 'created', label: 'Created', sortable: true },
+    ...(user?.is_admin ? [{ key: 'actions', label: 'Actions' } as DataTableColumn] : []),
+  ]
 
   const rows = categories.map((category) => (
     <Table.Tr key={category.id}>
@@ -341,7 +346,7 @@ export function CategoriesPage() {
             <ActionIcon
               variant="subtle"
               color="gray"
-              size="sm"
+              size="md"
               aria-label={`Edit ${category.name}`}
               onClick={() => setEditTarget(category)}
             >
@@ -350,7 +355,7 @@ export function CategoriesPage() {
             <ActionIcon
               variant="subtle"
               color="red"
-              size="sm"
+              size="md"
               aria-label={`Delete ${category.name}`}
               onClick={() => setDeleteTarget(category)}
             >
@@ -420,78 +425,9 @@ export function CategoriesPage() {
 
       {/* Table */}
       {!isLoading && !isError && categories.length > 0 && (
-        <Box
-          style={{
-            border: '1px solid var(--mantine-color-gray-3)',
-            borderRadius: 'var(--mantine-radius-md)',
-            overflow: 'hidden',
-          }}
-        >
-          <Table highlightOnHover>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>
-                  <Group gap={4} wrap="nowrap">
-                    <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                      Category Name
-                    </Text>
-                    <IconSelector size={12} color="var(--mantine-color-dimmed)" />
-                  </Group>
-                </Table.Th>
-                <Table.Th>
-                  <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                    Description
-                  </Text>
-                </Table.Th>
-                <Table.Th>
-                  <Group gap={4} wrap="nowrap">
-                    <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                      Features
-                    </Text>
-                    <IconSelector size={12} color="var(--mantine-color-dimmed)" />
-                  </Group>
-                </Table.Th>
-                <Table.Th>
-                  <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                    Status
-                  </Text>
-                </Table.Th>
-                <Table.Th>
-                  <Group gap={4} wrap="nowrap">
-                    <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                      Created
-                    </Text>
-                    <IconSelector size={12} color="var(--mantine-color-dimmed)" />
-                  </Group>
-                </Table.Th>
-                {user?.is_admin && (
-                  <Table.Th>
-                    <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                      Actions
-                    </Text>
-                  </Table.Th>
-                )}
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-
-          {/* Pagination footer */}
-          {meta && (
-            <Box
-              px="md"
-              py="sm"
-              style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}
-            >
-              <Group justify="space-between" align="center">
-                <Text fz="sm" c="dimmed">
-                  Showing {showingFrom}–{showingTo} of {meta.total} categories
-                </Text>
-                <Pagination meta={meta} onPageChange={setPage} />
-              </Group>
-            </Box>
-          )}
-        </Box>
+        <DataTable columns={columns} meta={meta} onPageChange={setPage} itemLabel="categories">
+          {rows}
+        </DataTable>
       )}
 
       {/* Create modal */}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Stack, Group, Text, TextInput, Button, Center, Paper, Modal } from '@mantine/core'
+import { Stack, Group, Text, TextInput, Button, Center, Modal } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { IconSearch, IconPlus, IconCircleDot } from '@tabler/icons-react'
 import { PageHeader } from '../../components/page-header'
@@ -15,7 +15,6 @@ import {
 import { Spinner } from '../../components/spinner'
 import { ErrorMessage } from '../../components/error-message'
 import { EmptyState } from '../../components/empty-state'
-import { Pagination } from '../../components/pagination'
 import type { Status } from '../../types/status'
 
 export function StatusesPage() {
@@ -95,9 +94,6 @@ export function StatusesPage() {
     })
   }
 
-  const startItem = meta ? (meta.page - 1) * meta.limit + 1 : 0
-  const endItem = meta ? Math.min(meta.page * meta.limit, meta.total) : 0
-
   const isPending = isCreating || isUpdating
   const submitError = editingStatus ? updateError : createError
 
@@ -161,35 +157,16 @@ export function StatusesPage() {
       )}
 
       {!isLoading && !isError && statuses.length > 0 && (
-        <Stack gap="sm">
-          <Paper withBorder radius="md" p={0} style={{ overflow: 'hidden' }}>
-            <StatusTable
-              statuses={statuses}
-              onEdit={handleOpenEdit}
-              onDelete={handleDeleteRequest}
-              onToggleActive={handleToggleActive}
-              deletingId={isDeleting ? deletingId : null}
-              togglingId={togglingId}
-            />
-          </Paper>
-
-          {meta && (
-            <Group justify="space-between" align="center" px={4}>
-              <Text size="sm" c="dimmed">
-                Showing{' '}
-                <Text span fw={500} c="dark">
-                  {startItem}–{endItem}
-                </Text>{' '}
-                of{' '}
-                <Text span fw={500} c="dark">
-                  {meta.total}
-                </Text>{' '}
-                statuses
-              </Text>
-              <Pagination meta={meta} onPageChange={(p) => setPage(p)} />
-            </Group>
-          )}
-        </Stack>
+        <StatusTable
+          statuses={statuses}
+          onEdit={handleOpenEdit}
+          onDelete={handleDeleteRequest}
+          onToggleActive={handleToggleActive}
+          deletingId={isDeleting ? deletingId : null}
+          togglingId={togglingId}
+          meta={meta}
+          onPageChange={setPage}
+        />
       )}
 
       {/* Create / Edit modal */}

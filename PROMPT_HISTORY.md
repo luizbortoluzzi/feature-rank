@@ -1911,3 +1911,44 @@ Fixed two issues in `components/page-header/index.tsx`:
 1. Corrected a JSX syntax error introduced in the previous edit — the closing `>` on the outer `Group` opening tag was missing, which would cause a compile error.
 2. Changed `backgroundColor: 'white'` to `backgroundColor: 'var(--mantine-color-body)'` so the PageHeader uses the same CSS variable as Mantine's `AppShell.Navbar`, guaranteeing they always render the same background color (defaults to white, but respects theme overrides).
 The `borderBottom: '1px solid var(--mantine-color-gray-2)'` was already in place.
+
+## [2026-03-27T00:00:00Z] — Abstract shared DataTable component
+
+### Prompt
+Ok, now we need to abstract and improve a component, acctually we have a data table hard coded here /home/isam/prj/feature-rank/frontend/src/pages/categories-page/index.tsx and a scope data table here /home/isam/prj/feature-rank/frontend/src/features/statuses/components/status-table/index.tsx. we need to abstract to a data-table shared component and reuse it in the needed pages, this way we turn the code simpler and we keep a concised component
+
+### Action Taken
+Created `components/data-table/index.tsx` — a generic structural `DataTable` component with:
+- `columns: DataTableColumn[]` — array of `{ key, label, sortable? }` for header rendering (sortable adds `IconSelector` indicator)
+- `children: ReactNode` — `Table.Tr` rows passed by the consumer
+- `meta?: PaginationMeta | null` + `onPageChange?` — optional built-in pagination footer (border-top separator, "Showing X–Y of N {itemLabel}" text + Pagination component)
+- `itemLabel?: string` — label for the count line (default "items")
+- Owns: border container (gray-3 border, md radius, overflow hidden), `Table highlightOnHover`, styled column headers (xs uppercase fw:600 dimmed), `Table.Tbody`, pagination footer
+
+Refactored `StatusTable` to use `DataTable` internally:
+- Added `meta?` and `onPageChange?` props, threaded through to `DataTable`
+- Defined `COLUMNS` constant at module level
+- Removed bare `Table` and `withTableBorder` (DataTable owns the container)
+
+Updated `statuses-page`:
+- Removed `Paper withBorder` wrapper around `StatusTable`
+- Removed standalone pagination `Group` with Showing X–Y text
+- Passed `meta` and `onPageChange` directly to `StatusTable`
+- Cleaned up now-unused imports: `Paper`, `Pagination`, `Group`, `Text`, `startItem`, `endItem`
+
+Updated `categories-page`:
+- Added `DataTable` import
+- Defined `columns` array dynamically (conditional Actions column for admins)
+- Replaced the 70-line `Box + Table + pagination footer` block with a 5-line `<DataTable>` usage
+- Cleaned up now-unused imports: `Pagination`, `IconSelector`
+
+## [2026-03-27T00:10:00Z] — DataTable style fixes + larger action buttons
+
+### Prompt
+great but now we need to improve the style of the table because as you can se the borders are weird and the table base are not colored filled as the rest of the table, also we need to increse the size of the action buttons
+
+### Action Taken
+Three changes to `DataTable` and table action buttons:
+1. `components/data-table/index.tsx` — added `backgroundColor: 'var(--mantine-color-body)'` to the outer Box so the white fill is explicit and the gray page background doesn't bleed through. Added `style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}` to `Table.Thead` to give the header row a subtle fill distinct from the white data rows — this eliminates the visual "borders are weird" effect where the header and body were indistinguishable.
+2. `features/statuses/components/status-table/index.tsx` — bumped action `ActionIcon` size from `size="sm"` to `size="md"`, icon size from 14 to 16.
+3. `pages/categories-page/index.tsx` — same button size bump applied for consistency.
