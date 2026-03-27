@@ -1,4 +1,14 @@
-import { Button, ColorInput, Group, Modal, Stack, Switch, Text, Textarea, TextInput } from '@mantine/core'
+import {
+  Button,
+  ColorInput,
+  Group,
+  Modal,
+  Stack,
+  Switch,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core'
 import { useForm } from 'react-hook-form'
 import { IconPicker } from '../icon-picker'
 

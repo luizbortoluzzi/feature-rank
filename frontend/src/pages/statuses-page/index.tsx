@@ -57,10 +57,7 @@ export function StatusesPage() {
 
   function handleSubmitForm(data: StatusFormFields) {
     if (editingStatus) {
-      updateStatus(
-        { id: editingStatus.id, payload: data },
-        { onSuccess: handleCloseForm },
-      )
+      updateStatus({ id: editingStatus.id, payload: data }, { onSuccess: handleCloseForm })
     } else {
       createStatus(data, { onSuccess: handleCloseForm })
     }
@@ -152,9 +149,7 @@ export function StatusesPage() {
         <EmptyState
           message={search ? 'No statuses match your search.' : 'No statuses have been created yet.'}
           action={
-            !search
-              ? { label: 'Create the first status', onClick: handleOpenCreate }
-              : undefined
+            !search ? { label: 'Create the first status', onClick: handleOpenCreate } : undefined
           }
         />
       )}
@@ -184,12 +179,7 @@ export function StatusesPage() {
       />
 
       {/* Delete confirmation modal */}
-      <Modal
-        opened={isConfirmOpen}
-        onClose={closeConfirm}
-        title="Delete Status"
-        size="sm"
-      >
+      <Modal opened={isConfirmOpen} onClose={closeConfirm} title="Delete Status" size="sm">
         <Stack gap="md">
           <Text size="sm">
             Are you sure you want to delete{' '}

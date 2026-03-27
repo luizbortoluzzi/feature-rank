@@ -208,7 +208,9 @@ export function FeatureForm({
             {...register('description', { required: 'Description is required.' })}
           />
           <Group justify="space-between" px={8}>
-            <Text fz="xs" c="dimmed">Be as detailed as possible to help our team understand your request</Text>
+            <Text fz="xs" c="dimmed">
+              Be as detailed as possible to help our team understand your request
+            </Text>
           </Group>
         </Stack>
 

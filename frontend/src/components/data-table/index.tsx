@@ -35,7 +35,6 @@ export function DataTable({
         backgroundColor: 'var(--mantine-color-body)',
         boxShadow: 'var(--mantine-shadow-sm)',
       }}
-      
     >
       <Table highlightOnHover>
         <Table.Thead style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>

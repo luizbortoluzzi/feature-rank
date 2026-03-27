@@ -45,9 +45,7 @@ export function FeatureListFilters({
         placeholder="All categories"
         data={categoryData}
         value={selectedCategoryId !== undefined ? String(selectedCategoryId) : ''}
-        onChange={(val) =>
-          onCategoryChange(val && val !== '' ? Number(val) : undefined)
-        }
+        onChange={(val) => onCategoryChange(val && val !== '' ? Number(val) : undefined)}
         disabled={isLoadingCategories}
         radius="md"
         size="sm"
@@ -58,9 +56,7 @@ export function FeatureListFilters({
         placeholder="All statuses"
         data={statusData}
         value={selectedStatusId !== undefined ? String(selectedStatusId) : ''}
-        onChange={(val) =>
-          onStatusChange(val && val !== '' ? Number(val) : undefined)
-        }
+        onChange={(val) => onStatusChange(val && val !== '' ? Number(val) : undefined)}
         disabled={isLoadingStatuses}
         radius="md"
         size="sm"

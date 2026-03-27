@@ -134,7 +134,10 @@ export function StatusFormModal({
           <Controller
             name="sort_order"
             control={control}
-            rules={{ required: 'Sort order is required.', min: { value: 0, message: 'Must be 0 or greater.' } }}
+            rules={{
+              required: 'Sort order is required.',
+              min: { value: 0, message: 'Must be 0 or greater.' },
+            }}
             render={({ field }) => (
               <NumberInput
                 label="Sort Order"

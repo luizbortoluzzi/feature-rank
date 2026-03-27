@@ -57,8 +57,12 @@ export function StatusTable({
                     }}
                   />
                   <Box>
-                    <Text fw={600} fz="sm">{status.name}</Text>
-                    <Text fz="xs" ff="monospace" c="dimmed">{status.color}</Text>
+                    <Text fw={600} fz="sm">
+                      {status.name}
+                    </Text>
+                    <Text fz="xs" ff="monospace" c="dimmed">
+                      {status.color}
+                    </Text>
                   </Box>
                 </Group>
                 <Switch
@@ -71,12 +75,17 @@ export function StatusTable({
               </Group>
 
               {status.description && (
-                <Text fz="xs" c="dimmed" lineClamp={2}>{status.description}</Text>
+                <Text fz="xs" c="dimmed" lineClamp={2}>
+                  {status.description}
+                </Text>
               )}
 
               <Group justify="space-between" align="center" mt={4}>
                 <Text fz="xs" c="dimmed">
-                  <Text span fw={600} c="dark" fz="xs">{status.usage_count}</Text> features
+                  <Text span fw={600} c="dark" fz="xs">
+                    {status.usage_count}
+                  </Text>{' '}
+                  features
                 </Text>
                 <Group gap={4}>
                   <ActionIcon

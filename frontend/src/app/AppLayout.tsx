@@ -13,13 +13,7 @@ import {
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useIsMobile } from '../hooks/use-is-mobile'
-import {
-  IconLayoutList,
-  IconTag,
-  IconCircleDot,
-  IconUsers,
-  IconLogout,
-} from '@tabler/icons-react'
+import { IconLayoutList, IconTag, IconCircleDot, IconUsers, IconLogout } from '@tabler/icons-react'
 import { useCurrentUser } from './AuthProvider'
 import { registerNavigate } from '../services/navigation'
 
@@ -33,13 +27,10 @@ const navLinks = [
   { label: 'Status', icon: IconCircleDot, path: '/statuses' },
 ]
 
-const adminLinks = [
-  { label: 'Users', icon: IconUsers, path: '/admin/users' },
-]
+const adminLinks = [{ label: 'Users', icon: IconUsers, path: '/admin/users' }]
 
 function isActive(path: string, locationPathname: string): boolean {
-  if (path === '/features')
-    return locationPathname === '/features' || locationPathname === '/'
+  if (path === '/features') return locationPathname === '/features' || locationPathname === '/'
   return locationPathname.startsWith(path)
 }
 
@@ -103,10 +94,18 @@ export function AppLayout({ children }: AppLayoutProps) {
               variant="filled"
               color="indigo"
               mb={2}
-              styles={{ label: { fontWeight: 600 }, root: { borderRadius: 'var(--mantine-radius-md)' } }}
-              style={active ? {
-                background: 'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
-              } : undefined}
+              styles={{
+                label: { fontWeight: 600 },
+                root: { borderRadius: 'var(--mantine-radius-md)' },
+              }}
+              style={
+                active
+                  ? {
+                      background:
+                        'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
+                    }
+                  : undefined
+              }
             />
           )
         })}
@@ -139,10 +138,18 @@ export function AppLayout({ children }: AppLayoutProps) {
                   variant="filled"
                   color="indigo"
                   mb={2}
-                  styles={{ label: { fontWeight: 600 }, root: { borderRadius: 'var(--mantine-radius-md)' } }}
-                  style={active ? {
-                    background: 'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
-                  } : undefined}
+                  styles={{
+                    label: { fontWeight: 600 },
+                    root: { borderRadius: 'var(--mantine-radius-md)' },
+                  }}
+                  style={
+                    active
+                      ? {
+                          background:
+                            'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
+                        }
+                      : undefined
+                  }
                 />
               )
             })}

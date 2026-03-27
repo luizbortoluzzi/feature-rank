@@ -57,9 +57,15 @@ export function EditFeaturePage() {
     if (featureError?.status === 404) {
       return (
         <Stack align="center" gap="sm" py="xl">
-          <Text fw={600} fz="lg">Feature not found</Text>
-          <Text c="dimmed" fz="sm">This feature request no longer exists.</Text>
-          <Anchor fz="sm" onClick={() => navigate('/features')}>Back to feature list</Anchor>
+          <Text fw={600} fz="lg">
+            Feature not found
+          </Text>
+          <Text c="dimmed" fz="sm">
+            This feature request no longer exists.
+          </Text>
+          <Anchor fz="sm" onClick={() => navigate('/features')}>
+            Back to feature list
+          </Anchor>
         </Stack>
       )
     }
@@ -72,9 +78,15 @@ export function EditFeaturePage() {
   if (!canEdit) {
     return (
       <Stack align="center" gap="sm" py="xl">
-        <Text fw={600} fz="lg">Access denied</Text>
-        <Text c="dimmed" fz="sm">You don't have permission to edit this feature request.</Text>
-        <Anchor fz="sm" onClick={() => navigate(`/features/${feature.id}`)}>Back to feature</Anchor>
+        <Text fw={600} fz="lg">
+          Access denied
+        </Text>
+        <Text c="dimmed" fz="sm">
+          You don't have permission to edit this feature request.
+        </Text>
+        <Anchor fz="sm" onClick={() => navigate(`/features/${feature.id}`)}>
+          Back to feature
+        </Anchor>
       </Stack>
     )
   }

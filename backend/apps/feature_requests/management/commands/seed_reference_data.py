@@ -58,11 +58,11 @@ CATEGORIES = [
 ]
 
 STATUSES = [
-    {"name": "open", "color": "#6B7280", "is_terminal": False, "sort_order": 0},
-    {"name": "under review", "color": "#F59E0B", "is_terminal": False, "sort_order": 1},
-    {"name": "planned", "color": "#3B82F6", "is_terminal": False, "sort_order": 2},
-    {"name": "completed", "color": "#10B981", "is_terminal": True, "sort_order": 3},
-    {"name": "rejected", "color": "#EF4444", "is_terminal": True, "sort_order": 4},
+    {"name": "Open", "color": "#6B7280", "is_terminal": False, "sort_order": 0},
+    {"name": "Under Review", "color": "#F59E0B", "is_terminal": False, "sort_order": 1},
+    {"name": "Planned", "color": "#3B82F6", "is_terminal": False, "sort_order": 2},
+    {"name": "Completed", "color": "#10B981", "is_terminal": True, "sort_order": 3},
+    {"name": "Rejected", "color": "#EF4444", "is_terminal": True, "sort_order": 4},
 ]
 
 

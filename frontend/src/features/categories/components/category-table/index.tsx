@@ -77,15 +77,21 @@ export function CategoryTable({
                 <Group gap="sm" wrap="nowrap">
                   <CategoryIcon icon={category.icon} color={category.color} />
                   <Box>
-                    <Text fw={600} fz="sm">{category.name}</Text>
-                    <Text fz="xs" c="dimmed">{category.feature_count} requests</Text>
+                    <Text fw={600} fz="sm">
+                      {category.name}
+                    </Text>
+                    <Text fz="xs" c="dimmed">
+                      {category.feature_count} requests
+                    </Text>
                   </Box>
                 </Group>
                 <ActiveBadge isActive={category.is_active} />
               </Group>
 
               {category.description && (
-                <Text fz="xs" c="dimmed" lineClamp={2}>{category.description}</Text>
+                <Text fz="xs" c="dimmed" lineClamp={2}>
+                  {category.description}
+                </Text>
               )}
 
               {isAdmin && (
@@ -134,7 +140,9 @@ export function CategoryTable({
           <Table.Td>
             <Group gap="sm" wrap="nowrap">
               <CategoryIcon icon={category.icon} color={category.color} />
-              <Text fw={500} fz="sm">{category.name}</Text>
+              <Text fw={500} fz="sm">
+                {category.name}
+              </Text>
             </Group>
           </Table.Td>
 
@@ -146,8 +154,12 @@ export function CategoryTable({
 
           <Table.Td>
             <Group gap={4} wrap="nowrap">
-              <Text fw={500} fz="sm">{category.feature_count}</Text>
-              <Text fz="sm" c="dimmed">requests</Text>
+              <Text fw={500} fz="sm">
+                {category.feature_count}
+              </Text>
+              <Text fz="sm" c="dimmed">
+                requests
+              </Text>
             </Group>
           </Table.Td>
 
@@ -156,7 +168,9 @@ export function CategoryTable({
           </Table.Td>
 
           <Table.Td>
-            <Text fz="sm" c="dimmed">{formatDate(category.created_at)}</Text>
+            <Text fz="sm" c="dimmed">
+              {formatDate(category.created_at)}
+            </Text>
           </Table.Td>
 
           {isAdmin && (

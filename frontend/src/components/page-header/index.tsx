@@ -59,11 +59,7 @@ export function PageHeader({ icon: Icon, title, subtitle, actions }: PageHeaderP
         {actions && !isMobile && <Group gap="sm">{actions}</Group>}
       </Group>
 
-      {actions && isMobile && (
-        <Stack gap="xs">
-          {actions}
-        </Stack>
-      )}
+      {actions && isMobile && <Stack gap="xs">{actions}</Stack>}
     </Stack>
   )
 }

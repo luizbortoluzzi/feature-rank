@@ -11,7 +11,9 @@ interface UpdateFeatureMutationArgs {
 }
 
 interface UseUpdateFeatureResult {
-  updateFeature: ReturnType<typeof useMutation<FeatureRequest, ApiError, UpdateFeatureMutationArgs>>['mutate']
+  updateFeature: ReturnType<
+    typeof useMutation<FeatureRequest, ApiError, UpdateFeatureMutationArgs>
+  >['mutate']
   isPending: boolean
   isError: boolean
   error: ApiError | null

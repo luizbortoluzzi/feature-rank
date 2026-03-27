@@ -13,12 +13,7 @@ import {
   UnstyledButton,
   Button,
 } from '@mantine/core'
-import {
-  IconArrowLeft,
-  IconChevronUp,
-  IconBolt,
-  IconShare2,
-} from '@tabler/icons-react'
+import { IconArrowLeft, IconChevronUp, IconBolt, IconShare2 } from '@tabler/icons-react'
 import { useCurrentUser } from '../../app/AuthProvider'
 import { useFeatureDetail } from '../../features/feature-requests/hooks/use-feature-detail'
 import { useDeleteFeature } from '../../features/feature-requests/hooks/use-delete-feature'
@@ -88,7 +83,15 @@ export function FeatureDetailPage() {
 
   if (isLoading) {
     return (
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: '48px 16px', display: 'flex', justifyContent: 'center' }}>
+      <main
+        style={{
+          maxWidth: 960,
+          margin: '0 auto',
+          padding: '48px 16px',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
         <Spinner size="lg" label="Loading feature request…" />
       </main>
     )
@@ -99,8 +102,12 @@ export function FeatureDetailPage() {
       return (
         <main style={{ maxWidth: 960, margin: '0 auto', padding: '48px 16px' }}>
           <Stack align="center" gap="sm">
-            <Title order={2} fz="xl">Feature not found</Title>
-            <Text c="dimmed" fz="sm">This feature request no longer exists.</Text>
+            <Title order={2} fz="xl">
+              Feature not found
+            </Title>
+            <Text c="dimmed" fz="sm">
+              This feature request no longer exists.
+            </Text>
             <Button variant="subtle" color="gray" size="sm" onClick={() => navigate('/features')}>
               Back to feature list
             </Button>
@@ -147,7 +154,14 @@ export function FeatureDetailPage() {
         </Group>
 
         <Group gap="sm" mt={2}>
-          <Button variant="light" color="gray" size="sm" onClick={handleShare} aria-label="Share this feature request" leftSection={<IconShare2 size={14} />}>
+          <Button
+            variant="light"
+            color="gray"
+            size="sm"
+            onClick={handleShare}
+            aria-label="Share this feature request"
+            leftSection={<IconShare2 size={14} />}
+          >
             Share
           </Button>
           {canEdit && (
@@ -197,15 +211,14 @@ export function FeatureDetailPage() {
                 >
                   <IconChevronUp
                     size={24}
-                    color={feature.has_voted ? 'var(--mantine-color-indigo-6)' : 'var(--mantine-color-gray-6)'}
+                    color={
+                      feature.has_voted
+                        ? 'var(--mantine-color-indigo-6)'
+                        : 'var(--mantine-color-gray-6)'
+                    }
                     stroke={feature.has_voted ? 2.5 : 1.5}
                   />
-                  <Text
-                    fz="xl"
-                    fw={700}
-                    c={feature.has_voted ? 'indigo.6' : 'dark'}
-                    lh={1.2}
-                  >
+                  <Text fz="xl" fw={700} c={feature.has_voted ? 'indigo.6' : 'dark'} lh={1.2}>
                     {feature.vote_count}
                   </Text>
                   <Text fz="xs" c="dimmed">
@@ -252,7 +265,12 @@ export function FeatureDetailPage() {
                 </Group>
 
                 <Group gap="sm" wrap="nowrap">
-                  <Avatar size={32} radius="xl" color="indigo" src={feature.author.avatar_url ?? undefined}>
+                  <Avatar
+                    size={32}
+                    radius="xl"
+                    color="indigo"
+                    src={feature.author.avatar_url ?? undefined}
+                  >
                     {authorInitials}
                   </Avatar>
                   <Stack gap={0}>
@@ -281,9 +299,7 @@ export function FeatureDetailPage() {
             {canDelete && (
               <>
                 <Divider mt="lg" mb="md" />
-                {isDeleteError && deleteError && (
-                  <ErrorMessage error={deleteError} />
-                )}
+                {isDeleteError && deleteError && <ErrorMessage error={deleteError} />}
                 <Group justify="flex-end">
                   <Button
                     variant="filled"

@@ -2271,3 +2271,84 @@ After that analysis, generate a complete and polished `README.md` at the root of
 
 ### Action Taken
 Performed a comprehensive repository analysis using an Explore agent, covering: Makefile (40+ targets), docker-compose.yml and docker-compose.prod.yml, .env.example, backend pyproject.toml, entrypoint.sh, all five Django apps and their layer structure, both management commands (seed_reference_data, seed_demo_data), frontend package.json and vite.config.ts, GitHub Actions CI workflow, all docs/ subdirectories, Dockerfile configurations for backend (multi-stage) and frontend (4-stage), nginx configuration, and MySQL init scripts. Generated and wrote a complete, polished README.md covering: project overview, full tech stack table, architecture (layer boundaries, data flow, containerization), project structure tree, prerequisites, environment variable reference, development and demo mode run instructions, database setup, all Makefile commands, testing, code quality, CI/CD pipeline summary, docs directory guide, key engineering decisions, future improvements, and contributing guidelines.
+
+## [2026-03-27T00:00:00Z] – Fix CI prettier formatting failures
+
+### Prompt
+lets to fix a few things that it broke in the ci automation:
+
+Run npm run format:check
+  npm run format:check
+  shell: /usr/bin/bash -e {0}
+
+> feature-rank-frontend@0.1.0 format:check
+> prettier --check src/
+
+Checking formatting...
+[warn] src/app/AppLayout.tsx
+[warn] src/components/data-table/index.tsx
+[warn] src/components/page-header/index.tsx
+[warn] src/features/categories/components/category-form-modal/index.tsx
+[warn] src/features/categories/components/category-table/index.tsx
+[warn] src/features/categories/components/icon-picker/index.tsx
+[warn] src/features/categories/hooks/use-create-category.ts
+[warn] src/features/feature-requests/components/feature-card/index.tsx
+[warn] src/features/feature-requests/components/feature-form/index.tsx
+[warn] src/features/feature-requests/components/feature-list-filters/index.tsx
+[warn] src/features/feature-requests/hooks/use-create-feature.ts
+[warn] src/features/feature-requests/hooks/use-update-feature.ts
+[warn] src/features/statuses/components/status-form-modal/index.tsx
+[warn] src/features/statuses/components/status-table/index.tsx
+[warn] src/hooks/use-notify.ts
+[warn] src/main.tsx
+[warn] src/pages/edit-feature-page/index.tsx
+[warn] src/pages/feature-detail-page/index.tsx
+[warn] src/pages/feature-list-page/index.tsx
+[warn] src/pages/login-page/index.tsx
+[warn] src/pages/login-page/login-form/index.tsx
+[warn] src/pages/statuses-page/index.tsx
+[warn] src/pages/users-page/index.tsx
+[warn] Code style issues found in 23 files. Run Prettier with --write to fix.
+Error: Process completed with exit code 1.
+
+### Action Taken
+Ran `npx prettier --write src/` in the frontend directory to fix formatting in all 23 flagged files. Verified the fix by re-running `npm run format:check`, which now passes with "All matched files use Prettier code style!"
+
+## [2026-03-27T00:00:00Z] – Improve login page background with richer gradients
+
+### Prompt
+I want to improve the backgorund outside de main card of login-page to no be so "boring" do you think that we can create something beauty for the background and using some gradients that harmonizes with the theme?
+
+### Action Taken
+Enhanced the desktop background in `frontend/src/pages/login-page/index.tsx`:
+- Changed the base gradient to a richer indigo/violet/blue progression (`#f5f3ff → #ede9fe → #e0e7ff → #eef2ff`)
+- Added a subtle dot-grid texture overlay (28px grid, 10% indigo dots) for modern depth
+- Replaced 4 weak orbs with 5 more prominent, larger aurora-style glowing blobs:
+  - Top-left: large violet aurora (700×700px, 42% opacity)
+  - Bottom-right: deep indigo aurora (680×680px, 38% opacity)
+  - Top-right: soft grape accent (460×460px, 45% opacity)
+  - Center: warm lavender lift glow (520×520px)
+  - Bottom-left: cool blue-indigo accent (320×320px, 28% opacity)
+- All decorative elements are `pointerEvents: none` and desktop-only (mobile keeps its solid gradient)
+
+## [2026-03-27T00:10:00Z] – Make login page background more visually striking
+
+### Prompt
+it still boring
+
+### Action Taken
+Completely overhauled the desktop background in `frontend/src/pages/login-page/index.tsx`:
+- Changed base from washed-out light lavender to a deep dark indigo/midnight (`#0f0824 → #1a0e3a → #0d1b4b → #0a0f2e`)
+- Injected CSS `@keyframes` (`orb-drift-1` through `orb-drift-4`) via a `<style>` tag for animated aurora orbs
+- Added 5 animated aurora blobs with distinct colors: vivid violet, deep indigo, rose accent (for contrast), bright purple, and cool cyan-blue
+- Each orb drifts independently on different durations (14s–22s) for an organic, living feel
+- Upgraded the card box-shadow to a dramatic 60% black shadow with a subtle white border ring so it floats clearly against the dark background
+- Mobile layout untouched
+
+## [2026-03-27T00:15:00Z] – Lighten login background to reduce clash with card left panel
+
+### Prompt
+I guess we just need to turn it a little bit lighter because the background is rushing with the left side of the card
+
+### Action Taken
+Lightened the desktop background gradient in `frontend/src/pages/login-page/index.tsx` from near-black (`#0f0824 → #1a0e3a → #0d1b4b → #0a0f2e`) to a rich dark-medium indigo-blue (`#2a1260 → #16245e → #1e1258 → #0f1d52`), creating clearer visual separation from the card's dark indigo left panel while keeping the aurora effect intact.

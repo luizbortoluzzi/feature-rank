@@ -71,12 +71,7 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
           ) : (
             <IconArrowUp size={22} color="var(--mantine-color-gray-5)" stroke={2} />
           )}
-          <Text
-            fw={700}
-            lh={1}
-            c={feature.has_voted ? 'green' : 'dark'}
-            style={{ fontSize: 32 }}
-          >
+          <Text fw={700} lh={1} c={feature.has_voted ? 'green' : 'dark'} style={{ fontSize: 32 }}>
             {feature.vote_count}
           </Text>
           <Text fz="xs" c="dimmed" lh={1}>
@@ -108,7 +103,12 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
           {/* Footer */}
           <Group gap="md" mt={4}>
             <Group gap={6} wrap="nowrap">
-              <Avatar size={32} radius="xl" color={avatarColor} src={feature.author.avatar_url ?? undefined}>
+              <Avatar
+                size={32}
+                radius="xl"
+                color={avatarColor}
+                src={feature.author.avatar_url ?? undefined}
+              >
                 {authorInitials}
               </Avatar>
               <Text fz="sm" fw={500}>

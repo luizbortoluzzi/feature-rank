@@ -6,7 +6,9 @@ import type { ApiError } from '../../../types/api'
 import { useNotify } from '../../../hooks/use-notify'
 
 interface UseCreateCategoryResult {
-  createCategory: ReturnType<typeof useMutation<CategoryListItem, ApiError, CreateCategoryPayload>>['mutate']
+  createCategory: ReturnType<
+    typeof useMutation<CategoryListItem, ApiError, CreateCategoryPayload>
+  >['mutate']
   isPending: boolean
   error: ApiError | null
 }

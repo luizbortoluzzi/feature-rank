@@ -14,9 +14,7 @@ import {
 import { IconSearch, IconX } from '@tabler/icons-react'
 
 // Lucide icons are forwardRef objects, not plain functions — filter by capitalised name only
-const ALL_ICON_NAMES: string[] = Object.keys(LucideIcons).filter((key) =>
-  /^[A-Z]/.test(key)
-)
+const ALL_ICON_NAMES: string[] = Object.keys(LucideIcons).filter((key) => /^[A-Z]/.test(key))
 
 function getLucideIcon(name: string): LucideIcon | null {
   const Icon = (LucideIcons as Record<string, unknown>)[name]
@@ -34,7 +32,7 @@ export function IconPicker({ value, onChange, error }: IconPickerProps) {
   const [search, setSearch] = useState('')
 
   const filtered = ALL_ICON_NAMES.filter((name) =>
-    name.toLowerCase().includes(search.toLowerCase())
+    name.toLowerCase().includes(search.toLowerCase()),
   ).slice(0, 80)
 
   const SelectedIcon = value ? getLucideIcon(value) : null

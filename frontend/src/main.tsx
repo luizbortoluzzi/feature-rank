@@ -15,7 +15,6 @@ declare module '@tanstack/react-query' {
   }
 }
 
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -14,12 +14,7 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core'
-import {
-  IconBrandGithub,
-  IconAlertCircle,
-  IconMail,
-  IconLock,
-} from '@tabler/icons-react'
+import { IconBrandGithub, IconAlertCircle, IconMail, IconLock } from '@tabler/icons-react'
 import type { ApiError } from '../../../types/api'
 import type { LoginPayload } from '../../../services/auth'
 
@@ -92,8 +87,12 @@ export function LoginForm({ onSubmit, isPending, error, isMobile }: LoginFormPro
     >
       <Stack gap="lg">
         <Box>
-          <Text fw={700} fz={24}>Sign In</Text>
-          <Text fz="sm" c="dimmed">Welcome back! Please enter your details.</Text>
+          <Text fw={700} fz={24}>
+            Sign In
+          </Text>
+          <Text fz="sm" c="dimmed">
+            Welcome back! Please enter your details.
+          </Text>
         </Box>
 
         <Stack gap="sm">
@@ -179,8 +178,7 @@ export function LoginForm({ onSubmit, isPending, error, isMobile }: LoginFormPro
               fullWidth
               size="md"
               radius="md"
-              variant="filled"
-              color="indigo"
+              variant="gradient"
               loading={isPending}
             >
               Sign In
@@ -188,17 +186,29 @@ export function LoginForm({ onSubmit, isPending, error, isMobile }: LoginFormPro
 
             <Text fz="sm" ta="center">
               Don&apos;t have an account?{' '}
-              <Anchor href="#" c="indigo">Sign up for free</Anchor>
+              <Anchor href="#" c="indigo">
+                Sign up for free
+              </Anchor>
             </Text>
           </Stack>
         </form>
 
         <Group justify="center" gap="xs">
-          <Anchor fz="xs" c="dimmed" href="#">Privacy Policy</Anchor>
-          <Text c="dimmed" fz="xs">·</Text>
-          <Anchor fz="xs" c="dimmed" href="#">Terms of Service</Anchor>
-          <Text c="dimmed" fz="xs">·</Text>
-          <Anchor fz="xs" c="dimmed" href="#">Help Center</Anchor>
+          <Anchor fz="xs" c="dimmed" href="#">
+            Privacy Policy
+          </Anchor>
+          <Text c="dimmed" fz="xs">
+            ·
+          </Text>
+          <Anchor fz="xs" c="dimmed" href="#">
+            Terms of Service
+          </Anchor>
+          <Text c="dimmed" fz="xs">
+            ·
+          </Text>
+          <Anchor fz="xs" c="dimmed" href="#">
+            Help Center
+          </Anchor>
         </Group>
       </Stack>
     </Box>

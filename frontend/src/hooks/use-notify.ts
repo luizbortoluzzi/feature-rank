@@ -10,7 +10,10 @@ export function useNotify() {
       autoClose: 3000,
       withBorder: true,
       styles: {
-        root: { backgroundColor: 'var(--mantine-color-green-0)', borderColor: 'var(--mantine-color-green-4)' },
+        root: {
+          backgroundColor: 'var(--mantine-color-green-0)',
+          borderColor: 'var(--mantine-color-green-4)',
+        },
         title: { color: 'var(--mantine-color-green-8)' },
         description: { color: 'var(--mantine-color-green-7)' },
       },
@@ -25,7 +28,10 @@ export function useNotify() {
       autoClose: 5000,
       withBorder: true,
       styles: {
-        root: { backgroundColor: 'var(--mantine-color-red-0)', borderColor: 'var(--mantine-color-red-4)' },
+        root: {
+          backgroundColor: 'var(--mantine-color-red-0)',
+          borderColor: 'var(--mantine-color-red-4)',
+        },
         title: { color: 'var(--mantine-color-red-8)' },
         description: { color: 'var(--mantine-color-red-7)' },
       },

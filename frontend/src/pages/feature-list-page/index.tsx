@@ -12,7 +12,10 @@ import { useCategories } from '../../features/categories/hooks/use-categories'
 import { useStatuses } from '../../features/statuses/hooks/use-statuses'
 import { FeatureCard } from '../../features/feature-requests/components/feature-card'
 import { FeatureListFilters } from '../../features/feature-requests/components/feature-list-filters'
-import { FeatureForm, type FeatureFormFields } from '../../features/feature-requests/components/feature-form'
+import {
+  FeatureForm,
+  type FeatureFormFields,
+} from '../../features/feature-requests/components/feature-form'
 import { Spinner } from '../../components/spinner'
 import { ErrorMessage } from '../../components/error-message'
 import { EmptyState } from '../../components/empty-state'
@@ -39,7 +42,13 @@ export function FeatureListPage() {
   const { statuses, isLoading: isLoadingStatuses } = useStatuses()
   const { castVote, votingId } = useCastVote(params)
   const { removeVote, removingId } = useRemoveVote(params)
-  const { createFeature, isPending: isCreating, isError: isCreateError, error: createError, data: createdFeature } = useCreateFeature()
+  const {
+    createFeature,
+    isPending: isCreating,
+    isError: isCreateError,
+    error: createError,
+    data: createdFeature,
+  } = useCreateFeature()
 
   useEffect(() => {
     if (createdFeature) setModalOpen(false)
@@ -69,7 +78,13 @@ export function FeatureListPage() {
   }
 
   function handleCreateSubmit(fields: FeatureFormFields) {
-    const payload: { title: string; description: string; rate: number; category_id: number; status_id?: number } = {
+    const payload: {
+      title: string
+      description: string
+      rate: number
+      category_id: number
+      status_id?: number
+    } = {
       title: fields.title,
       description: fields.description,
       rate: fields.rate,
@@ -177,7 +192,12 @@ export function FeatureListPage() {
         title="New Feature Request"
         size="lg"
         centered
-        styles={{ inner: { scrollbarWidth: 'thin', scrollbarColor: 'var(--mantine-color-gray-4) transparent' } }}
+        styles={{
+          inner: {
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'var(--mantine-color-gray-4) transparent',
+          },
+        }}
       >
         <FeatureForm
           categories={categories}

@@ -6,7 +6,9 @@ import type { ApiError } from '../../../types/api'
 import { useNotify } from '../../../hooks/use-notify'
 
 interface UseCreateFeatureResult {
-  createFeature: ReturnType<typeof useMutation<FeatureRequest, ApiError, CreateFeaturePayload>>['mutate']
+  createFeature: ReturnType<
+    typeof useMutation<FeatureRequest, ApiError, CreateFeaturePayload>
+  >['mutate']
   isPending: boolean
   isError: boolean
   error: ApiError | null
