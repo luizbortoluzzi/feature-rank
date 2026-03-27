@@ -1,6 +1,6 @@
 import { type ReactNode, type ElementType } from 'react'
 import { Group, Stack, Box, Title, Text } from '@mantine/core'
-import { useMediaQuery } from '@mantine/hooks'
+import { useIsMobile } from '../../hooks/use-is-mobile'
 
 interface PageHeaderProps {
   icon?: ElementType
@@ -10,7 +10,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ icon: Icon, title, subtitle, actions }: PageHeaderProps) {
-  const isMobile = useMediaQuery('(max-width: 48em)')
+  const isMobile = useIsMobile()
 
   return (
     <Stack

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Stack, Group, Text, TextInput, Button, Center, Modal } from '@mantine/core'
-import { useDisclosure, useMediaQuery } from '@mantine/hooks'
+import { useDisclosure } from '@mantine/hooks'
+import { useIsMobile } from '../../hooks/use-is-mobile'
 import { IconSearch, IconPlus, IconCircleDot } from '@tabler/icons-react'
 import { PageHeader } from '../../components/page-header'
 import { useStatusList } from '../../features/statuses/hooks/use-status-list'
@@ -18,7 +19,7 @@ import { EmptyState } from '../../components/empty-state'
 import type { Status } from '../../types/status'
 
 export function StatusesPage() {
-  const isMobile = useMediaQuery('(max-width: 48em)')
+  const isMobile = useIsMobile()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [isFormOpen, { open: openForm, close: closeForm }] = useDisclosure(false)

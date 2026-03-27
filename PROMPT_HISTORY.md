@@ -2169,3 +2169,26 @@ now we need to set this ci: [template provided]. i realized that in current proj
 
 ### Action Taken
 Deleted backend-ci.yml and frontend-ci.yml. Created unified .github/workflows/ci.yml with four jobs: structure (required files/dirs check, removed scripts/ which doesn't exist), pre-commit (skips frontend-lint and frontend-typecheck via SKIP env var since those run in frontend-quality), frontend-quality (type-check, lint, format:check, tests with --run flag, build), backend-tests (libmysqlclient-dev, pip install -e ".[dev]", ruff lint+format check, pytest with coverage). Added pytest-cov>=5.0 to backend pyproject.toml dev dependencies.
+
+## [2026-03-27T00:13:00Z] – Frontend codebase audit
+
+### Prompt
+[Full audit prompt requesting deep analysis across architecture, component design, folder organization, naming, reusability, TypeScript quality, state management, maintainability, code smells, and consistency]
+
+### Action Taken
+Performed a complete read of all 75 frontend source files. Produced a structured audit report covering 10 dimensions with severity ratings, concrete file references, and a prioritized remediation roadmap. Key findings: unprotected /features/:id route, categories/index.ts exporting wrong feature's hooks, LoginPage god component with adjacent empty stub directory, DataTable dead sort UI, duplicated breakpoint magic strings, FeatureRequest type alias inconsistency, window.location.href bypassing React Router.
+
+## [2026-03-27T00:00:00Z] – Phase 1 audit fixes
+
+### Prompt
+ok, lets done everything, lets start with phase 1
+
+### Action Taken
+Executed all Phase 1 audit remediation items:
+1. Confirmed features/categories/index.ts barrel was already correct — no action needed.
+2. Added ProtectedRoute wrapper to /features/:id route in app/router.tsx.
+3. Renamed hooks/useNotify.ts to hooks/use-notify.ts (git mv) and updated all 11 import sites.
+4. Created hooks/use-is-mobile.ts with SM_BREAKPOINT, MD_BREAKPOINT constants and useIsMobile() hook; updated 7 files to use useIsMobile() and login-page to use MD_BREAKPOINT constant.
+5. Added CachedListData interface to types/feature.ts; removed duplicate local declarations from use-cast-vote.ts and use-remove-vote.ts.
+6. Created services/navigation.ts singleton (registerNavigate/redirectToLogin); updated services/api.ts to use redirectToLogin() instead of window.location.href; registered navigate function in AppLayout useEffect.
+7. Removed dead sortable prop from DataTableColumn interface and corresponding IconSelector conditional render from DataTable component.

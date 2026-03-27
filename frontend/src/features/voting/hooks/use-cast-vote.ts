@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { featureKeys } from '../../feature-requests/queryKeys'
 import { castVote } from '../../../services/voting'
-import type { FeatureRequest, FeatureRequestSummary } from '../../../types/feature'
-import type { ApiError, PaginationMeta } from '../../../types/api'
+import type { CachedListData, FeatureRequest } from '../../../types/feature'
+import type { ApiError } from '../../../types/api'
 import type { FeatureListParams } from '../../../services/features'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UseCastVoteResult {
   castVote: (featureId: number) => void
@@ -12,11 +12,6 @@ interface UseCastVoteResult {
   votingId: number | null
   isError: boolean
   error: ApiError | null
-}
-
-interface CachedListData {
-  items: FeatureRequestSummary[]
-  meta: PaginationMeta
 }
 
 export function useCastVote(params?: FeatureListParams): UseCastVoteResult {

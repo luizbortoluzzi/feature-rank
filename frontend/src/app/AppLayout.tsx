@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   AppShell,
@@ -11,7 +11,8 @@ import {
   Box,
   Divider,
 } from '@mantine/core'
-import { useDisclosure, useMediaQuery } from '@mantine/hooks'
+import { useDisclosure } from '@mantine/hooks'
+import { useIsMobile } from '../hooks/use-is-mobile'
 import {
   IconLayoutList,
   IconTag,
@@ -21,6 +22,7 @@ import {
   IconLogout,
 } from '@tabler/icons-react'
 import { useCurrentUser } from './AuthProvider'
+import { registerNavigate } from '../services/navigation'
 
 interface AppLayoutProps {
   children: ReactNode
@@ -47,7 +49,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate()
   const { user, logout } = useCurrentUser()
   const [opened, { toggle, close }] = useDisclosure()
-  const isMobile = useMediaQuery('(max-width: 48em)') // Mantine 'sm' breakpoint
+  const isMobile = useIsMobile()
+
+  useEffect(() => {
+    registerNavigate(navigate)
+  }, [navigate])
 
   const userInitials = user
     ? user.name

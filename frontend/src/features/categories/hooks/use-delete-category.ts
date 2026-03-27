@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { categoryKeys } from '../queryKeys'
 import { deleteCategory } from '../../../services/categories'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UseDeleteCategoryResult {
   deleteCategory: ReturnType<typeof useMutation<void, unknown, number>>['mutate']

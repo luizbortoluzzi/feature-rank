@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Stack, TextInput, Button, Center, Modal } from '@mantine/core'
-import { useMediaQuery } from '@mantine/hooks'
+import { useIsMobile } from '../../hooks/use-is-mobile'
 import { IconSearch, IconPlus, IconLayoutList } from '@tabler/icons-react'
 import { PageHeader } from '../../components/page-header'
 import { useCurrentUser } from '../../app/AuthProvider'
@@ -20,7 +20,7 @@ import { Pagination } from '../../components/pagination'
 
 export function FeatureListPage() {
   const { user } = useCurrentUser()
-  const isMobile = useMediaQuery('(max-width: 48em)')
+  const isMobile = useIsMobile()
   const [page, setPage] = useState(1)
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined)
   const [statusId, setStatusId] = useState<number | undefined>(undefined)

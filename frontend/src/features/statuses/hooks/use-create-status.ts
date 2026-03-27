@@ -3,7 +3,7 @@ import { statusKeys } from '../queryKeys'
 import { createStatus, type CreateStatusPayload } from '../../../services/statuses'
 import type { Status } from '../../../types/status'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UseCreateStatusResult {
   createStatus: ReturnType<typeof useMutation<Status, ApiError, CreateStatusPayload>>['mutate']

@@ -3,7 +3,7 @@ import { statusKeys } from '../queryKeys'
 import { updateStatus, type UpdateStatusPayload } from '../../../services/statuses'
 import type { Status } from '../../../types/status'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UpdateStatusMutationArgs {
   id: number

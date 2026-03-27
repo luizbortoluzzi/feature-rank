@@ -3,7 +3,7 @@ import { featureKeys } from '../queryKeys'
 import { updateFeature, type UpdateFeaturePayload } from '../../../services/features'
 import type { FeatureRequest } from '../../../types/feature'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UpdateFeatureMutationArgs {
   id: number

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
 import { useMediaQuery } from '@mantine/hooks'
+import { MD_BREAKPOINT } from '../../hooks/use-is-mobile'
 import {
   Alert,
   Anchor,
@@ -80,7 +81,7 @@ const AVATAR_ITEMS = [
 export function LoginPage() {
   const { user, isLoading } = useCurrentUser()
   const loginMutation = useLogin()
-  const isMobile = useMediaQuery('(max-width: 62em)')
+  const isMobile = useMediaQuery(MD_BREAKPOINT)
 
   const {
     register,

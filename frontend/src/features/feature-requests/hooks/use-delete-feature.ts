@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { featureKeys } from '../queryKeys'
 import { deleteFeature } from '../../../services/features'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UseDeleteFeatureResult {
   deleteFeature: ReturnType<typeof useMutation<void, ApiError, number>>['mutate']

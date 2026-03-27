@@ -31,9 +31,11 @@ export const router = createBrowserRouter([
   {
     path: '/features/:id',
     element: (
-      <AppLayout>
-        <FeatureDetailPage />
-      </AppLayout>
+      <ProtectedRoute>
+        <AppLayout>
+          <FeatureDetailPage />
+        </AppLayout>
+      </ProtectedRoute>
     ),
   },
   {

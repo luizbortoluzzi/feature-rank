@@ -3,7 +3,7 @@ import { categoryKeys } from '../queryKeys'
 import { createCategory, type CreateCategoryPayload } from '../../../services/categories'
 import type { CategoryListItem } from '../../../types/category'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UseCreateCategoryResult {
   createCategory: ReturnType<typeof useMutation<CategoryListItem, ApiError, CreateCategoryPayload>>['mutate']

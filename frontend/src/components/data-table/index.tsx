@@ -1,13 +1,11 @@
 import { type ReactNode } from 'react'
 import { Table, Box, Group, Text } from '@mantine/core'
-import { IconSelector } from '@tabler/icons-react'
 import { Pagination } from '../pagination'
 import type { PaginationMeta } from '../../types/api'
 
 export interface DataTableColumn {
   key: string
   label: string
-  sortable?: boolean
 }
 
 interface DataTableProps {
@@ -44,18 +42,9 @@ export function DataTable({
           <Table.Tr>
             {columns.map((col) => (
               <Table.Th key={col.key}>
-                {col.sortable ? (
-                  <Group gap={4} wrap="nowrap">
-                    <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                      {col.label}
-                    </Text>
-                    <IconSelector size={12} color="var(--mantine-color-dimmed)" />
-                  </Group>
-                ) : (
-                  <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
-                    {col.label}
-                  </Text>
-                )}
+                <Text fz="xs" fw={600} tt="uppercase" c="dimmed">
+                  {col.label}
+                </Text>
               </Table.Th>
             ))}
           </Table.Tr>

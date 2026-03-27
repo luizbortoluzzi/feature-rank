@@ -3,7 +3,7 @@ import { featureKeys } from '../queryKeys'
 import { createFeature, type CreateFeaturePayload } from '../../../services/features'
 import type { FeatureRequest } from '../../../types/feature'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UseCreateFeatureResult {
   createFeature: ReturnType<typeof useMutation<FeatureRequest, ApiError, CreateFeaturePayload>>['mutate']

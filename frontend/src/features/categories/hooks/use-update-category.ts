@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { categoryKeys } from '../queryKeys'
 import { updateCategory, type UpdateCategoryPayload } from '../../../services/categories'
 import type { ApiError } from '../../../types/api'
-import { useNotify } from '../../../hooks/useNotify'
+import { useNotify } from '../../../hooks/use-notify'
 
 interface UpdateCategoryArgs {
   id: number

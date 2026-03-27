@@ -16,7 +16,7 @@ import {
   Switch,
   ColorInput,
 } from '@mantine/core'
-import { useMediaQuery } from '@mantine/hooks'
+import { useIsMobile } from '../../hooks/use-is-mobile'
 import {
   IconSearch,
   IconPlus,
@@ -221,7 +221,7 @@ function DeleteConfirmModal({
 
 export function CategoriesPage() {
   const { user } = useCurrentUser()
-  const isMobile = useMediaQuery('(max-width: 48em)')
+  const isMobile = useIsMobile()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
 

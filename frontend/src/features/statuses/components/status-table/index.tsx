@@ -1,5 +1,5 @@
 import { Table, Group, Stack, Paper, Text, ActionIcon, Switch, Box } from '@mantine/core'
-import { useMediaQuery } from '@mantine/hooks'
+import { useIsMobile } from '../../../../hooks/use-is-mobile'
 import { IconPencil, IconTrash } from '@tabler/icons-react'
 import { DataTable, type DataTableColumn } from '../../../../components/data-table'
 import { Pagination } from '../../../../components/pagination'
@@ -36,7 +36,7 @@ export function StatusTable({
   meta,
   onPageChange,
 }: StatusTableProps) {
-  const isMobile = useMediaQuery('(max-width: 48em)')
+  const isMobile = useIsMobile()
 
   if (isMobile) {
     return (

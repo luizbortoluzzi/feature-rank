@@ -1,5 +1,5 @@
 import { Group, Stack, Select, Button } from '@mantine/core'
-import { useMediaQuery } from '@mantine/hooks'
+import { useIsMobile } from '../../../../hooks/use-is-mobile'
 import type { Category } from '../../../../types/category'
 import type { Status } from '../../../../types/status'
 
@@ -26,7 +26,7 @@ export function FeatureListFilters({
   onStatusChange,
   onClearFilters,
 }: FeatureListFiltersProps) {
-  const isMobile = useMediaQuery('(max-width: 48em)')
+  const isMobile = useIsMobile()
   const hasActiveFilters = selectedCategoryId !== undefined || selectedStatusId !== undefined
   const categoryData = [
     { value: '', label: 'All categories' },
