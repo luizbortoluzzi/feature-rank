@@ -1952,3 +1952,77 @@ Three changes to `DataTable` and table action buttons:
 1. `components/data-table/index.tsx` — added `backgroundColor: 'var(--mantine-color-body)'` to the outer Box so the white fill is explicit and the gray page background doesn't bleed through. Added `style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}` to `Table.Thead` to give the header row a subtle fill distinct from the white data rows — this eliminates the visual "borders are weird" effect where the header and body were indistinguishable.
 2. `features/statuses/components/status-table/index.tsx` — bumped action `ActionIcon` size from `size="sm"` to `size="md"`, icon size from 14 to 16.
 3. `pages/categories-page/index.tsx` — same button size bump applied for consistency.
+
+## [2026-03-27T00:20:00Z] — Increase badge and action icon sizes in table rows
+
+### Prompt
+ok now we need to increse the chip size and the action icons in the table rows
+
+### Action Taken
+Categories page (`pages/categories-page/index.tsx`):
+- Added `size="md"` to the Active/Inactive `Badge` and bumped the dot indicator from 6→7px for proportional scaling.
+- Bumped action `ActionIcon` from `size="md"` → `size="lg"`, icon from 16→18px.
+
+Statuses table (`features/statuses/components/status-table/index.tsx`):
+- Same `ActionIcon` bump: `size="md"` → `size="lg"`, icon 16→18px, applied consistently.
+
+## [2026-03-27T00:30:00Z] — Replace icon text input with icon picker in categories form
+
+### Prompt
+ok now for the form in categories we need to turn the icon field as a icon picker to improve the ui
+
+### Action Taken
+Created `features/categories/components/icon-picker/index.tsx` — a Popover-based icon picker that:
+- Shows a trigger button with the selected icon preview + name (or placeholder if none)
+- Has a clear (×) button to deselect the current icon
+- Opens a Popover with a search `TextInput` (auto-focused) and a 7-column `SimpleGrid` of `ActionIcon` buttons inside a `ScrollArea` (h=240)
+- Filters the full Lucide icon set by name as the user types, capped at 80 results
+- Highlights the currently selected icon with indigo filled style
+- Shows "No icons found" empty state and a hint when results are capped at 80
+
+Updated `pages/categories-page/index.tsx`:
+- Imported `IconPicker`
+- Added `watch('icon')` → `iconValue`
+- Replaced the plain `TextInput label="Icon"` with `<IconPicker value={iconValue} onChange={(val) => setValue('icon', val)} error={...} />`
+
+## [2026-03-27T00:00:00Z] – Increase feature card element sizes
+
+### Prompt
+ok, now we gonna increase all the side props in the feature card, the author and his avatar must be bigger, the stars rate must be bigger, the category and status must be bigger too
+
+### Action Taken
+In feature-card: avatar size 22→32 (with avatar_url src), author text fz xs→sm, star icons size 14→18, clock icon size 12→14, badges now pass size="md". Added size prop (BadgeProps['size']) to StatusBadge and CategoryBadge components to support the new size prop.
+
+## [2026-03-27T00:40:00Z] — Fix icon picker showing empty grid
+
+### Prompt
+the icon picker are no showing any icons just an empty box
+
+### Action Taken
+Fixed two checks in `features/categories/components/icon-picker/index.tsx`:
+- `ALL_ICON_NAMES` filter: removed `typeof val === 'function'` guard — Lucide icons are React `forwardRef` objects, not plain functions, so the check silently excluded every icon. Now filters only by capitalised key name (`/^[A-Z]/`), which is sufficient since all non-icon exports (`createLucideIcon` etc.) start with lowercase.
+- `getLucideIcon`: replaced `typeof Icon === 'function'` with a simple null check (`Icon != null`).
+
+## [2026-03-27T00:01:00Z] – Green filled vote button with check icon when voted
+
+### Prompt
+ok now for the vote button we need to do some improvements the correct it would be: if the user voted it must be filled in green and the icon must be a check
+
+### Action Taken
+Updated vote widget in feature-card: when has_voted, background switches to green-1, border to green-4, icon switches from IconArrowUp to IconCheck (green-6), vote count text color changes to green. Unvoted state unchanged (gray background, arrow up icon).
+
+## [2026-03-27T00:02:00Z] – Increase category and status badge sizes further
+
+### Prompt
+but lets increase more the two upper props
+
+### Action Taken
+Changed category and status badge sizes from "md" to "lg" in the feature card.
+
+## [2026-03-27T00:03:00Z] – Category badge uses its own color
+
+### Prompt
+and we must display the chips of each category with its own color
+
+### Action Taken
+Updated CategoryBadge to use category.color for background (color + 18 alpha), text, and border (color + 30 alpha), matching the same pattern already used by StatusBadge.

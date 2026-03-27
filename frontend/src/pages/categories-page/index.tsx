@@ -24,6 +24,7 @@ import {
 } from '@tabler/icons-react'
 import { PageHeader } from '../../components/page-header'
 import { DataTable, type DataTableColumn } from '../../components/data-table'
+import { IconPicker } from '../../features/categories/components/icon-picker'
 import { useForm } from 'react-hook-form'
 import * as LucideIcons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -107,6 +108,7 @@ function CategoryFormModal({
     },
   })
 
+  const iconValue = watch('icon')
   const colorValue = watch('color')
   const isActiveValue = watch('is_active')
 
@@ -138,11 +140,10 @@ function CategoryFormModal({
             {...register('description')}
           />
 
-          <TextInput
-            label="Icon"
-            placeholder="e.g. 🔵 or any emoji"
+          <IconPicker
+            value={iconValue}
+            onChange={(val) => setValue('icon', val)}
             error={submitError?.details?.icon?.[0]}
-            {...register('icon')}
           />
 
           <ColorInput
@@ -314,13 +315,14 @@ export function CategoriesPage() {
             <span
               style={{
                 display: 'inline-block',
-                width: 6,
-                height: 6,
+                width: 7,
+                height: 7,
                 borderRadius: '50%',
                 backgroundColor: category.is_active ? '#2f9e44' : '#868e96',
               }}
             />
           }
+          size="md"
           variant="light"
           radius="sm"
           style={{
@@ -346,20 +348,20 @@ export function CategoriesPage() {
             <ActionIcon
               variant="subtle"
               color="gray"
-              size="md"
+              size="lg"
               aria-label={`Edit ${category.name}`}
               onClick={() => setEditTarget(category)}
             >
-              <IconPencil size={16} />
+              <IconPencil size={18} />
             </ActionIcon>
             <ActionIcon
               variant="subtle"
               color="red"
-              size="md"
+              size="lg"
               aria-label={`Delete ${category.name}`}
               onClick={() => setDeleteTarget(category)}
             >
-              <IconTrash size={16} />
+              <IconTrash size={18} />
             </ActionIcon>
           </Group>
         </Table.Td>

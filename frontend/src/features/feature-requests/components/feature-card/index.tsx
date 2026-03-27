@@ -1,5 +1,5 @@
 import { Group, Paper, Stack, Text, Title, Avatar } from '@mantine/core'
-import { IconArrowUp, IconStar, IconStarFilled, IconClock } from '@tabler/icons-react'
+import { IconArrowUp, IconCheck, IconStar, IconStarFilled, IconClock } from '@tabler/icons-react'
 import type { FeatureRequestSummary } from '../../../../types/feature'
 import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
@@ -16,9 +16,9 @@ function StarRating({ value }: { value: number }) {
     <Group gap={2}>
       {[1, 2, 3, 4, 5].map((i) =>
         i <= value ? (
-          <IconStarFilled key={i} size={14} color="var(--mantine-color-yellow-5)" />
+          <IconStarFilled key={i} size={18} color="var(--mantine-color-yellow-5)" />
         ) : (
-          <IconStar key={i} size={14} color="var(--mantine-color-gray-3)" />
+          <IconStar key={i} size={18} color="var(--mantine-color-gray-3)" />
         ),
       )}
     </Group>
@@ -50,9 +50,9 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
             borderRadius: 'var(--mantine-radius-md)',
             cursor: isVoting ? 'default' : 'pointer',
             backgroundColor: feature.has_voted
-              ? 'var(--mantine-color-indigo-1)'
+              ? 'var(--mantine-color-green-1)'
               : 'var(--mantine-color-gray-0)',
-            border: `1px solid ${feature.has_voted ? 'var(--mantine-color-indigo-3)' : 'var(--mantine-color-gray-2)'}`,
+            border: `1px solid ${feature.has_voted ? 'var(--mantine-color-green-4)' : 'var(--mantine-color-gray-2)'}`,
             transition: 'background-color 0.15s, border-color 0.15s',
             opacity: isVoting ? 0.6 : 1,
             pointerEvents: isVoting ? 'none' : 'auto',
@@ -66,19 +66,15 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
               : `Vote (${feature.vote_count})`
           }
         >
-          <IconArrowUp
-            size={22}
-            color={
-              feature.has_voted
-                ? 'var(--mantine-color-indigo-6)'
-                : 'var(--mantine-color-gray-5)'
-            }
-            stroke={feature.has_voted ? 2.5 : 2}
-          />
+          {feature.has_voted ? (
+            <IconCheck size={22} color="var(--mantine-color-green-6)" stroke={2.5} />
+          ) : (
+            <IconArrowUp size={22} color="var(--mantine-color-gray-5)" stroke={2} />
+          )}
           <Text
             fw={700}
             lh={1}
-            c={feature.has_voted ? 'indigo' : 'dark'}
+            c={feature.has_voted ? 'green' : 'dark'}
             style={{ fontSize: 32 }}
           >
             {feature.vote_count}
@@ -93,8 +89,8 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
           {/* Badges + Star rating */}
           <Group justify="space-between" align="center">
             <Group gap="xs">
-              <CategoryBadge category={feature.category} />
-              <StatusBadge status={feature.status} />
+              <CategoryBadge category={feature.category} size="lg" />
+              <StatusBadge status={feature.status} size="lg" />
             </Group>
             <StarRating value={feature.rate} />
           </Group>
@@ -112,15 +108,15 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
           {/* Footer */}
           <Group gap="md" mt={4}>
             <Group gap={6} wrap="nowrap">
-              <Avatar size={22} radius="xl" color={avatarColor}>
+              <Avatar size={32} radius="xl" color={avatarColor} src={feature.author.avatar_url ?? undefined}>
                 {authorInitials}
               </Avatar>
-              <Text fz="xs" fw={500}>
+              <Text fz="sm" fw={500}>
                 {feature.author.name}
               </Text>
             </Group>
             <Group gap={4} wrap="nowrap">
-              <IconClock size={12} color="var(--mantine-color-gray-5)" />
+              <IconClock size={14} color="var(--mantine-color-gray-5)" />
               <Text fz="xs" c="dimmed">
                 Posted {formatRelativeDate(feature.created_at)}
               </Text>

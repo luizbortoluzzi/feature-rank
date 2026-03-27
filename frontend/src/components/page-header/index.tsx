@@ -42,7 +42,7 @@ export function PageHeader({ icon: Icon, title, subtitle, actions }: PageHeaderP
           </Box>
         )}
         <Box>
-          <Title order={2} fz="xl">
+          <Title order={2} fz="lg">
             {title}
           </Title>
           {subtitle && (

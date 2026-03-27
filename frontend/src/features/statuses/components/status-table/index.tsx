@@ -105,21 +105,21 @@ export function StatusTable({
               <ActionIcon
                 variant="subtle"
                 color="gray"
-                size="md"
+                size="lg"
                 onClick={() => onEdit(status)}
                 aria-label={`Edit ${status.name}`}
               >
-                <IconPencil size={16} />
+                <IconPencil size={18} />
               </ActionIcon>
               <ActionIcon
                 variant="subtle"
                 color="red"
-                size="md"
+                size="lg"
                 onClick={() => onDelete(status)}
                 loading={deletingId === status.id}
                 aria-label={`Delete ${status.name}`}
               >
-                <IconTrash size={16} />
+                <IconTrash size={18} />
               </ActionIcon>
             </Group>
           </Table.Td>
