@@ -106,6 +106,7 @@ export function EditFeaturePage() {
             isPending={isPending}
             submitError={isError ? error : null}
             onSubmit={handleSubmit}
+            onCancel={() => navigate(-1)}
           />
         </Stack>
       </Box>

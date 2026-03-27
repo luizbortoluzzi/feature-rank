@@ -188,6 +188,7 @@ export function FeatureListPage() {
           isPending={isCreating}
           submitError={isCreateError ? createError : null}
           onSubmit={handleCreateSubmit}
+          onCancel={() => setModalOpen(false)}
         />
       </Modal>
     </Stack>

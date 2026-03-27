@@ -1,27 +1,12 @@
 import { createTheme, rem, type MantineTheme } from '@mantine/core'
 
 export const theme = createTheme({
-  primaryColor: 'brand',
-  primaryShade: { light: 5, dark: 4 },
-
-  colors: {
-    brand: [
-      '#f3efff',
-      '#e2d9ff',
-      '#c7b3ff',
-      '#ab8cff',
-      '#926bff',
-      '#7f56ff',
-      '#6c3df0',
-      '#5d30d4',
-      '#4f28b2',
-      '#432394',
-    ],
-  },
+  primaryColor: 'indigo',
+  primaryShade: { light: 6, dark: 5 },
 
   defaultGradient: {
-    from: 'brand.6',
-    to: 'brand.4',
+    from: 'indigo.6',
+    to: 'violet.5',
     deg: 135,
   },
 
