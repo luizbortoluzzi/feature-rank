@@ -2192,3 +2192,19 @@ Executed all Phase 1 audit remediation items:
 5. Added CachedListData interface to types/feature.ts; removed duplicate local declarations from use-cast-vote.ts and use-remove-vote.ts.
 6. Created services/navigation.ts singleton (registerNavigate/redirectToLogin); updated services/api.ts to use redirectToLogin() instead of window.location.href; registered navigate function in AppLayout useEffect.
 7. Removed dead sortable prop from DataTableColumn interface and corresponding IconSelector conditional render from DataTable component.
+
+## [2026-03-27T00:30:00Z] – Phase 2 component extraction
+
+### Prompt
+Ok, now lets do the phase 2
+
+### Action Taken
+Executed Phase 2 component extraction and god-component reduction:
+1. Fixed TypeScript error: removed leftover `sortable: true` from CategoriesPage columns (sortable was removed from DataTableColumn interface in Phase 1).
+2. Extracted `CategoryIcon` → `features/categories/components/category-icon/index.tsx` (LucideIcon renderer with colored circular background).
+3. Extracted `CategoryFormModal` → `features/categories/components/category-form-modal/index.tsx` (exported CategoryFormValues type alongside component).
+4. Extracted `DeleteConfirmModal` → `features/categories/components/delete-confirm-modal/index.tsx` (category-specific confirmation dialog).
+5. Extracted `CategoryTable` → `features/categories/components/category-table/index.tsx` (handles both desktop DataTable and mobile Paper card list, removes isMobile duplication from the page, owns ActiveBadge helper internally).
+6. Rewrote `CategoriesPage` from 540 lines to ~130 lines — now only handles state, data fetching, and event wiring.
+7. Extracted `LoginForm` (right panel) → `pages/login-page/login-form/index.tsx` (owns form state, error mapping, social buttons, footer; receives onSubmit/isPending/error/isMobile as props).
+8. Rewrote `LoginPage` from 486 lines to ~130 lines — now handles auth guard, layout shell, background orbs, and left panel only.
