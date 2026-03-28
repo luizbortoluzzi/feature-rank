@@ -186,11 +186,7 @@ export function FeatureListPage() {
       )}
 
       {/* Create feature modal */}
-      <Modal
-        opened={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="New Feature Request"
-      >
+      <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="New Feature Request">
         <FeatureForm
           categories={categories}
           statuses={statuses}

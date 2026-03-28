@@ -14,11 +14,5 @@ export function Badge({ label, color = '#868e96', icon }: BadgeProps) {
     </span>
   ) : undefined
 
-  return (
-    <ColoredBadge
-      label={label}
-      color={color}
-      leftSection={leftSection}
-    />
-  )
+  return <ColoredBadge label={label} color={color} leftSection={leftSection} />
 }

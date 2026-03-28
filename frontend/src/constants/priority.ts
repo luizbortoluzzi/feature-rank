@@ -1,4 +1,7 @@
-export const PRIORITY_CONFIG: Record<number, { label: string; color: string; description: string }> = {
+export const PRIORITY_CONFIG: Record<
+  number,
+  { label: string; color: string; description: string }
+> = {
   1: { label: 'Very Low', color: 'gray', description: 'Nice to have, low urgency' },
   2: { label: 'Low', color: 'teal', description: 'Useful, but not time-sensitive' },
   3: { label: 'Medium', color: 'yellow', description: 'Meaningful improvement for users' },

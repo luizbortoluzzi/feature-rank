@@ -187,8 +187,8 @@ export function StatusesPage() {
         title="Delete Status"
         description={
           <>
-            Are you sure you want to delete{' '}
-            <strong>{pendingDeleteStatus?.name}</strong>? This action cannot be undone.
+            Are you sure you want to delete <strong>{pendingDeleteStatus?.name}</strong>? This
+            action cannot be undone.
           </>
         }
         confirmLabel="Delete"

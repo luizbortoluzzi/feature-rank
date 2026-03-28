@@ -20,12 +20,5 @@ export function StatusBadge({ status, size }: StatusBadgeProps) {
     />
   )
 
-  return (
-    <ColoredBadge
-      label={status.name}
-      color={status.color}
-      leftSection={dot}
-      size={size}
-    />
-  )
+  return <ColoredBadge label={status.name} color={status.color} leftSection={dot} size={size} />
 }

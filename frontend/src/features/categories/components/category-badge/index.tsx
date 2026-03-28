@@ -8,11 +8,5 @@ interface CategoryBadgeProps {
 }
 
 export function CategoryBadge({ category, size }: CategoryBadgeProps) {
-  return (
-    <ColoredBadge
-      label={category.name}
-      color={category.color}
-      size={size}
-    />
-  )
+  return <ColoredBadge label={category.name} color={category.color} size={size} />
 }

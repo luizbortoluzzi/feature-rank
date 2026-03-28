@@ -180,9 +180,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </AppShell.Navbar>
 
-      <AppShell.Main>
-        {children}
-      </AppShell.Main>
+      <AppShell.Main>{children}</AppShell.Main>
     </AppShell>
   )
 }

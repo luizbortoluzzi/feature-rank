@@ -1,15 +1,5 @@
-import {
-  Avatar,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  type MantineColor,
-} from '@mantine/core'
-import {
-  IconClock,
-  IconStarFilled,
-} from '@tabler/icons-react'
+import { Avatar, Group, Paper, Stack, Text, type MantineColor } from '@mantine/core'
+import { IconClock, IconStarFilled } from '@tabler/icons-react'
 import { useIsMobile } from '../../../../hooks/use-is-mobile'
 import type { FeatureRequest } from '../../../../types/feature'
 import { StatusBadge } from '../../../statuses/components/status-badge'

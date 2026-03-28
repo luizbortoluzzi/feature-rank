@@ -82,9 +82,7 @@ function PriorityPicker({ value, onChange }: PriorityPickerProps) {
                   width: 34,
                   height: 34,
                   borderRadius: 'var(--mantine-radius-full)',
-                  color: isActive
-                    ? 'var(--mantine-color-indigo-5)'
-                    : 'var(--mantine-color-gray-3)',
+                  color: isActive ? 'var(--mantine-color-indigo-5)' : 'var(--mantine-color-gray-3)',
                   transform: isActive ? 'scale(1.08)' : 'scale(1)',
                   transition: 'color 120ms ease, transform 120ms ease',
                 }}
@@ -167,14 +165,11 @@ export function FeatureForm({
     label: status.name,
   }))
 
-  const titleCounterColor =
-    titleLength > 90 ? 'red' : titleLength > 70 ? 'yellow.7' : 'dimmed'
+  const titleCounterColor = titleLength > 90 ? 'red' : titleLength > 70 ? 'yellow.7' : 'dimmed'
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <Stack gap="lg">
-
-
         {submitError && !submitError.details && (
           <Alert
             color="red"
@@ -366,13 +361,7 @@ export function FeatureForm({
         </Text>
 
         <Group justify="space-between" gap="sm">
-          <Button
-            variant="subtle"
-            color="gray"
-            onClick={onCancel}
-            disabled={isPending}
-            size="md"
-          >
+          <Button variant="subtle" color="gray" onClick={onCancel} disabled={isPending} size="md">
             Cancel
           </Button>
 
