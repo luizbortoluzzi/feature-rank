@@ -2430,3 +2430,19 @@ Updated Python version from 3.12 to 3.13 in all relevant files:
 - `.github/workflows/ci.yml`: both `python-version: "3.12"` occurrences → `"3.13"`
 - `.pre-commit-config.yaml`: already updated in previous step (`language_version: python3.13`)
 - `backend/Dockerfile`: was already using `python:3.13-slim`
+
+## [2026-03-27T01:00:00Z] – Fix 5 failing backend tests (health check + JWT auth)
+
+### Prompt
+Run pytest --cov=apps [...] 5 failed: test_auth (2), test_health (3)
+
+### Action Taken
+Two root causes fixed:
+
+1. **Health check 404** — `health_check` view existed in `config/views.py` but was never registered. Added `path("api/v1/health/", health_check, name="health_check")` to `config/urls.py`.
+
+2. **JWT auth tests** — refresh token is stored in an HttpOnly cookie (`refresh_token`), not the response body. Tests were incorrectly asserting `payload["refresh"]`. Updated `tests/test_auth.py`:
+   - `test_valid_credentials_returns_200_with_tokens`: now asserts `"refresh_token" in response.cookies`
+   - `_obtain_refresh_token` renamed to `_obtain_refresh_cookie` — just makes the token request so the test client stores the cookie automatically
+   - `test_valid_refresh_token_returns_200_with_new_access`: calls refresh endpoint with no body (cookie is replayed automatically by test client)
+   - `test_invalid_refresh_token_returns_401` renamed to `test_missing_refresh_cookie_returns_401` — tests with no cookie present (which returns 401 per the view's logic)
