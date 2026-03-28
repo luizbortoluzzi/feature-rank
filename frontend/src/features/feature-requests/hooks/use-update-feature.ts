@@ -29,10 +29,10 @@ export function useUpdateFeature(): UseUpdateFeatureResult {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: featureKeys.all })
       queryClient.invalidateQueries({ queryKey: featureKeys.detail(data.id) })
-      notify.success('Feature request updated!')
+      notify.success('Feature Request Successfully Updated!', 'Your feature request has been saved.')
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to update feature request', err)
+      notify.error('Feature Request Update Failed', err)
     },
   })
 

@@ -71,6 +71,7 @@ export function CategoriesPage() {
 
   return (
     <Stack gap="md">
+
       <PageHeader
         icon={IconTag}
         title="Categories"

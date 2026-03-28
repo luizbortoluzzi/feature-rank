@@ -20,10 +20,10 @@ export function useDeleteFeature(): UseDeleteFeatureResult {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: featureKeys.all })
       queryClient.removeQueries({ queryKey: featureKeys.detail(id) })
-      notify.success('Feature request deleted.')
+      notify.success('Feature Request Successfully Deleted!', 'The feature request has been removed.')
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to delete feature request', err)
+      notify.error('Feature Request Delete Failed', err)
     },
   })
 

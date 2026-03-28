@@ -11,7 +11,13 @@ RUN npm ci --frozen-lockfile
 
 # ── Stage 2: builder ──────────────────────────────────────────────────────────
 # Runs the Vite production build and produces the compiled static assets.
+# VITE_API_BASE_URL is baked into the bundle at build time by Vite.
+# Pass "" (empty string) for same-origin API calls proxied through nginx.
+# Pass "https://api.example.com" to call a separate API host directly.
 FROM node:22-alpine AS builder
+
+ARG VITE_API_BASE_URL=""
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules

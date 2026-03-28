@@ -451,12 +451,20 @@ export const theme = createTheme({
               borderColor: palette[3],
             }),
           },
+          icon: {
+            ...(palette && {
+              borderRadius: theme.radius.full,
+              backgroundColor: palette[1],
+              color: palette[6],
+              border: `1px solid ${palette[2]}`,
+            }),
+          },
           title: {
-            color: theme.colors.gray[9],
+            color: palette ? palette[8] : theme.colors.gray[9],
             fontWeight: '600',
           },
           description: {
-            color: theme.colors.gray[6],
+            color: palette ? palette[7] : theme.colors.gray[6],
           },
         }
       },
