@@ -54,12 +54,15 @@ class StatusSerializerTest(TestCase):
     def test_usage_count_reflects_feature_request_count(self):
         """usage_count equals zero for a status with no feature requests."""
         from apps.statuses.selectors import get_status
+
         annotated = get_status(pk=self.status.pk)
         data = StatusSerializer(annotated).data
         self.assertEqual(data["usage_count"], 0)
 
     def test_usage_count_is_read_only(self):
         """usage_count is not accepted as input — it is a read-only derived value."""
-        s = StatusSerializer(data={"name": "wc_test", "color": "#000", "sort_order": 77, "usage_count": 999})
+        s = StatusSerializer(
+            data={"name": "wc_test", "color": "#000", "sort_order": 77, "usage_count": 999}
+        )
         self.assertTrue(s.is_valid(), s.errors)
         self.assertNotIn("usage_count", s.validated_data)

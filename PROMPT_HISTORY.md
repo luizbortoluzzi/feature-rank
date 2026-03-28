@@ -1626,12 +1626,12 @@ The page has:
      - Divider
      - Feature description (whitespace preserved)
      - Delete button (if canDelete) at bottom of card
-   - **Sidebar column**: 
+   - **Sidebar column**:
      - "Status & Details" card: Current Status (StatusBadge), Priority (rate-as-priority badge), Category (CategoryBadge), Posted date, Last Updated date
      - "Engagement" card: shows Votes count (the only API-available engagement metric)
 
 ## Priority mapping for `rate` field (display only, no logic):
-- rate 5 → "Critical" 
+- rate 5 → "Critical"
 - rate 4 → "High Priority"
 - rate 3 → "Medium Priority"
 - rate 1-2 → "Low Priority"
@@ -1642,7 +1642,7 @@ Add `formatRelativeDate(isoString: string): string` to `frontend/src/utils/forma
 
 ## Implementation rules:
 - Use Mantine components: `Grid`, `Paper`, `Group`, `Stack`, `Text`, `Title`, `Badge`, `Avatar`, `ActionIcon`, `Divider`, `UnstyledButton`
-- Use `@tabler/icons-react`: `IconArrowLeft`, `IconChevronUp`, `IconBolt`, `IconShare2`  
+- Use `@tabler/icons-react`: `IconArrowLeft`, `IconChevronUp`, `IconBolt`, `IconShare2`
 - Use existing components: `StatusBadge`, `CategoryBadge`, `Spinner`, `ErrorMessage`, `Button`
 - The vote box is an `UnstyledButton` (or similar) styled as a bordered box - clicking it votes/unvotes
 - If user is not authenticated, show the vote box as static display (no click)

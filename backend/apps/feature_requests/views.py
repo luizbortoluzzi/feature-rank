@@ -120,7 +120,9 @@ def _parse_int_param(name: str, value: str):
             OpenApiParameter("category_id", int, description="Filter by category ID."),
             OpenApiParameter("status_id", int, description="Filter by status ID."),
             OpenApiParameter("author_id", int, description="Filter by author user ID."),
-            OpenApiParameter("search", str, description="Case-insensitive search across title and description."),
+            OpenApiParameter(
+                "search", str, description="Case-insensitive search across title and description."
+            ),
             OpenApiParameter("page", int, description="Page number (1-indexed). Default: 1."),
             OpenApiParameter("limit", int, description="Items per page. Max 100. Default: 20."),
         ],

@@ -28,7 +28,9 @@ class CreateStatusServiceTest(TestCase):
 
     def test_creates_status_with_description(self):
         """create_status persists the description field."""
-        s = create_status(name="with_desc", color="#000", sort_order=7, description="A test description")
+        s = create_status(
+            name="with_desc", color="#000", sort_order=7, description="A test description"
+        )
         self.assertEqual(s.description, "A test description")
 
     def test_creates_status_with_is_active(self):
