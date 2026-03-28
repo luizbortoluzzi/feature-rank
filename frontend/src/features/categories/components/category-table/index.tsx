@@ -9,8 +9,7 @@ import type { CategoryListItem } from '../../../../types/category'
 import { CategoryIcon } from '../category-icon'
 
 const COLUMNS: DataTableColumn[] = [
-  { key: 'name', label: 'Category Name' },
-  { key: 'description', label: 'Description' },
+  { key: 'name', label: 'Category' },
   { key: 'features', label: 'Features' },
   { key: 'status', label: 'Status' },
   { key: 'created', label: 'Created' },
@@ -30,28 +29,7 @@ interface CategoryTableProps {
 
 function ActiveBadge({ isActive }: { isActive: boolean }) {
   return (
-    <Badge
-      leftSection={
-        <span
-          style={{
-            display: 'inline-block',
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            backgroundColor: isActive ? '#2f9e44' : '#868e96',
-          }}
-        />
-      }
-      size="md"
-      variant="light"
-      radius="sm"
-      style={{
-        backgroundColor: isActive ? '#2f9e4418' : '#868e9618',
-        color: isActive ? '#2f9e44' : '#868e96',
-        textTransform: 'none',
-        fontWeight: 500,
-      }}
-    >
+    <Badge size="lg" variant="light" color={isActive ? 'green' : 'gray'} radius="sm">
       {isActive ? 'Active' : 'Inactive'}
     </Badge>
   )
@@ -137,45 +115,53 @@ export function CategoryTable({
     >
       {categories.map((category) => (
         <Table.Tr key={category.id}>
+          {/* Category — icon + name + description */}
           <Table.Td>
             <Group gap="sm" wrap="nowrap">
               <CategoryIcon icon={category.icon} color={category.color} />
-              <Text fw={500} fz="sm">
-                {category.name}
-              </Text>
+              <Box>
+                <Text fw={600} fz="sm" lh={1.3}>
+                  {category.name}
+                </Text>
+                {category.description ? (
+                  <Text fz="xs" c="dimmed" lineClamp={1} lh={1.4}>
+                    {category.description}
+                  </Text>
+                ) : (
+                  <Text fz="xs" c="dimmed" fs="italic" lh={1.4}>
+                    No description
+                  </Text>
+                )}
+              </Box>
             </Group>
           </Table.Td>
 
+          {/* Features — count primary, label secondary */}
           <Table.Td>
-            <Text fz="sm" c="dimmed" lineClamp={2}>
-              {category.description || '—'}
+            <Text fw={600} fz="sm" lh={1.2}>
+              {category.feature_count}
+            </Text>
+            <Text fz="xs" c="dimmed" lh={1.2}>
+              requests
             </Text>
           </Table.Td>
 
-          <Table.Td>
-            <Group gap={4} wrap="nowrap">
-              <Text fw={500} fz="sm">
-                {category.feature_count}
-              </Text>
-              <Text fz="sm" c="dimmed">
-                requests
-              </Text>
-            </Group>
-          </Table.Td>
-
+          {/* Status */}
           <Table.Td>
             <ActiveBadge isActive={category.is_active} />
           </Table.Td>
 
+          {/* Created */}
           <Table.Td>
-            <Text fz="sm" c="dimmed">
+            <Text fz="xs" c="dimmed">
               {formatDate(category.created_at)}
             </Text>
           </Table.Td>
 
+          {/* Actions */}
           {isAdmin && (
             <Table.Td>
-              <Group gap={4} wrap="nowrap">
+              <Group gap={6} wrap="nowrap">
                 <ActionIcon
                   variant="subtle"
                   color="gray"

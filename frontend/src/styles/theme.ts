@@ -378,22 +378,19 @@ export const theme = createTheme({
       },
       styles: (theme: MantineTheme) => ({
         table: {
-          borderCollapse: 'separate',
+          // borderCollapse: 'separate',
           borderSpacing: 0,
           overflow: 'hidden',
-          borderRadius: theme.radius.xl,
           backgroundColor: theme.white,
         },
 
         thead: {
-          backgroundColor: theme.colors.gray[0],
+          backgroundColor: theme.colors.gray[2],
         },
 
         th: {
           fontWeight: 600,
           fontSize: theme.fontSizes.xs,
-          color: theme.colors.gray[6],
-          padding: `${rem(12)} ${rem(18)}`,
           borderBottom: `1px solid ${theme.colors.gray[2]}`,
           letterSpacing: '0.02em',
         },

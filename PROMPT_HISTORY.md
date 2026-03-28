@@ -2446,3 +2446,38 @@ Two root causes fixed:
    - `_obtain_refresh_token` renamed to `_obtain_refresh_cookie` — just makes the token request so the test client stores the cookie automatically
    - `test_valid_refresh_token_returns_200_with_new_access`: calls refresh endpoint with no body (cookie is replayed automatically by test client)
    - `test_invalid_refresh_token_returns_401` renamed to `test_missing_refresh_cookie_returns_401` — tests with no cookie present (which returns 401 per the view's logic)
+
+## [2026-03-28T00:00:00Z] – Refactor CategoryTable for product-grade UI
+
+### Prompt
+Refactor the category table component to improve UI/UX and information hierarchy (full spec provided).
+
+### Action Taken
+Refactored `frontend/src/features/categories/components/category-table/index.tsx`:
+- Removed "Description" column from COLUMNS (now 5 cols instead of 6)
+- Category cell: icon + bold name + description below (lineClamp 1, dimmed) or "No description" italic placeholder
+- Features cell: stacked bold count + dimmed "requests" label
+- Created cell: smaller `fz="xs"` dimmed text
+- ActiveBadge: replaced hardcoded hex colors with Mantine `color="green"/"gray"`, size reduced to `sm`
+- Actions: reduced ActionIcon to `size="sm"`, icons to 14px, gap tightened to 2
+- Mobile version left unchanged
+
+## [2026-03-28T00:05:00Z] – Increase size of status badge and action buttons in CategoryTable
+
+### Prompt
+ok but increse the size of the status chips and the action buttons
+
+### Action Taken
+In `frontend/src/features/categories/components/category-table/index.tsx`:
+- Badge: `size="sm"` → `size="md"`
+- ActionIcon: `size="sm"` → `size="md"`, icons 14px → 16px, gap 2 → 4
+
+## [2026-03-28T00:10:00Z] – Further increase badge and action button sizes
+
+### Prompt
+everything still with the same size
+
+### Action Taken
+Bumped sizes more aggressively in the desktop table of `category-table/index.tsx`:
+- Badge: `size="md"` → `size="lg"`
+- ActionIcon: `size="md"` → `size="lg"`, icons 16px → 18px, gap 4 → 6
