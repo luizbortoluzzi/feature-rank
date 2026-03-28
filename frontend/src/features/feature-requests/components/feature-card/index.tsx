@@ -1,6 +1,5 @@
 import {
   Avatar,
-  Box,
   Group,
   Paper,
   Stack,
@@ -12,13 +11,13 @@ import {
   IconArrowUp,
   IconCheck,
   IconClock,
-  IconDots,
   IconStarFilled,
 } from '@tabler/icons-react'
 import type { FeatureRequest } from '../../../../types/feature'
 import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
 import { formatRelativeDate } from '../../../../utils/formatDate'
+import { getInitials } from '../../../../utils/formatUser'
 
 interface FeatureCardProps {
   feature: FeatureRequest
@@ -51,12 +50,7 @@ const AVATAR_COLORS: MantineColor[] = [
 ]
 
 export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
-  const authorInitials = feature.author.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  const authorInitials = getInitials(feature.author.name)
 
   const avatarColor = AVATAR_COLORS[feature.author.id % AVATAR_COLORS.length]
 
@@ -129,27 +123,7 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
               <StatusBadge status={feature.status} size="md" />
             </Group>
 
-            <Group gap={10} wrap="nowrap">
-              <PriorityRating value={feature.rate} />
-              <Box
-                component="button"
-                type="button"
-                aria-label="More actions"
-                style={{
-                  display: 'grid',
-                  placeItems: 'center',
-                  width: 32,
-                  height: 32,
-                  borderRadius: '999px',
-                  border: '1px solid var(--mantine-color-gray-2)',
-                  background: 'var(--mantine-color-white)',
-                  color: 'var(--mantine-color-gray-6)',
-                  cursor: 'pointer',
-                }}
-              >
-                <IconDots size={16} />
-              </Box>
-            </Group>
+            <PriorityRating value={feature.rate} />
           </Group>
 
           <Stack gap={6}>

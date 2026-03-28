@@ -23,6 +23,15 @@ class GetCategoriesListSelectorTest(TestCase):
         """get_categories_list returns an empty queryset when there are no categories."""
         self.assertEqual(get_categories_list().count(), 0)
 
+    def test_search_returns_matching_categories_only(self):
+        """get_categories_list with search= filters by name (case-insensitive)."""
+        Category.objects.create(name="Technology", icon="", color="")
+        Category.objects.create(name="Design", icon="", color="")
+        results = list(get_categories_list(search="tech"))
+        names = [c.name for c in results]
+        self.assertIn("Technology", names)
+        self.assertNotIn("Design", names)
+
 
 class GetCategorySelectorTest(TestCase):
     def setUp(self):

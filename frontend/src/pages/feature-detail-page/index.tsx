@@ -24,21 +24,14 @@ import { CategoryBadge } from '../../features/categories/components/category-bad
 import { Spinner } from '../../components/spinner'
 import { ErrorMessage } from '../../components/error-message'
 import { formatDate, formatRelativeDate } from '../../utils/formatDate'
+import { getInitials } from '../../utils/formatUser'
+import { PAGE_MAX_WIDTH } from '../../constants/layout'
 
 function getPriorityLabel(rate: number): string {
   if (rate === 5) return 'Critical'
   if (rate === 4) return 'High Priority'
   if (rate === 3) return 'Medium Priority'
   return 'Low Priority'
-}
-
-function getAuthorInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
 }
 
 export function FeatureDetailPage() {
@@ -85,7 +78,7 @@ export function FeatureDetailPage() {
     return (
       <main
         style={{
-          maxWidth: 960,
+          maxWidth: PAGE_MAX_WIDTH,
           margin: '0 auto',
           padding: '48px 16px',
           display: 'flex',
@@ -100,7 +93,7 @@ export function FeatureDetailPage() {
   if (isError) {
     if (error?.status === 404) {
       return (
-        <main style={{ maxWidth: 960, margin: '0 auto', padding: '48px 16px' }}>
+        <main style={{ maxWidth: PAGE_MAX_WIDTH, margin: '0 auto', padding: '48px 16px' }}>
           <Stack align="center" gap="sm">
             <Title order={2} fz="xl">
               Feature not found
@@ -116,7 +109,7 @@ export function FeatureDetailPage() {
       )
     }
     return (
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: '48px 16px' }}>
+      <main style={{ maxWidth: PAGE_MAX_WIDTH, margin: '0 auto', padding: '48px 16px' }}>
         <ErrorMessage error={error} />
       </main>
     )
@@ -125,11 +118,11 @@ export function FeatureDetailPage() {
   if (!feature) return null
 
   const priorityLabel = getPriorityLabel(feature.rate)
-  const authorInitials = getAuthorInitials(feature.author.name)
+  const authorInitials = getInitials(feature.author.name)
   const isVoteDisabled = !user || isVoting || feature.status.is_terminal
 
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: '16px 0 48px' }}>
+    <main style={{ maxWidth: PAGE_MAX_WIDTH, margin: '0 auto', padding: '16px 0 48px' }}>
       {/* Page header */}
       <Group justify="space-between" align="flex-start" mb="lg">
         <Group align="flex-start" gap="sm">

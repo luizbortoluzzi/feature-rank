@@ -37,7 +37,7 @@ export function DataTable({
       }}
     >
       <Table highlightOnHover>
-        <Table.Thead style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>
+        <Table.Thead>
           <Table.Tr>
             {columns.map((col) => (
               <Table.Th key={col.key}>

@@ -17,6 +17,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from apps.categories.models import Category
 from apps.feature_requests.models import FeatureRequest, Vote
 from apps.feature_requests.services import (
+    change_feature_request_status,
     create_feature_request,
     unvote_feature_request,
     update_feature_request,
@@ -249,3 +250,131 @@ class UpdateFeatureRequestServiceTest(TestCase):
         self.feature.refresh_from_db()
         self.assertEqual(self.feature.title, "New Title Only")
         self.assertEqual(self.feature.description, original_description)
+
+    def test_update_description(self):
+        """update_feature_request updates the description field."""
+        update_feature_request(
+            feature_request=self.feature,
+            user=self.user,
+            data={"description": "Updated description"},
+        )
+        self.feature.refresh_from_db()
+        self.assertEqual(self.feature.description, "Updated description")
+
+    def test_update_rate(self):
+        """update_feature_request updates the rate field."""
+        update_feature_request(
+            feature_request=self.feature,
+            user=self.user,
+            data={"rate": 2},
+        )
+        self.feature.refresh_from_db()
+        self.assertEqual(self.feature.rate, 2)
+
+    def test_update_category_id(self):
+        """update_feature_request updates the category_id field."""
+        new_category = Category.objects.create(name="Alt Svc Category", icon="code", color="#F59E0B")
+        update_feature_request(
+            feature_request=self.feature,
+            user=self.user,
+            data={"category_id": new_category.pk},
+        )
+        self.feature.refresh_from_db()
+        self.assertEqual(self.feature.category_id, new_category.pk)
+
+
+class ChangeFeatureRequestStatusServiceTest(TestCase):
+    """Tests for the change_feature_request_status service."""
+
+    def setUp(self):
+        self.admin = make_user("chgstadmin", "chgstadmin@example.com", is_admin=True)
+        self.regular = make_user("chgstreg", "chgstreg@example.com")
+        self.category = make_category()
+        self.status_open = Status.objects.create(
+            name="open", color="#6B7280", is_terminal=False, sort_order=1
+        )
+        self.status_planned = Status.objects.create(
+            name="planned", color="#6B7280", is_terminal=False, sort_order=2
+        )
+        self.status_in_progress = Status.objects.create(
+            name="in progress", color="#6B7280", is_terminal=False, sort_order=3
+        )
+        self.status_completed = Status.objects.create(
+            name="completed", color="#6B7280", is_terminal=True, sort_order=4
+        )
+        self.status_rejected = Status.objects.create(
+            name="rejected", color="#6B7280", is_terminal=True, sort_order=5
+        )
+        self.feature = make_feature(self.regular, self.category, self.status_open)
+
+    def test_non_admin_raises_permission_denied(self):
+        """Non-admin caller must receive PermissionDenied."""
+        with self.assertRaises(PermissionDenied):
+            change_feature_request_status(
+                feature_request=self.feature,
+                user=self.regular,
+                new_status_id=self.status_planned.pk,
+            )
+
+    def test_admin_can_perform_valid_transition(self):
+        """Admin can advance a feature from 'open' to 'planned'."""
+        updated = change_feature_request_status(
+            feature_request=self.feature,
+            user=self.admin,
+            new_status_id=self.status_planned.pk,
+        )
+        self.assertEqual(updated.status, self.status_planned)
+
+    def test_nonexistent_target_status_raises_validation_error(self):
+        """A target status that does not exist raises ValidationError."""
+        with self.assertRaises(ValidationError):
+            change_feature_request_status(
+                feature_request=self.feature,
+                user=self.admin,
+                new_status_id=99999,
+            )
+
+    def test_invalid_transition_raises_validation_error(self):
+        """A transition not in VALID_TRANSITIONS raises ValidationError (open → completed)."""
+        with self.assertRaises(ValidationError):
+            change_feature_request_status(
+                feature_request=self.feature,
+                user=self.admin,
+                new_status_id=self.status_completed.pk,
+            )
+
+    def test_terminal_status_has_no_outbound_transitions(self):
+        """A feature in a terminal status cannot be transitioned to any other status."""
+        completed_feature = make_feature(self.regular, self.category, self.status_completed)
+        with self.assertRaises(ValidationError):
+            change_feature_request_status(
+                feature_request=completed_feature,
+                user=self.admin,
+                new_status_id=self.status_planned.pk,
+            )
+
+    def test_valid_rejection_from_open(self):
+        """Open features may be rejected."""
+        updated = change_feature_request_status(
+            feature_request=self.feature,
+            user=self.admin,
+            new_status_id=self.status_rejected.pk,
+        )
+        self.assertEqual(updated.status.name.lower(), "rejected")
+
+    def test_full_progression_open_to_completed(self):
+        """A feature can follow the full happy path: open → planned → in progress → completed."""
+        fr = change_feature_request_status(
+            feature_request=self.feature, user=self.admin, new_status_id=self.status_planned.pk
+        )
+        self.assertEqual(fr.status.name, "planned")
+
+        fr = change_feature_request_status(
+            feature_request=fr, user=self.admin, new_status_id=self.status_in_progress.pk
+        )
+        self.assertEqual(fr.status.name, "in progress")
+
+        fr = change_feature_request_status(
+            feature_request=fr, user=self.admin, new_status_id=self.status_completed.pk
+        )
+        self.assertEqual(fr.status.name, "completed")

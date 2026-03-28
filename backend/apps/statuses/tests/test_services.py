@@ -88,6 +88,11 @@ class UpdateStatusServiceTest(TestCase):
         updated = update_status(status=self.status, is_active=False)
         self.assertFalse(updated.is_active)
 
+    def test_updates_sort_order(self):
+        """update_status updates the sort_order field."""
+        updated = update_status(status=self.status, sort_order=99)
+        self.assertEqual(updated.sort_order, 99)
+
 
 class DeleteStatusServiceTest(TestCase):
     def setUp(self):

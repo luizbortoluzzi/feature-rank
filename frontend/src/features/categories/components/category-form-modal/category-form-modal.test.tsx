@@ -3,7 +3,7 @@ import { renderWithMantine } from '../../../../test/render'
 import { CategoryFormModal } from './index'
 
 const baseProps = {
-  opened: true,
+  isOpen: true,
   onClose: vi.fn(),
   onSubmit: vi.fn(),
   title: 'New Category',
@@ -18,7 +18,7 @@ describe('CategoryFormModal', () => {
   })
 
   it('does not render content when closed', () => {
-    renderWithMantine(<CategoryFormModal {...baseProps} opened={false} />)
+    renderWithMantine(<CategoryFormModal {...baseProps} isOpen={false} />)
     expect(screen.queryByText('New Category')).toBeNull()
   })
 
@@ -48,11 +48,11 @@ describe('CategoryFormModal', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  it('pre-fills fields when initialValues are provided', () => {
+  it('pre-fills fields when defaultValues are provided', () => {
     renderWithMantine(
       <CategoryFormModal
         {...baseProps}
-        initialValues={{ name: 'Design', description: 'UI features' }}
+        defaultValues={{ name: 'Design', description: 'UI features' }}
       />,
     )
     expect(screen.getByDisplayValue('Design')).toBeDefined()

@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useMediaQuery } from '@mantine/hooks'
-import { MD_BREAKPOINT } from '../../hooks/use-is-mobile'
+import { MD_BREAKPOINT } from '../../constants/layout'
 import { Avatar, Box, Divider, Group, Stack, Text } from '@mantine/core'
 import { IconStack2, IconCheck, IconUsers, IconTrendingUp } from '@tabler/icons-react'
 import { useCurrentUser } from '../../app/AuthProvider'
