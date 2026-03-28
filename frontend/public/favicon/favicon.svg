@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><g clip-path="url(#SvgjsClipPath1085)"><rect width="1000" height="1000" fill="#ffffff"></rect><g transform="matrix(1.4285714285714286,0,0,1.4285714285714286,0,0)"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="Camada_1" data-name="Camada 1" width="700" height="700" viewBox="0 0 700 700"><defs>
+    <linearGradient id="Nova_amostra_de_gradiente_1" data-name="Nova amostra de gradiente 1" x1="-515.658" y1="1022.826" x2="-515.763" y2="1022.72" gradientTransform="translate(3094601 -6136299) scale(6000)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4c6ef5"></stop>
+      <stop offset="1" stop-color="#845ef7"></stop>
+    </linearGradient>
+  <clipPath id="SvgjsClipPath1085"><rect width="1000" height="1000" x="0" y="0" rx="300" ry="300"></rect></clipPath></defs><rect x="-1.872" y="-1.872" width="700" height="700" rx="87.75" ry="87.75" fill="url(#Nova_amostra_de_gradiente_1)"></rect><g>
+    <path d="M395.473,614.394c-19.574,0-35.441-15.868-35.441-35.441v-248.09H111.941c-19.574,0-35.441-15.868-35.441-35.441s15.868-35.441,35.441-35.441h283.532c19.574,0,35.441,15.868,35.441,35.441v283.532c0,19.574-15.868,35.441-35.441,35.441Z" fill="#fff"></path>
+    <path d="M537.239,472.628c-19.574,0-35.441-15.868-35.441-35.441v-248.09h-248.09c-19.574,0-35.441-15.868-35.441-35.441s15.868-35.441,35.441-35.441h283.532c19.574,0,35.441,15.868,35.441,35.441v283.532c0,19.574-15.868,35.441-35.441,35.441Z" fill="#fff"></path>
+  </g></svg></g></g></svg>
