@@ -27,7 +27,8 @@ class JWTTokenObtainTest(TestCase):
         )
 
     def test_valid_credentials_returns_200_with_tokens(self):
-        """POST /api/v1/auth/token/ with correct credentials returns access and refresh tokens."""
+        """POST /api/v1/auth/token/ with correct credentials returns access token in body
+        and refresh token as an HttpOnly cookie."""
         response = self.client.post(
             "/api/v1/auth/token/",
             {"username": "jwtuser", "password": "strongpass123"},
@@ -35,10 +36,10 @@ class JWTTokenObtainTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         body = response.json()
-        # JWT token responses are wrapped in the standard envelope
         payload = body.get("data", body)
         self.assertIn("access", payload)
-        self.assertIn("refresh", payload)
+        # Refresh token is delivered as an HttpOnly cookie, not in the response body
+        self.assertIn("refresh_token", response.cookies)
 
     def test_wrong_password_returns_401(self):
         """POST /api/v1/auth/token/ with wrong password returns 401."""
@@ -78,37 +79,25 @@ class JWTTokenRefreshTest(TestCase):
             password="refreshpass123",
         )
 
-    def _obtain_refresh_token(self):
-        """Helper to obtain a valid refresh token."""
-        response = self.client.post(
+    def _obtain_refresh_cookie(self):
+        """Obtain a token pair; the refresh token is stored as a cookie on self.client."""
+        self.client.post(
             "/api/v1/auth/token/",
             {"username": "jwtrefreshuser", "password": "refreshpass123"},
             format="json",
         )
-        body = response.json()
-        # Response is wrapped in the envelope: {"data": {"access": ..., "refresh": ...}, "meta": null}
-        payload = body.get("data", body)
-        return payload["refresh"]
 
     def test_valid_refresh_token_returns_200_with_new_access(self):
-        """POST /api/v1/auth/token/refresh/ with valid refresh token returns new access token."""
-        refresh_token = self._obtain_refresh_token()
-        response = self.client.post(
-            "/api/v1/auth/token/refresh/",
-            {"refresh": refresh_token},
-            format="json",
-        )
+        """POST /api/v1/auth/token/refresh/ sends refresh cookie and returns new access token."""
+        self._obtain_refresh_cookie()
+        # The test client automatically replays the refresh_token cookie on subsequent requests
+        response = self.client.post("/api/v1/auth/token/refresh/", format="json")
         self.assertEqual(response.status_code, 200)
         body = response.json()
-        # Response is wrapped in the envelope
         payload = body.get("data", body)
         self.assertIn("access", payload)
 
-    def test_invalid_refresh_token_returns_401(self):
-        """POST /api/v1/auth/token/refresh/ with an invalid token returns 401."""
-        response = self.client.post(
-            "/api/v1/auth/token/refresh/",
-            {"refresh": "this.is.not.valid"},
-            format="json",
-        )
+    def test_missing_refresh_cookie_returns_401(self):
+        """POST /api/v1/auth/token/refresh/ with no refresh cookie returns 401."""
+        response = self.client.post("/api/v1/auth/token/refresh/", format="json")
         self.assertEqual(response.status_code, 401)

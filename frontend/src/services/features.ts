@@ -1,5 +1,5 @@
 import { apiClient } from './api'
-import type { FeatureRequest, FeatureRequestSummary } from '../types/feature'
+import type { FeatureRequest } from '../types/feature'
 import type { PaginationMeta } from '../types/api'
 
 export interface FeatureListParams {
@@ -26,7 +26,7 @@ export interface UpdateFeaturePayload {
 
 export async function getFeatureList(
   params: FeatureListParams,
-): Promise<{ items: FeatureRequestSummary[]; meta: PaginationMeta }> {
+): Promise<{ items: FeatureRequest[]; meta: PaginationMeta }> {
   const response = await apiClient.get('/api/v1/features/', { params })
   return { items: response.data.data, meta: response.data.meta }
 }

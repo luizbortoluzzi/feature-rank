@@ -1,31 +1,24 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   AppShell,
   Avatar,
   ActionIcon,
+  Burger,
   Group,
   Text,
   NavLink,
   Box,
   Divider,
-  Title,
-  Stack,
 } from '@mantine/core'
-import {
-  IconLayoutList,
-  IconTag,
-  IconCircleDot,
-  IconUsers,
-  IconStack2,
-  IconLogout,
-} from '@tabler/icons-react'
+import { useDisclosure } from '@mantine/hooks'
+import { useIsMobile } from '../hooks/use-is-mobile'
+import { IconLayoutList, IconTag, IconCircleDot, IconUsers, IconLogout } from '@tabler/icons-react'
 import { useCurrentUser } from './AuthProvider'
+import { registerNavigate } from '../services/navigation'
 
 interface AppLayoutProps {
   children: ReactNode
-  title?: string
-  subtitle?: string
 }
 
 const navLinks = [
@@ -34,20 +27,23 @@ const navLinks = [
   { label: 'Status', icon: IconCircleDot, path: '/statuses' },
 ]
 
-const adminLinks = [
-  { label: 'Users', icon: IconUsers, path: '/admin/users' },
-]
+const adminLinks = [{ label: 'Users', icon: IconUsers, path: '/admin/users' }]
 
 function isActive(path: string, locationPathname: string): boolean {
-  if (path === '/features')
-    return locationPathname === '/features' || locationPathname === '/'
+  if (path === '/features') return locationPathname === '/features' || locationPathname === '/'
   return locationPathname.startsWith(path)
 }
 
-export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
+export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useCurrentUser()
+  const [opened, { toggle, close }] = useDisclosure()
+  const isMobile = useIsMobile()
+
+  useEffect(() => {
+    registerNavigate(navigate)
+  }, [navigate])
 
   const userInitials = user
     ? user.name
@@ -58,44 +54,61 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
         .slice(0, 2)
     : '?'
 
+  function handleNavigate(path: string) {
+    navigate(path)
+    close()
+  }
+
   return (
     <AppShell
-      navbar={{ width: 240, breakpoint: 'sm' }}
+      navbar={{ width: 240, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      header={{ height: 60, collapsed: !isMobile }}
       padding="md"
     >
-      <AppShell.Navbar p="sm">
-        {/* Brand */}
-        <Group gap="sm" mb="xl" mt="xs">
-          <Box
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 6,
-              backgroundColor: 'var(--mantine-color-indigo-6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <IconStack2 size={20} color="white" />
-          </Box>
-          <Text fw={700} fz="md">
-            Feature Rank
-          </Text>
+      {/* Mobile header */}
+      <AppShell.Header>
+        <Group h="100%" px="md" justify="space-between">
+          <img src="/logo.svg" alt="Feature Rank" style={{ width: 200 }} />
+          <Burger opened={opened} onClick={toggle} size="sm" aria-label="Toggle navigation" />
         </Group>
+      </AppShell.Header>
+
+      <AppShell.Navbar p="sm">
+        {/* Brand — desktop only (hidden on mobile since header shows it) */}
+        {!isMobile && (
+          <Group gap="sm" mb="xl" mt="xs" justify="center">
+            <img src="/logo.svg" alt="Feature Rank" style={{ width: '95%' }} />
+          </Group>
+        )}
 
         {/* Nav links */}
-        {navLinks.map((link) => (
-          <NavLink
-            key={link.path}
-            label={link.label}
-            leftSection={<link.icon size={18} stroke={1.5} />}
-            active={isActive(link.path, location.pathname)}
-            onClick={() => navigate(link.path)}
-            variant="light"
-            mb={2}
-          />
-        ))}
+        {navLinks.map((link) => {
+          const active = isActive(link.path, location.pathname)
+          return (
+            <NavLink
+              key={link.path}
+              label={link.label}
+              leftSection={<link.icon size={18} stroke={1.5} />}
+              active={active}
+              onClick={() => handleNavigate(link.path)}
+              variant="filled"
+              color="indigo"
+              mb={2}
+              styles={{
+                label: { fontWeight: 600 },
+                root: { borderRadius: 'var(--mantine-radius-md)' },
+              }}
+              style={
+                active
+                  ? {
+                      background:
+                        'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
+                    }
+                  : undefined
+              }
+            />
+          )
+        })}
 
         {/* Admin section */}
         {user?.is_admin && (
@@ -113,25 +126,42 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
                 },
               }}
             />
-            {adminLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                label={link.label}
-                leftSection={<link.icon size={18} stroke={1.5} />}
-                active={isActive(link.path, location.pathname)}
-                onClick={() => navigate(link.path)}
-                variant="light"
-                mb={2}
-              />
-            ))}
+            {adminLinks.map((link) => {
+              const active = isActive(link.path, location.pathname)
+              return (
+                <NavLink
+                  key={link.path}
+                  label={link.label}
+                  leftSection={<link.icon size={18} stroke={1.5} />}
+                  active={active}
+                  onClick={() => handleNavigate(link.path)}
+                  variant="filled"
+                  color="indigo"
+                  mb={2}
+                  styles={{
+                    label: { fontWeight: 600 },
+                    root: { borderRadius: 'var(--mantine-radius-md)' },
+                  }}
+                  style={
+                    active
+                      ? {
+                          background:
+                            'linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-5) 100%)',
+                        }
+                      : undefined
+                  }
+                />
+              )
+            })}
           </>
         )}
+
         {/* User profile strip */}
         {user && (
           <>
             <Divider mt="auto" mb="sm" />
             <Group gap="sm" px={4} wrap="nowrap">
-              <Avatar size={32} radius="xl" color="indigo">
+              <Avatar size={32} radius="xl" color="indigo" src={user.avatar_url ?? undefined}>
                 {userInitials}
               </Avatar>
               <Box style={{ flex: 1, minWidth: 0 }}>
@@ -156,17 +186,7 @@ export function AppLayout({ children, title, subtitle }: AppLayoutProps) {
         )}
       </AppShell.Navbar>
 
-      <AppShell.Main>
-        {title && (
-          <Stack gap={4} mb="lg">
-            <Title order={2}>{title}</Title>
-            {subtitle && (
-              <Text c="dimmed" fz="sm">
-                {subtitle}
-              </Text>
-            )}
-          </Stack>
-        )}
+      <AppShell.Main style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>
         {children}
       </AppShell.Main>
     </AppShell>

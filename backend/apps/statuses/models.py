@@ -31,7 +31,9 @@ class Status(models.Model):
 
     name = models.CharField(max_length=100, unique=True)
     color = models.CharField(max_length=7)
+    description = models.TextField(blank=True, default="")
     is_terminal = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     sort_order = models.IntegerField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

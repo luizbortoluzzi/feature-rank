@@ -49,20 +49,20 @@ ROLES = [
 ]
 
 CATEGORIES = [
-    {"name": "UI", "icon": "palette", "color": "#3B82F6"},
-    {"name": "Performance", "icon": "zap", "color": "#F59E0B"},
-    {"name": "API", "icon": "code", "color": "#10B981"},
-    {"name": "Security", "icon": "shield", "color": "#EF4444"},
-    {"name": "Developer Experience", "icon": "terminal", "color": "#8B5CF6"},
-    {"name": "Other", "icon": "dots-horizontal", "color": "#6B7280"},
+    {"name": "UI", "icon": "Palette", "color": "#3B82F6"},
+    {"name": "Performance", "icon": "Zap", "color": "#F59E0B"},
+    {"name": "API", "icon": "Code2", "color": "#10B981"},
+    {"name": "Security", "icon": "Shield", "color": "#EF4444"},
+    {"name": "Developer Experience", "icon": "Terminal", "color": "#8B5CF6"},
+    {"name": "Other", "icon": "MoreHorizontal", "color": "#6B7280"},
 ]
 
 STATUSES = [
-    {"name": "open", "color": "#6B7280", "is_terminal": False, "sort_order": 0},
-    {"name": "under review", "color": "#F59E0B", "is_terminal": False, "sort_order": 1},
-    {"name": "planned", "color": "#3B82F6", "is_terminal": False, "sort_order": 2},
-    {"name": "completed", "color": "#10B981", "is_terminal": True, "sort_order": 3},
-    {"name": "rejected", "color": "#EF4444", "is_terminal": True, "sort_order": 4},
+    {"name": "Open", "color": "#6B7280", "is_terminal": False, "sort_order": 0},
+    {"name": "Under Review", "color": "#F59E0B", "is_terminal": False, "sort_order": 1},
+    {"name": "Planned", "color": "#3B82F6", "is_terminal": False, "sort_order": 2},
+    {"name": "Completed", "color": "#10B981", "is_terminal": True, "sort_order": 3},
+    {"name": "Rejected", "color": "#EF4444", "is_terminal": True, "sort_order": 4},
 ]
 
 
@@ -82,15 +82,18 @@ class Command(BaseCommand):
         )
 
         categories_created = 0
+        categories_updated = 0
         for data in CATEGORIES:
-            _, created = Category.objects.get_or_create(
+            _, created = Category.objects.update_or_create(
                 name=data["name"],
                 defaults={"icon": data["icon"], "color": data["color"]},
             )
             if created:
                 categories_created += 1
+            else:
+                categories_updated += 1
         self.stdout.write(
-            f"Categories: {categories_created} created, {len(CATEGORIES) - categories_created} already existed."
+            f"Categories: {categories_created} created, {categories_updated} updated."
         )
 
         statuses_created = 0

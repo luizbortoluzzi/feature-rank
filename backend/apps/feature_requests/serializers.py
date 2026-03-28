@@ -33,11 +33,11 @@ User = get_user_model()
 
 
 class AuthorSerializer(serializers.ModelSerializer):
-    """Minimal nested author representation: id and name only. Never exposes email."""
+    """Minimal nested author representation: id, name, and avatar_url. Never exposes email."""
 
     class Meta:
         model = User
-        fields = ["id", "name"]
+        fields = ["id", "name", "avatar_url"]
 
 
 class CategoryNestedSerializer(serializers.ModelSerializer):

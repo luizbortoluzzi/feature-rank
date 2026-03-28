@@ -22,11 +22,22 @@ from apps.statuses.models import Status
 
 
 def create_status(
-    *, name: str, color: str = "", is_terminal: bool = False, sort_order: int = 0
+    *,
+    name: str,
+    color: str = "",
+    description: str = "",
+    is_terminal: bool = False,
+    is_active: bool = True,
+    sort_order: int = 0,
 ) -> Status:
     """Create and return a new Status reference record."""
     return Status.objects.create(
-        name=name, color=color, is_terminal=is_terminal, sort_order=sort_order
+        name=name,
+        color=color,
+        description=description,
+        is_terminal=is_terminal,
+        is_active=is_active,
+        sort_order=sort_order,
     )
 
 
@@ -35,7 +46,9 @@ def update_status(
     status: Status,
     name: str = None,
     color: str = None,
+    description: str = None,
     is_terminal: bool = None,
+    is_active: bool = None,
     sort_order: int = None,
 ) -> Status:
     """
@@ -46,8 +59,12 @@ def update_status(
         status.name = name
     if color is not None:
         status.color = color
+    if description is not None:
+        status.description = description
     if is_terminal is not None:
         status.is_terminal = is_terminal
+    if is_active is not None:
+        status.is_active = is_active
     if sort_order is not None:
         status.sort_order = sort_order
     status.save()

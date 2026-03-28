@@ -21,6 +21,6 @@ export function useFeatureDetail(id: number): UseFeatureDetailResult {
     feature: data ?? null,
     isLoading,
     isError,
-    error: isError ? (error as unknown as ApiError) : null,
+    error: isError ? error : null,
   }
 }

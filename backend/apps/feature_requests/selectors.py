@@ -20,7 +20,7 @@ See docs/architecture/backend-architecture.md — Selectors, Query Design Strate
 See docs/domain/voting-rules.md — Ranking Rules.
 """
 
-from django.db.models import BooleanField, Count, Exists, OuterRef, Value
+from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
 
 from apps.feature_requests.models import FeatureRequest, Vote
 
@@ -44,6 +44,7 @@ def get_feature_requests_list(
     category_id=None,
     status_id=None,
     author_id=None,
+    search=None,
     sort=None,
 ):
     """
@@ -73,6 +74,8 @@ def get_feature_requests_list(
         qs = qs.filter(status_id=status_id)
     if author_id is not None:
         qs = qs.filter(author_id=author_id)
+    if search:
+        qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
 
     ordering = SORT_MAP.get(sort, ["-vote_count", "-created_at", "-id"])
     return qs.order_by(*ordering)

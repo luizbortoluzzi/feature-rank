@@ -1,6 +1,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import type { ApiError } from '../types/api'
 import { clearAccessToken, getAccessToken, setAccessToken } from './auth-token'
+import { redirectToLogin } from './navigation'
 
 // Extend config type to track retry state
 interface RetryConfig extends InternalAxiosRequestConfig {
@@ -50,7 +51,7 @@ apiClient.interceptors.response.use(
       if (originalRequest._retry) {
         clearAccessToken()
         new BroadcastChannel('auth').postMessage({ type: 'logout' })
-        window.location.href = '/login'
+        redirectToLogin()
         return Promise.reject(buildApiError(error))
       }
 
@@ -88,7 +89,7 @@ apiClient.interceptors.response.use(
         abortQueue()
         clearAccessToken()
         new BroadcastChannel('auth').postMessage({ type: 'logout' })
-        window.location.href = '/login'
+        redirectToLogin()
         return Promise.reject(buildApiError(error))
       }
     }

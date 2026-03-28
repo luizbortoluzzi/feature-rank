@@ -1,13 +1,15 @@
-import { Badge } from '@mantine/core'
+import { Badge, type BadgeProps } from '@mantine/core'
 import type { Status } from '../../../../types/status'
 
 interface StatusBadgeProps {
   status: Status
+  size?: BadgeProps['size']
 }
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ status, size }: StatusBadgeProps) {
   return (
     <Badge
+      size={size}
       leftSection={
         <span
           style={{
