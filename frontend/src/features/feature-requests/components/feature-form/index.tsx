@@ -29,6 +29,7 @@ import {
 import type { Category } from '../../../../types/category'
 import type { Status } from '../../../../types/status'
 import type { ApiError } from '../../../../types/api'
+import { PRIORITY_CONFIG } from '../../../../constants/priority'
 
 export interface FeatureFormFields {
   title: string
@@ -56,18 +57,10 @@ interface PriorityPickerProps {
   onChange: (value: number) => void
 }
 
-const PRIORITY_LABELS: Record<number, { label: string; color: string; description: string }> = {
-  1: { label: 'Very Low', color: 'gray', description: 'Nice to have, low urgency' },
-  2: { label: 'Low', color: 'teal', description: 'Useful, but not time-sensitive' },
-  3: { label: 'Medium', color: 'yellow', description: 'Meaningful improvement for users' },
-  4: { label: 'High', color: 'orange', description: 'Important problem worth prioritizing' },
-  5: { label: 'Critical', color: 'red', description: 'High-value issue with strong impact' },
-}
-
 function PriorityPicker({ value, onChange }: PriorityPickerProps) {
   const [hovered, setHovered] = useState(0)
   const active = hovered || value || 3
-  const displayEntry = PRIORITY_LABELS[active] ?? PRIORITY_LABELS[3]
+  const displayEntry = PRIORITY_CONFIG[active] ?? PRIORITY_CONFIG[3]
 
   return (
     <Stack gap="xs">

@@ -1,4 +1,5 @@
-import { Badge, type BadgeProps } from '@mantine/core'
+import { type BadgeProps } from '@mantine/core'
+import { ColoredBadge } from '../../../../components/colored-badge'
 import type { Category } from '../../../../types/category'
 
 interface CategoryBadgeProps {
@@ -8,19 +9,10 @@ interface CategoryBadgeProps {
 
 export function CategoryBadge({ category, size }: CategoryBadgeProps) {
   return (
-    <Badge
+    <ColoredBadge
+      label={category.name}
+      color={category.color}
       size={size}
-      variant="light"
-      radius="sm"
-      style={{
-        backgroundColor: `${category.color}18`,
-        color: category.color,
-        borderColor: `${category.color}30`,
-        textTransform: 'none',
-        fontWeight: 500,
-      }}
-    >
-      {category.name}
-    </Badge>
+    />
   )
 }

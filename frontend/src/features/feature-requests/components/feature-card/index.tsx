@@ -4,12 +4,9 @@ import {
   Paper,
   Stack,
   Text,
-  UnstyledButton,
   type MantineColor,
 } from '@mantine/core'
 import {
-  IconArrowUp,
-  IconCheck,
   IconClock,
   IconStarFilled,
 } from '@tabler/icons-react'
@@ -18,6 +15,8 @@ import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
 import { formatRelativeDate } from '../../../../utils/formatDate'
 import { getInitials } from '../../../../utils/formatUser'
+import { VoteButton } from '../../../../components/vote-button'
+import { PRIORITY_CONFIG } from '../../../../constants/priority'
 
 interface FeatureCardProps {
   feature: FeatureRequest
@@ -26,6 +25,8 @@ interface FeatureCardProps {
 }
 
 function PriorityRating({ value }: { value: number }) {
+  const config = PRIORITY_CONFIG[value] ?? PRIORITY_CONFIG[3]
+
   return (
     <Group gap={4} wrap="nowrap">
       <IconStarFilled size={14} color="var(--mantine-color-yellow-6)" />
@@ -33,7 +34,7 @@ function PriorityRating({ value }: { value: number }) {
         {value.toFixed(1)}
       </Text>
       <Text fz="xs" c="dimmed">
-        Priority
+        {config.label}
       </Text>
     </Group>
   )
@@ -51,12 +52,7 @@ const AVATAR_COLORS: MantineColor[] = [
 
 export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
   const authorInitials = getInitials(feature.author.name)
-
   const avatarColor = AVATAR_COLORS[feature.author.id % AVATAR_COLORS.length]
-
-  const voteLabel = feature.has_voted
-    ? `Remove vote (${feature.vote_count})`
-    : `Vote (${feature.vote_count})`
 
   return (
     <Paper
@@ -68,53 +64,13 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
       }}
     >
       <Group align="flex-start" gap="lg" wrap="nowrap">
-        <UnstyledButton
-          onClick={onVote}
-          disabled={isVoting}
-          aria-pressed={feature.has_voted}
-          aria-label={voteLabel}
-          style={{
-            minWidth: 88,
-            borderRadius: 'var(--mantine-radius-xl)',
-            padding: '16px 12px',
-            backgroundColor: feature.has_voted
-              ? 'var(--mantine-color-indigo-0)'
-              : 'var(--mantine-color-gray-0)',
-            border: `1px solid ${
-              feature.has_voted
-                ? 'var(--mantine-color-indigo-3)'
-                : 'var(--mantine-color-gray-2)'
-            }`,
-            opacity: isVoting ? 0.65 : 1,
-            cursor: isVoting ? 'default' : 'pointer',
-            transition:
-              'transform 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease',
-            boxShadow: feature.has_voted
-              ? '0 8px 18px rgba(99, 102, 241, 0.10)'
-              : '0 4px 12px rgba(30, 36, 53, 0.04)',
-          }}
-        >
-          <Stack align="center" gap={6}>
-            {feature.has_voted ? (
-              <IconCheck size={20} color="var(--mantine-color-indigo-6)" stroke={2.5} />
-            ) : (
-              <IconArrowUp size={20} color="var(--mantine-color-gray-6)" stroke={2.2} />
-            )}
-
-            <Text
-              fw={800}
-              lh={1}
-              c={feature.has_voted ? 'indigo.7' : 'dark'}
-              style={{ fontSize: 30 }}
-            >
-              {feature.vote_count}
-            </Text>
-
-            <Text fz="xs" fw={600} c={feature.has_voted ? 'indigo.6' : 'dimmed'} lh={1}>
-              votes
-            </Text>
-          </Stack>
-        </UnstyledButton>
+        <VoteButton
+          voteCount={feature.vote_count}
+          hasVoted={feature.has_voted}
+          isDisabled={isVoting}
+          isLoading={isVoting}
+          onVote={onVote}
+        />
 
         <Stack gap="sm" style={{ flex: 1, minWidth: 0 }}>
           <Group justify="space-between" align="flex-start" gap="sm" wrap="nowrap">

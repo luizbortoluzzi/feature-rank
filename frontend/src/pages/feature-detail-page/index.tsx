@@ -6,14 +6,12 @@ import {
   Stack,
   Text,
   Title,
-  Badge,
   Avatar,
   ActionIcon,
   Divider,
-  UnstyledButton,
   Button,
 } from '@mantine/core'
-import { IconArrowLeft, IconChevronUp, IconBolt, IconShare2 } from '@tabler/icons-react'
+import { IconArrowLeft, IconShare2 } from '@tabler/icons-react'
 import { useCurrentUser } from '../../app/AuthProvider'
 import { useFeatureDetail } from '../../features/feature-requests/hooks/use-feature-detail'
 import { useDeleteFeature } from '../../features/feature-requests/hooks/use-delete-feature'
@@ -21,18 +19,13 @@ import { useCastVote } from '../../features/voting/hooks/use-cast-vote'
 import { useRemoveVote } from '../../features/voting/hooks/use-remove-vote'
 import { StatusBadge } from '../../features/statuses/components/status-badge'
 import { CategoryBadge } from '../../features/categories/components/category-badge'
+import { PriorityBadge } from '../../features/feature-requests/components/priority-badge'
+import { VoteButton } from '../../components/vote-button'
 import { Spinner } from '../../components/spinner'
 import { ErrorMessage } from '../../components/error-message'
 import { formatDate, formatRelativeDate } from '../../utils/formatDate'
 import { getInitials } from '../../utils/formatUser'
 import { PAGE_MAX_WIDTH } from '../../constants/layout'
-
-function getPriorityLabel(rate: number): string {
-  if (rate === 5) return 'Critical'
-  if (rate === 4) return 'High Priority'
-  if (rate === 3) return 'Medium Priority'
-  return 'Low Priority'
-}
 
 export function FeatureDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -117,9 +110,8 @@ export function FeatureDetailPage() {
 
   if (!feature) return null
 
-  const priorityLabel = getPriorityLabel(feature.rate)
   const authorInitials = getInitials(feature.author.name)
-  const isVoteDisabled = !user || isVoting || feature.status.is_terminal
+  const isVoteDisabled = isVoting || !!feature.status.is_terminal
 
   return (
     <main style={{ maxWidth: PAGE_MAX_WIDTH, margin: '0 auto', padding: '16px 0 48px' }}>
@@ -177,84 +169,20 @@ export function FeatureDetailPage() {
           <Paper withBorder radius="md" p="lg">
             {/* Vote box + meta row */}
             <Group align="flex-start" gap="lg" mb="md">
-              {/* Large vote box */}
-              {user ? (
-                <UnstyledButton
-                  onClick={handleVoteToggle}
-                  disabled={isVoteDisabled}
-                  aria-label={feature.has_voted ? 'Remove vote' : 'Cast vote'}
-                  aria-pressed={feature.has_voted}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: `2px solid ${feature.has_voted ? 'var(--mantine-color-indigo-5)' : 'var(--mantine-color-gray-3)'}`,
-                    borderRadius: 8,
-                    padding: '12px 20px',
-                    minWidth: 80,
-                    cursor: isVoteDisabled ? 'not-allowed' : 'pointer',
-                    opacity: isVoteDisabled && !feature.has_voted ? 0.5 : 1,
-                    backgroundColor: feature.has_voted
-                      ? 'var(--mantine-color-indigo-0)'
-                      : 'transparent',
-                    transition: 'border-color 0.15s, background-color 0.15s',
-                    flexShrink: 0,
-                  }}
-                >
-                  <IconChevronUp
-                    size={24}
-                    color={
-                      feature.has_voted
-                        ? 'var(--mantine-color-indigo-6)'
-                        : 'var(--mantine-color-gray-6)'
-                    }
-                    stroke={feature.has_voted ? 2.5 : 1.5}
-                  />
-                  <Text fz="xl" fw={700} c={feature.has_voted ? 'indigo.6' : 'dark'} lh={1.2}>
-                    {feature.vote_count}
-                  </Text>
-                  <Text fz="xs" c="dimmed">
-                    votes
-                  </Text>
-                </UnstyledButton>
-              ) : (
-                <Stack
-                  align="center"
-                  justify="center"
-                  gap={4}
-                  style={{
-                    border: '2px solid var(--mantine-color-gray-3)',
-                    borderRadius: 8,
-                    padding: '12px 20px',
-                    minWidth: 80,
-                    flexShrink: 0,
-                  }}
-                >
-                  <IconChevronUp size={24} color="var(--mantine-color-gray-5)" stroke={1.5} />
-                  <Text fz="xl" fw={700} c="dark" lh={1.2}>
-                    {feature.vote_count}
-                  </Text>
-                  <Text fz="xs" c="dimmed">
-                    votes
-                  </Text>
-                </Stack>
-              )}
+              <VoteButton
+                voteCount={feature.vote_count}
+                hasVoted={feature.has_voted}
+                isDisabled={isVoteDisabled}
+                isLoading={isVoting}
+                onVote={user ? handleVoteToggle : undefined}
+              />
 
               {/* Meta: badges + author + timestamps */}
               <Stack gap="sm" style={{ flex: 1, minWidth: 0 }}>
                 <Group gap="xs" wrap="wrap">
                   <CategoryBadge category={feature.category} />
                   <StatusBadge status={feature.status} />
-                  <Badge
-                    leftSection={<IconBolt size={11} />}
-                    color="orange"
-                    variant="light"
-                    radius="sm"
-                    style={{ textTransform: 'none', fontWeight: 500 }}
-                  >
-                    {priorityLabel}
-                  </Badge>
+                  <PriorityBadge rate={feature.rate} />
                 </Group>
 
                 <Group gap="sm" wrap="nowrap">
@@ -329,15 +257,7 @@ export function FeatureDetailPage() {
                   <Text fz="sm" c="dimmed">
                     Priority
                   </Text>
-                  <Badge
-                    leftSection={<IconBolt size={11} />}
-                    color="orange"
-                    variant="light"
-                    radius="sm"
-                    style={{ textTransform: 'none', fontWeight: 500 }}
-                  >
-                    {priorityLabel}
-                  </Badge>
+                  <PriorityBadge rate={feature.rate} />
                 </Group>
 
                 <Group justify="space-between" align="center">

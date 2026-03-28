@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Stack, Group, Text, TextInput, Button, Center, Modal } from '@mantine/core'
+import { Stack, TextInput, Button, Center } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useIsMobile } from '../../hooks/use-is-mobile'
 import { IconSearch, IconPlus, IconCircleDot } from '@tabler/icons-react'
@@ -16,6 +16,7 @@ import {
 import { Spinner } from '../../components/spinner'
 import { ErrorMessage } from '../../components/error-message'
 import { EmptyState } from '../../components/empty-state'
+import { ConfirmModal } from '../../components/confirm-modal'
 import type { Status } from '../../types/status'
 
 export function StatusesPage() {
@@ -179,25 +180,20 @@ export function StatusesPage() {
       />
 
       {/* Delete confirmation modal */}
-      <Modal opened={isConfirmOpen} onClose={closeConfirm} title="Delete Status" size="sm">
-        <Stack gap="md">
-          <Text size="sm">
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={closeConfirm}
+        onConfirm={handleConfirmDelete}
+        title="Delete Status"
+        description={
+          <>
             Are you sure you want to delete{' '}
-            <Text span fw={600}>
-              {pendingDeleteStatus?.name}
-            </Text>
-            ? This action cannot be undone.
-          </Text>
-          <Group justify="flex-end" gap="sm">
-            <Button variant="default" onClick={closeConfirm} disabled={isDeleting}>
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleConfirmDelete} loading={isDeleting}>
-              Delete
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+            <strong>{pendingDeleteStatus?.name}</strong>? This action cannot be undone.
+          </>
+        }
+        confirmLabel="Delete"
+        isPending={isDeleting}
+      />
     </Stack>
   )
 }
