@@ -1,31 +1,35 @@
 import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
-  TextInput,
-  Textarea,
+  Alert,
+  Badge,
+  Button,
+  Collapse,
+  Group,
+  Paper,
   Select,
   SimpleGrid,
-  Group,
-  Button,
-  Text,
   Stack,
-  Paper,
-  ActionIcon,
-  Divider,
-  Collapse,
-  Badge,
+  Text,
+  TextInput,
+  Textarea,
+  ThemeIcon,
+  UnstyledButton,
 } from '@mantine/core'
 import {
-  IconStar,
-  IconStarFilled,
-  IconSend,
+  IconAlertCircle,
   IconBulb,
   IconChevronDown,
   IconChevronUp,
+  IconInfoCircle,
+  IconSend,
+  IconStar,
+  IconStarFilled,
 } from '@tabler/icons-react'
 import type { Category } from '../../../../types/category'
 import type { Status } from '../../../../types/status'
 import type { ApiError } from '../../../../types/api'
+import { PRIORITY_CONFIG } from '../../../../constants/priority'
 
 export interface FeatureFormFields {
   title: string
@@ -48,69 +52,57 @@ interface FeatureFormProps {
   onCancel: () => void
 }
 
-interface StarPickerProps {
+interface PriorityPickerProps {
   value: number
   onChange: (value: number) => void
 }
 
-const PRIORITY_LABELS: Record<number, { label: string; color: string }> = {
-  1: { label: 'Very Low', color: 'gray' },
-  2: { label: 'Low', color: 'teal' },
-  3: { label: 'Medium', color: 'yellow' },
-  4: { label: 'High', color: 'orange' },
-  5: { label: 'Critical', color: 'red' },
-}
-
-function StarPicker({ value, onChange }: StarPickerProps) {
+function PriorityPicker({ value, onChange }: PriorityPickerProps) {
   const [hovered, setHovered] = useState(0)
-  const active = hovered || value
-  const displayEntry = PRIORITY_LABELS[hovered || value] ?? PRIORITY_LABELS[3]
+  const active = hovered || value || 3
+  const displayEntry = PRIORITY_CONFIG[active] ?? PRIORITY_CONFIG[3]
 
   return (
-    <Stack gap={4}>
-      <Group gap="xs" align="center">
-        <Group gap={2}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <ActionIcon
-              key={star}
-              variant="transparent"
-              size="lg"
-              aria-label={`Rate ${star}`}
-              onClick={() => onChange(star)}
-              onMouseEnter={() => setHovered(star)}
-              onMouseLeave={() => setHovered(0)}
-              style={{
-                color:
-                  star <= active ? 'var(--mantine-color-yellow-5)' : 'var(--mantine-color-gray-3)',
-                transition: 'color 100ms ease, transform 100ms ease',
-                transform: star <= active ? 'scale(1.15)' : 'scale(1)',
-              }}
-            >
-              {star <= active ? <IconStarFilled size={22} /> : <IconStar size={22} />}
-            </ActionIcon>
-          ))}
+    <Stack gap="xs">
+      <Group gap="sm" align="center" wrap="nowrap">
+        <Group gap={4}>
+          {[1, 2, 3, 4, 5].map((star) => {
+            const isActive = star <= active
+
+            return (
+              <UnstyledButton
+                key={star}
+                aria-label={`Set priority to ${star}`}
+                onClick={() => onChange(star)}
+                onMouseEnter={() => setHovered(star)}
+                onMouseLeave={() => setHovered(0)}
+                style={{
+                  display: 'grid',
+                  placeItems: 'center',
+                  width: 34,
+                  height: 34,
+                  borderRadius: 'var(--mantine-radius-full)',
+                  color: isActive ? 'var(--mantine-color-indigo-5)' : 'var(--mantine-color-gray-3)',
+                  transform: isActive ? 'scale(1.08)' : 'scale(1)',
+                  transition: 'color 120ms ease, transform 120ms ease',
+                }}
+              >
+                {isActive ? <IconStarFilled size={22} /> : <IconStar size={22} />}
+              </UnstyledButton>
+            )
+          })}
         </Group>
-        <Badge color={displayEntry.color} variant="light" size="sm">
+
+        <Badge color={displayEntry.color} variant="light" radius="xl" size="md">
           {displayEntry.label}
         </Badge>
       </Group>
-      <Group justify="space-between" px={8}>
-        <Text fz="xs" c="dimmed">
-          Your self-assessed importance (1 = lowest, 5 = highest)
-        </Text>
-      </Group>
+
+      <Text fz="xs" c="dimmed">
+        {displayEntry.description}. Your self-assessed importance from 1 to 5.
+      </Text>
     </Stack>
   )
-}
-
-const DIVIDER_STYLES = {
-  label: {
-    fontWeight: 600 as const,
-    fontSize: 'var(--mantine-font-size-xs)',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
-    color: 'var(--mantine-color-dimmed)',
-  },
 }
 
 export function FeatureForm({
@@ -125,7 +117,7 @@ export function FeatureForm({
   onSubmit,
   onCancel,
 }: FeatureFormProps) {
-  const [tipsOpen, setTipsOpen] = useState(false)
+  const [tipsOpen, setTipsOpen] = useState(true)
 
   const {
     register,
@@ -153,194 +145,235 @@ export function FeatureForm({
     }
   }, [submitError, setError])
 
-  const titleLength = watch('title').length
+  const titleValue = watch('title') ?? ''
+  const descriptionValue = watch('description') ?? ''
+  const titleLength = titleValue.length
 
-  const categoryData = categories.map((c) => ({
-    value: String(c.id),
-    label: c.name,
+  useEffect(() => {
+    if (descriptionValue.trim().length > 0) {
+      setTipsOpen(false)
+    }
+  }, [descriptionValue])
+
+  const categoryData = categories.map((category) => ({
+    value: String(category.id),
+    label: category.name,
   }))
 
-  const statusData = statuses.map((s) => ({
-    value: String(s.id),
-    label: s.name,
+  const statusData = statuses.map((status) => ({
+    value: String(status.id),
+    label: status.name,
   }))
+
+  const titleCounterColor = titleLength > 90 ? 'red' : titleLength > 70 ? 'yellow.7' : 'dimmed'
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <Stack gap="md">
-        {/* Required fields note */}
-
-        {/* Non-field submit error */}
+      <Stack gap="lg">
         {submitError && !submitError.details && (
-          <Text c="red" fz="sm" role="alert">
+          <Alert
+            color="red"
+            variant="light"
+            radius="xl"
+            icon={<IconAlertCircle size={18} />}
+            title="We couldn't submit your request"
+          >
             {submitError.message}
-          </Text>
+          </Alert>
         )}
 
-        {/* Feature Title + character counter */}
-        <Stack gap={4}>
+        <Stack gap="xs">
           <TextInput
-            label="Feature Title"
+            label="Feature title"
+            description="Keep it short, specific, and easy to scan."
             withAsterisk
             placeholder="Enter a clear, concise title for your feature request"
             maxLength={100}
+            size="md"
             error={errors.title?.message}
             {...register('title', { required: 'Title is required.' })}
           />
+
           <Group justify="space-between" px={8}>
             <Text fz="xs" c="dimmed">
-              Keep it short and descriptive
+              A strong title helps similar requests get discovered faster.
             </Text>
-            <Text fz="xs" c={titleLength > 90 ? 'red' : 'dimmed'}>
+            <Text fz="xs" c={titleCounterColor}>
               {titleLength} / 100
             </Text>
           </Group>
         </Stack>
 
-        {/* Description */}
-        <Stack gap={4}>
-          <Textarea
-            label="Description"
-            withAsterisk
-            placeholder="Describe your feature request in detail. What problem does it solve? How would it benefit users?"
-            rows={5}
-            error={errors.description?.message}
-            {...register('description', { required: 'Description is required.' })}
-          />
-          <Group justify="space-between" px={8}>
-            <Text fz="xs" c="dimmed">
-              Be as detailed as possible to help our team understand your request
+        <Stack gap="xs">
+          <Group justify="space-between" align="center">
+            <Text fw={600} fz="sm">
+              Tips for a great request
             </Text>
+
+            <Button
+              variant="subtle"
+              color="indigo"
+              size="compact-sm"
+              leftSection={<IconBulb size={14} />}
+              rightSection={tipsOpen ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
+              onClick={() => setTipsOpen((opened) => !opened)}
+            >
+              {tipsOpen ? 'Hide tips' : 'Show tips'}
+            </Button>
           </Group>
-        </Stack>
 
-        {/* ── Classification ───────────────── */}
-        <Divider label="Classification" labelPosition="left" styles={DIVIDER_STYLES} />
-
-        {/* Priority */}
-        <Stack gap={4}>
-          <Text fz="sm" fw={500}>
-            Priority{' '}
-            <span aria-hidden="true" style={{ color: 'var(--mantine-color-red-6)' }}>
-              *
-            </span>
-          </Text>
-          <Controller
-            name="rate"
-            control={control}
-            rules={{ required: 'Priority is required.', min: 1, max: 5 }}
-            render={({ field }) => <StarPicker value={field.value} onChange={field.onChange} />}
-          />
-          {errors.rate && (
-            <Text fz="xs" c="red" role="alert">
-              {errors.rate.message}
-            </Text>
-          )}
-        </Stack>
-
-        {/* Category — full width for non-admin, two columns for admin */}
-        <SimpleGrid cols={isAdmin ? 2 : 1} spacing="md">
-          <Controller
-            name="category_id"
-            control={control}
-            rules={{ required: 'Category is required.' }}
-            render={({ field }) => (
-              <Select
-                label="Category"
-                withAsterisk
-                placeholder={isLoadingCategories ? 'Loading…' : 'Select a category'}
-                data={categoryData}
-                disabled={isLoadingCategories}
-                value={field.value || null}
-                onChange={(val) => field.onChange(val ?? '')}
-                error={errors.category_id?.message}
-              />
-            )}
-          />
-          {isAdmin && (
-            <Controller
-              name="status_id"
-              control={control}
-              rules={{ required: 'Status is required.' }}
-              render={({ field }) => (
-                <Select
-                  label="Initial Status"
-                  withAsterisk
-                  placeholder={isLoadingStatuses ? 'Loading…' : 'Select a status'}
-                  data={statusData}
-                  disabled={isLoadingStatuses}
-                  value={field.value || null}
-                  onChange={(val) => field.onChange(val ?? '')}
-                  error={errors.status_id?.message}
-                />
-              )}
-            />
-          )}
-        </SimpleGrid>
-
-        {/* Collapsible tips */}
-        <Stack gap={0}>
-          <Button
-            variant="subtle"
-            color="indigo"
-            size="xs"
-            leftSection={<IconBulb size={14} />}
-            rightSection={tipsOpen ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
-            onClick={() => setTipsOpen((o) => !o)}
-            justify="space-between"
-            fullWidth
-            styles={{
-              root: {
-                borderRadius: 'var(--mantine-radius-md)',
-                backgroundColor: 'var(--mantine-color-indigo-0)',
-                border: '1px solid var(--mantine-color-indigo-2)',
-              },
-              inner: { width: '100%' },
-            }}
-          >
-            Tips or a Great Feature Request
-          </Button>
           <Collapse in={tipsOpen}>
             <Paper
               p="md"
-              radius="md"
-              mt={4}
+              radius="xl"
               style={{
                 backgroundColor: 'var(--mantine-color-indigo-0)',
                 border: '1px solid var(--mantine-color-indigo-2)',
               }}
             >
-              <Stack gap={4}>
+              <Stack gap="xs">
                 {[
                   "Be specific about the problem you're trying to solve",
                   'Explain how this feature would benefit users',
-                  'Include any relevant examples or use cases',
-                  'Check if a similar request already exists',
+                  'Include examples, workflows, or concrete use cases',
+                  'Mention limitations in the current experience',
                 ].map((tip) => (
-                  <Text key={tip} fz="xs" c="indigo.7">
-                    • {tip}
-                  </Text>
+                  <Group key={tip} gap="xs" align="flex-start" wrap="nowrap">
+                    <ThemeIcon size={18} radius="xl" variant="light" color="indigo">
+                      <IconInfoCircle size={12} />
+                    </ThemeIcon>
+                    <Text fz="sm" c="indigo.8">
+                      {tip}
+                    </Text>
+                  </Group>
                 ))}
               </Stack>
             </Paper>
           </Collapse>
         </Stack>
+
+        <Stack gap="xs">
+          <Textarea
+            label="Description"
+            description="Explain what problem this solves, who it helps, and why it matters."
+            withAsterisk
+            placeholder="Describe your feature request in detail. What problem does it solve? How would it benefit users?"
+            rows={5}
+            size="md"
+            autosize
+            minRows={5}
+            maxRows={10}
+            error={errors.description?.message}
+            {...register('description', { required: 'Description is required.' })}
+          />
+          <Text fz="xs" c="dimmed" px={8}>
+            The more context you provide, the easier it is to evaluate the request accurately.
+          </Text>
+        </Stack>
+
+        <Paper
+          p="md"
+          radius="xl"
+          withBorder
+          style={{
+            backgroundColor: 'var(--mantine-color-white)',
+          }}
+        >
+          <Stack gap="md">
+            <Text fz="sm" fw={700} c="dark">
+              How should we classify this request?
+            </Text>
+
+            <Stack gap="xs">
+              <Text fz="sm" fw={600}>
+                Priority{' '}
+                <span aria-hidden="true" style={{ color: 'var(--mantine-color-red-6)' }}>
+                  *
+                </span>
+              </Text>
+
+              <Controller
+                name="rate"
+                control={control}
+                rules={{ required: 'Priority is required.', min: 1, max: 5 }}
+                render={({ field }) => (
+                  <PriorityPicker value={field.value} onChange={field.onChange} />
+                )}
+              />
+
+              {errors.rate && (
+                <Text fz="xs" c="red" role="alert">
+                  {errors.rate.message}
+                </Text>
+              )}
+            </Stack>
+
+            <SimpleGrid cols={isAdmin ? 2 : 1} spacing="md">
+              <Controller
+                name="category_id"
+                control={control}
+                rules={{ required: 'Category is required.' }}
+                render={({ field }) => (
+                  <Select
+                    label="Category"
+                    description="What area does this request belong to?"
+                    withAsterisk
+                    size="md"
+                    placeholder={isLoadingCategories ? 'Loading…' : 'Select a category'}
+                    data={categoryData}
+                    disabled={isLoadingCategories}
+                    value={field.value || null}
+                    onChange={(value) => field.onChange(value ?? '')}
+                    error={errors.category_id?.message}
+                    searchable
+                    nothingFoundMessage="No categories found"
+                  />
+                )}
+              />
+
+              {isAdmin && (
+                <Controller
+                  name="status_id"
+                  control={control}
+                  rules={{ required: 'Status is required.' }}
+                  render={({ field }) => (
+                    <Select
+                      label="Initial status"
+                      description="Choose how this request should start."
+                      withAsterisk
+                      size="md"
+                      placeholder={isLoadingStatuses ? 'Loading…' : 'Select a status'}
+                      data={statusData}
+                      disabled={isLoadingStatuses}
+                      value={field.value || null}
+                      onChange={(value) => field.onChange(value ?? '')}
+                      error={errors.status_id?.message}
+                    />
+                  )}
+                />
+              )}
+            </SimpleGrid>
+          </Stack>
+        </Paper>
+
         <Text fz="xs" c="dimmed" ta="right">
           <span style={{ color: 'var(--mantine-color-red-6)' }}>*</span> Required fields
         </Text>
-        {/* Buttons */}
-        <Group gap="sm">
-          <Button variant="outline" color="gray" onClick={onCancel} disabled={isPending}>
+
+        <Group justify="space-between" gap="sm">
+          <Button variant="subtle" color="gray" onClick={onCancel} disabled={isPending} size="md">
             Cancel
           </Button>
+
           <Button
             type="submit"
             variant="gradient"
             style={{ flex: 1 }}
             leftSection={<IconSend size={16} />}
             loading={isPending}
+            size="md"
           >
-            Submit Feature Request
+            Submit Request
           </Button>
         </Group>
       </Stack>

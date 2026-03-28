@@ -1,3 +1,9 @@
+<div align="center">
+  <img src="frontend/public/favicon/favicon.svg" alt="Feature Rank icon" width="80" />
+  <br />
+  <img src="frontend/public/logo.svg" alt="Feature Rank logo" width="420" />
+</div>
+
 # Feature Rank
 
 A full-stack Feature Voting System built as a monorepo, designed to replace scattered feedback channels with a structured, vote-weighted ranking surface. Users submit feature requests, upvote what matters to them, and the system surfaces the most wanted work through a deterministic ranking algorithm.

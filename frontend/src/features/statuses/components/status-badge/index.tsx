@@ -1,4 +1,5 @@
-import { Badge, type BadgeProps } from '@mantine/core'
+import { type BadgeProps } from '@mantine/core'
+import { ColoredBadge } from '../../../../components/colored-badge'
 import type { Status } from '../../../../types/status'
 
 interface StatusBadgeProps {
@@ -7,31 +8,17 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, size }: StatusBadgeProps) {
-  return (
-    <Badge
-      size={size}
-      leftSection={
-        <span
-          style={{
-            display: 'inline-block',
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            backgroundColor: status.color,
-          }}
-        />
-      }
-      variant="light"
-      radius="sm"
+  const dot = (
+    <span
       style={{
-        backgroundColor: `${status.color}18`,
-        color: status.color,
-        borderColor: `${status.color}30`,
-        textTransform: 'none',
-        fontWeight: 500,
+        display: 'inline-block',
+        width: 6,
+        height: 6,
+        borderRadius: '50%',
+        backgroundColor: status.color,
       }}
-    >
-      {status.name}
-    </Badge>
+    />
   )
+
+  return <ColoredBadge label={status.name} color={status.color} leftSection={dot} size={size} />
 }

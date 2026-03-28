@@ -23,10 +23,13 @@ export function useCreateFeature(): UseCreateFeatureResult {
     mutationFn: (payload: CreateFeaturePayload) => createFeature(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: featureKeys.all })
-      notify.success('Feature request submitted!', 'Your request has been added to the board.')
+      notify.success(
+        'Feature Request Successfully Submitted!',
+        'Your feature request has been received.',
+      )
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to submit feature request', err)
+      notify.error('Feature Request Submission Failed', err)
     },
   })
 

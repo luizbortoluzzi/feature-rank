@@ -17,6 +17,19 @@ from apps.feature_requests.models import FeatureRequest, Vote
 from apps.feature_requests.selectors import get_feature_requests_list
 from apps.statuses.models import Status
 
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+
+def make_category_with_name(name):
+    return Category.objects.create(name=name, icon="", color="#000000")
+
+
+def make_status_with_name(name, sort_order):
+    return Status.objects.create(
+        name=name, color="#6B7280", is_terminal=False, sort_order=sort_order
+    )
+
+
 User = get_user_model()
 
 
@@ -175,3 +188,62 @@ class HasVotedAnnotationTest(TestCase):
         Vote.objects.create(user=self.user, feature_request=fr)
         result = get_feature_requests_list(user=None).get(pk=fr.pk)
         self.assertFalse(result.has_voted)
+
+
+class FilteringTest(TestCase):
+    """Tests for the filter parameters of get_feature_requests_list."""
+
+    def setUp(self):
+        self.user = make_user("filtuser", "filtuser@example.com")
+        self.user2 = make_user("filtuser2", "filtuser2@example.com")
+        self.cat1 = make_category_with_name("Filt Cat1")
+        self.cat2 = make_category_with_name("Filt Cat2")
+        self.st1 = make_status_with_name("filt_open", sort_order=1)
+        self.st2 = make_status_with_name("filt_planned", sort_order=2)
+        self.fr1 = make_feature(self.user, self.cat1, self.st1, "Alpha Feature")
+        self.fr2 = make_feature(self.user2, self.cat2, self.st2, "Beta Feature")
+
+    def test_filter_by_category_id(self):
+        """category_id filter returns only features belonging to that category."""
+        qs = list(get_feature_requests_list(category_id=self.cat1.pk))
+        pks = [fr.pk for fr in qs]
+        self.assertIn(self.fr1.pk, pks)
+        self.assertNotIn(self.fr2.pk, pks)
+
+    def test_filter_by_status_id(self):
+        """status_id filter returns only features with that status."""
+        qs = list(get_feature_requests_list(status_id=self.st2.pk))
+        pks = [fr.pk for fr in qs]
+        self.assertIn(self.fr2.pk, pks)
+        self.assertNotIn(self.fr1.pk, pks)
+
+    def test_filter_by_author_id(self):
+        """author_id filter returns only features authored by that user."""
+        qs = list(get_feature_requests_list(author_id=self.user2.pk))
+        pks = [fr.pk for fr in qs]
+        self.assertIn(self.fr2.pk, pks)
+        self.assertNotIn(self.fr1.pk, pks)
+
+    def test_search_matches_title(self):
+        """search parameter filters by title (case-insensitive)."""
+        qs = list(get_feature_requests_list(search="alpha"))
+        pks = [fr.pk for fr in qs]
+        self.assertIn(self.fr1.pk, pks)
+        self.assertNotIn(self.fr2.pk, pks)
+
+    def test_search_matches_description(self):
+        """search parameter also matches the description field."""
+        # Create a feature with a unique description substring
+        fr_unique = FeatureRequest.objects.create(
+            title="Generic Title",
+            description="uniquedesctoken",
+            rate=3,
+            author=self.user,
+            category=self.cat1,
+            status=self.st1,
+        )
+        qs = list(get_feature_requests_list(search="uniquedesctoken"))
+        pks = [fr.pk for fr in qs]
+        self.assertIn(fr_unique.pk, pks)
+        self.assertNotIn(self.fr1.pk, pks)
+        self.assertNotIn(self.fr2.pk, pks)

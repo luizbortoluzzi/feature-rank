@@ -21,10 +21,10 @@ export function useCreateCategory(): UseCreateCategoryResult {
     mutationFn: (payload: CreateCategoryPayload) => createCategory(payload),
     onSuccess: (_data: CategoryListItem) => {
       void queryClient.invalidateQueries({ queryKey: categoryKeys.all })
-      notify.success('Category created!')
+      notify.success('Category Successfully Created!', 'The new category is now available.')
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to create category', err)
+      notify.error('Category Creation Failed', err)
     },
   })
 

@@ -32,6 +32,12 @@ dist-ssr/
 .env
 .env.local
 .env.*.local
+# Production secrets — generated on the server, never committed
+.env.prod
+
+# Traefik ACME certificate store — generated at runtime, never committed
+acme.json
+docker/traefik/acme.json
 
 # OS / editor
 .DS_Store
