@@ -186,19 +186,7 @@ export function FeatureListPage() {
       )}
 
       {/* Create feature modal */}
-      <Modal
-        opened={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="New Feature Request"
-        size="lg"
-        centered
-        styles={{
-          inner: {
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'var(--mantine-color-gray-4) transparent',
-          },
-        }}
-      >
+      <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title="New Feature Request">
         <FeatureForm
           categories={categories}
           statuses={statuses}

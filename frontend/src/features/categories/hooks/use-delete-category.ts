@@ -17,10 +17,10 @@ export function useDeleteCategory(): UseDeleteCategoryResult {
     mutationFn: (id: number) => deleteCategory(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: categoryKeys.all })
-      notify.success('Category deleted.')
+      notify.success('Category Successfully Deleted!', 'The category has been removed.')
     },
     onError: (err: unknown) => {
-      notify.error('Failed to delete category', err as ApiError)
+      notify.error('Category Delete Failed', err as ApiError)
     },
   })
 

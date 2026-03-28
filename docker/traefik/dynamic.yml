@@ -1,0 +1,41 @@
+# Traefik dynamic configuration — loaded via the file provider.
+# This file is watched for changes; updates apply without restarting Traefik.
+# Referenced in docker-compose.prod.yml via:
+#   --providers.file.filename=/dynamic.yml
+
+http:
+  middlewares:
+    # Permanent HTTP → HTTPS redirect applied to all HTTP entrypoint routers.
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    # Common security response headers applied to all HTTPS routes.
+    # Note: X-Frame-Options and X-Content-Type-Options are also set by the
+    # Django backend and the nginx frontend; having them here adds defence-in-
+    # depth for any future routes that bypass those layers.
+    secure-headers:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        frameDeny: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+
+tls:
+  options:
+    # Modern TLS profile — TLS 1.2+ with strong cipher suites.
+    # Applied to all websecure entrypoint connections.
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256

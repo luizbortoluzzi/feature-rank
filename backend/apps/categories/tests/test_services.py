@@ -63,6 +63,16 @@ class UpdateCategoryServiceTest(TestCase):
         self.assertEqual(self.category.icon, "old-icon")
         self.assertEqual(self.category.color, "#000000")
 
+    def test_updates_description(self):
+        """update_category updates the description field."""
+        updated = update_category(category=self.category, description="A new description")
+        self.assertEqual(updated.description, "A new description")
+
+    def test_updates_is_active(self):
+        """update_category can deactivate a category."""
+        updated = update_category(category=self.category, is_active=False)
+        self.assertFalse(updated.is_active)
+
 
 class DeleteCategoryServiceTest(TestCase):
     def setUp(self):

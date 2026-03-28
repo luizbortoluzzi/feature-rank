@@ -21,10 +21,10 @@ export function useCreateStatus(): UseCreateStatusResult {
     mutationFn: (payload: CreateStatusPayload) => createStatus(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: statusKeys.all })
-      notify.success('Status created.')
+      notify.success('Status Successfully Created!', 'The new status is now available.')
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to create status', err)
+      notify.error('Status Creation Failed', err)
     },
   })
 

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import {
   Button,
   ColorInput,
@@ -21,20 +22,20 @@ export interface CategoryFormValues {
 }
 
 interface CategoryFormModalProps {
-  opened: boolean
+  isOpen: boolean
   onClose: () => void
   onSubmit: (values: CategoryFormValues) => void
-  initialValues?: Partial<CategoryFormValues>
+  defaultValues?: Partial<CategoryFormValues>
   title: string
   isPending: boolean
   submitError: { message: string; details?: Record<string, string[]> | null } | null
 }
 
 export function CategoryFormModal({
-  opened,
+  isOpen,
   onClose,
   onSubmit,
-  initialValues,
+  defaultValues,
   title,
   isPending,
   submitError,
@@ -48,25 +49,32 @@ export function CategoryFormModal({
     formState: { errors },
   } = useForm<CategoryFormValues>({
     defaultValues: {
-      name: initialValues?.name ?? '',
-      description: initialValues?.description ?? '',
-      icon: initialValues?.icon ?? '',
-      color: initialValues?.color ?? '#4C6EF5',
-      is_active: initialValues?.is_active ?? true,
+      name: '',
+      description: '',
+      icon: '',
+      color: '#4C6EF5',
+      is_active: true,
     },
   })
+
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        name: defaultValues?.name ?? '',
+        description: defaultValues?.description ?? '',
+        icon: defaultValues?.icon ?? '',
+        color: defaultValues?.color ?? '#4C6EF5',
+        is_active: defaultValues?.is_active ?? true,
+      })
+    }
+  }, [isOpen, defaultValues, reset])
 
   const iconValue = watch('icon')
   const colorValue = watch('color')
   const isActiveValue = watch('is_active')
 
-  function handleClose() {
-    reset()
-    onClose()
-  }
-
   return (
-    <Modal opened={opened} onClose={handleClose} title={title} size="md">
+    <Modal opened={isOpen} onClose={onClose} title={title} size="md">
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack gap="sm">
           <TextInput
@@ -107,13 +115,13 @@ export function CategoryFormModal({
           />
 
           {submitError && !submitError.details && (
-            <Text c="red" fz="sm">
+            <Text c="red" fz="sm" role="alert">
               {submitError.message}
             </Text>
           )}
 
           <Group justify="flex-end" mt="xs">
-            <Button variant="subtle" color="gray" onClick={handleClose} disabled={isPending}>
+            <Button variant="default" onClick={onClose} disabled={isPending}>
               Cancel
             </Button>
             <Button type="submit" loading={isPending}>

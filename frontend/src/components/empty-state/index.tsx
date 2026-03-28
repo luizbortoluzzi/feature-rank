@@ -1,4 +1,4 @@
-import { Stack, Text, Anchor, UnstyledButton, ThemeIcon, Center } from '@mantine/core'
+import { Stack, Text, Anchor, Button, ThemeIcon, Center } from '@mantine/core'
 import { IconInbox } from '@tabler/icons-react'
 
 interface EmptyStateProps {
@@ -26,11 +26,9 @@ export function EmptyState({ message, action }: EmptyStateProps) {
               {action.label}
             </Anchor>
           ) : (
-            <UnstyledButton onClick={action.onClick}>
-              <Text size="sm" fw={500} c="indigo">
-                {action.label}
-              </Text>
-            </UnstyledButton>
+            <Button variant="subtle" color="indigo" size="sm" onClick={action.onClick}>
+              {action.label}
+            </Button>
           ))}
       </Stack>
     </Center>

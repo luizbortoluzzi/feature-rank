@@ -53,7 +53,7 @@ export function useRemoveVote(params?: FeatureListParams): UseRemoveVoteResult {
       return { previousList, previousDetail }
     },
     onSuccess: (voteResponse) => {
-      notify.success('Vote removed.')
+      notify.success('Vote Successfully Removed!', 'Your vote has been withdrawn.')
       const { feature_request_id, has_voted, vote_count } = voteResponse
 
       if (params) {
@@ -86,7 +86,7 @@ export function useRemoveVote(params?: FeatureListParams): UseRemoveVoteResult {
       if (context?.previousDetail) {
         queryClient.setQueryData(featureKeys.detail(featureId), context.previousDetail)
       }
-      notify.error('Could not remove vote', err)
+      notify.error('Vote Failed', err)
     },
   })
 

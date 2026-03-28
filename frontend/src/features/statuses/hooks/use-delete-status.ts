@@ -21,10 +21,10 @@ export function useDeleteStatus(): UseDeleteStatusResult {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: statusKeys.all })
       queryClient.removeQueries({ queryKey: statusKeys.detail(id) })
-      notify.success('Status deleted.')
+      notify.success('Status Successfully Deleted!', 'The status has been removed.')
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to delete status', err)
+      notify.error('Status Delete Failed', err)
     },
   })
 

@@ -1,51 +1,236 @@
-# Production override — apply on top of docker-compose.yml:
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
-# All services run with restart: always. No source bind mounts.
-# MySQL port NOT exposed to host. Secrets must come from environment only.
+# Production deployment for Oracle Cloud Infrastructure (OCI) VM.
+#
+# Standalone file — does NOT layer on top of docker-compose.yml.
+# Requires:  .env.prod  (copy .env.prod.example and fill in all values)
+#
+# First-time setup:
+#   docker network create traefik_net
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Or use the deploy script:
+#   ./scripts/deploy.sh
+#
+# Architecture:
+#   Internet → Traefik (TLS termination) → nginx (SPA + /api/ proxy) → Django → MySQL
+#
+#   traefik_net  — external bridge network shared across all apps on this VM;
+#                  Traefik and the frontend nginx are both attached.
+#   feature_rank_internal — isolated internal network; db and backend are never
+#                           directly reachable from Traefik or the internet.
+
+networks:
+  # Shared Traefik routing network.  Must exist before first deploy.
+  # Create with: docker network create traefik_net
+  traefik_net:
+    external: true
+
+  # Isolated backend network — no direct ingress from Traefik or the internet.
+  feature_rank_internal:
+    internal: true
+
+volumes:
+  mysql_data:
+  traefik_acme:
 
 services:
 
-  # ── MySQL — no host port in prod, data volume retained ────────────────────
-  db:
-    restart: always
-    ports: []  # override dev port exposure — 3306 not reachable from host
+  # ── Traefik v3 — TLS termination and reverse proxy ─────────────────────────
+  # Handles HTTPS via Let's Encrypt, routes by Host header, exposes dashboard.
+  # When this VM hosts additional apps, their compose stacks attach their
+  # frontend containers to traefik_net and add routing labels — no Traefik
+  # changes required.
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - traefik_net
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Docker socket (read-only) for container label discovery
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Dynamic middleware config (redirect, security headers)
+      - ./docker/traefik/dynamic.yml:/dynamic.yml:ro
+      # Persistent ACME certificate storage
+      - traefik_acme:/acme
+    command:
+      # Disable telemetry
+      - "--global.checkNewVersion=false"
+      - "--global.sendAnonymousUsage=false"
+      # Enable dashboard API (access controlled via basic-auth middleware below)
+      - "--api.dashboard=true"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Let's Encrypt — HTTP-01 challenge (port 80 must be reachable from internet)
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      # Docker provider — only containers with traefik.enable=true are routed
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik_net"
+      # File provider for dynamic middleware config
+      - "--providers.file.filename=/dynamic.yml"
+      - "--providers.file.watch=true"
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_net"
+      # Dashboard — protected with HTTP basic auth
+      # Generate TRAEFIK_DASHBOARD_USERS with: htpasswd -nB admin | sed 's/\$\$/\$/g'
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-auth@docker"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_USERS}"
+      # HTTP redirect for the dashboard subdomain
+      - "traefik.http.routers.traefik-dashboard-http.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.traefik-dashboard-http.entrypoints=web"
+      - "traefik.http.routers.traefik-dashboard-http.middlewares=redirect-to-https@file"
+    deploy:
+      resources:
+        limits:
+          memory: 128m
 
-  # ── Django backend — gunicorn production server ────────────────────────────
+  # ── MySQL 8.4 — containerised database ────────────────────────────────────
+  # Oracle Cloud MySQL HeatWave free tier has region-specific availability and
+  # is not appropriate for demo apps with daily resets. A hardened containerised
+  # MySQL provides equivalent durability with simpler operation and reset logic.
+  db:
+    image: mysql:8.4
+    container_name: feature-rank-db
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - feature_rank_internal
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      # Persistent data volume — survives container recreation
+      - mysql_data:/var/lib/mysql
+      # Init scripts run once on first startup (grants test DB access)
+      - ./docker/mysql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent 2>/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  # ── Django — Gunicorn WSGI server ─────────────────────────────────────────
+  # Runs on the internal network only. Traefik never routes directly to it;
+  # all traffic arrives via the nginx frontend proxy.
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: feature-rank-backend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - feature_rank_internal
     environment:
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+      DB_HOST: db
+      DB_PORT: "3306"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_ALLOWED_HOSTS: ${DOMAIN},localhost
       DJANGO_SETTINGS_MODULE: config.settings.production
       DJANGO_ENV: production
-    volumes: []  # remove dev bind mounts — image content only
+      # CORS is technically not needed for same-origin API calls (nginx proxy),
+      # but is required for any direct API consumers (mobile, Postman, etc.)
+      CORS_ALLOWED_ORIGINS: https://${DOMAIN}
+    depends_on:
+      db:
+        condition: service_healthy
     command:
       - gunicorn
       - config.wsgi:application
       - --bind
       - "0.0.0.0:8000"
       - --workers
-      - "4"
+      - "2"
       - --timeout
       - "120"
       - --access-logfile
       - "-"
       - --error-logfile
       - "-"
-    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
 
-  # ── nginx frontend — serves compiled static assets ─────────────────────────
+  # ── nginx — React SPA + API reverse proxy ─────────────────────────────────
+  # Serves the pre-built React bundle and proxies /api/ and /admin/ to the
+  # Django backend on the internal network. Traefik terminates TLS and forwards
+  # plain HTTP to this container on port 80.
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
       target: runner
+      args:
+        # Empty string → axios uses relative URLs → nginx proxies to backend.
+        # No hardcoded hostname is baked into the bundle.
+        VITE_API_BASE_URL: ""
+    container_name: feature-rank-frontend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      # traefik_net: so Traefik can route inbound HTTP to this container
+      - traefik_net
+      # feature_rank_internal: so nginx can proxy /api/ to the backend
+      - feature_rank_internal
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-    ports:
-      - "80:80"
-    restart: always
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_net"
+      # HTTPS route
+      - "traefik.http.routers.feature-rank.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.feature-rank.entrypoints=websecure"
+      - "traefik.http.routers.feature-rank.tls.certresolver=letsencrypt"
+      - "traefik.http.services.feature-rank.loadbalancer.server.port=80"
+      # HTTP → HTTPS redirect
+      - "traefik.http.routers.feature-rank-http.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.feature-rank-http.entrypoints=web"
+      - "traefik.http.routers.feature-rank-http.middlewares=redirect-to-https@file"
+    deploy:
+      resources:
+        limits:
+          memory: 64m
