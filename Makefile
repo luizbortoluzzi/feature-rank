@@ -4,10 +4,10 @@
 
 .PHONY: help \
         install install-backend install-frontend \
-        up down logs restart ps \
+        up down clear logs restart ps \
         dev dev-backend dev-frontend \
         migrate makemigrations shell \
-        seed seed-demo \
+        seed seed-demo demo \
         lint lint-backend lint-frontend \
         format format-backend \
         fix fix-backend \
@@ -28,6 +28,7 @@ help:
 	@echo "  Docker"
 	@echo "    up                Start all services (detached)"
 	@echo "    down              Stop all services"
+	@echo "    clear             Stop services, delete volumes and locally-built images (full reset)"
 	@echo "    logs              Tail logs for all services"
 	@echo "    restart           Restart all services"
 	@echo "    ps                Show running service status"
@@ -43,6 +44,7 @@ help:
 	@echo "    shell             Open Django shell inside the container"
 	@echo "    seed              Seed reference data (categories + statuses)"
 	@echo "    seed-demo         Seed full demo dataset (users, features, votes)"
+	@echo "    demo              Start the app and run all seeds (reference + demo)"
 	@echo ""
 	@echo "  Code quality"
 	@echo "    lint              Lint backend + frontend"
@@ -81,6 +83,9 @@ up:
 down:
 	docker compose down
 
+clear:
+	docker compose down -v --rmi local
+
 logs:
 	docker compose logs -f
 
@@ -104,6 +109,8 @@ dev-frontend:
 # ── Database ──────────────────────────────────────────────────────────────────
 
 migrate:
+	docker compose exec -T backend python manage.py migrate contenttypes 0001
+	docker compose exec -T backend python manage.py migrate contenttypes 0002 --fake
 	docker compose exec -T backend python manage.py migrate
 
 makemigrations:
@@ -116,6 +123,14 @@ seed:
 	docker compose exec -T backend python manage.py seed_reference_data
 
 seed-demo:
+	docker compose exec -T backend python manage.py seed_demo_data
+
+demo:
+	docker compose up -d
+	docker compose exec -T backend python manage.py migrate contenttypes 0001
+	docker compose exec -T backend python manage.py migrate contenttypes 0002 --fake
+	docker compose exec -T backend python manage.py migrate
+	docker compose exec -T backend python manage.py seed_reference_data
 	docker compose exec -T backend python manage.py seed_demo_data
 
 # ── Code quality ──────────────────────────────────────────────────────────────

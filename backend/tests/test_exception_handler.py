@@ -9,7 +9,6 @@ according to the documented error envelope:
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from apps.categories.models import Category
 from apps.users.models import User
 
 

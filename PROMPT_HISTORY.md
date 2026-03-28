@@ -2352,3 +2352,61 @@ I guess we just need to turn it a little bit lighter because the background is r
 
 ### Action Taken
 Lightened the desktop background gradient in `frontend/src/pages/login-page/index.tsx` from near-black (`#0f0824 → #1a0e3a → #0d1b4b → #0a0f2e`) to a rich dark-medium indigo-blue (`#2a1260 → #16245e → #1e1258 → #0f1d52`), creating clearer visual separation from the card's dark indigo left panel while keeping the aurora effect intact.
+
+## [2026-03-27T00:20:00Z] – Add down-volumes and demo targets to Makefile
+
+### Prompt
+ok, now other thing lets update the Makefile to has a comand to down and erase all the app volumes and another command called 'make demo' that starts the aplication and run the seeds
+
+### Action Taken
+Updated `Makefile`:
+- Added `down-volumes` target: runs `docker compose down -v` to stop all services and delete all named volumes (full reset)
+- Added `demo` target: runs `docker compose up -d`, then `migrate`, then `seed_reference_data`, then `seed_demo_data` in sequence
+- Registered both new targets in `.PHONY`
+- Added descriptions for both to the `help` output
+
+## [2026-03-27T00:25:00Z] – Rename down-volumes to clear and add --rmi local
+
+### Prompt
+yes but be sure that only affects the current app and also rename the comand down-volumes to clear
+
+### Action Taken
+Renamed `down-volumes` to `clear` and updated the command to `docker compose down -v --rmi local`. The `--rmi local` flag removes only images built by this compose project (untagged/local images), leaving images from other projects untouched. Updated .PHONY and help text accordingly.
+
+## [2026-03-27T00:30:00Z] – Fix migrate crash on Django 5 + MySQL (contenttypes 0002)
+
+### Prompt
+docker compose exec -T backend python manage.py migrate
+[...error: django.db.utils.OperationalError: (1054, "Unknown column 'name' in 'django_content_type'")]
+
+### Action Taken
+Root cause: Django 5's `contenttypes.0001_initial` no longer creates the `name` column, but `contenttypes.0002_remove_content_type_name` still tries to ALTER it, crashing on MySQL with "Unknown column".
+Fix: updated both `migrate` and `demo` targets in the Makefile to run `migrate contenttypes 0001` first, then `migrate contenttypes 0002 --fake` (skips the no-op removal), then the full `migrate`.
+
+## [2026-03-27T00:35:00Z] – Fix aurora orbs bleeding through login card on resize
+
+### Prompt
+ok, now we will need to fix the login page background style effects to have the same behaviour always even I resize the screen, take a look into the image to look how weird it is if I resize the window
+
+### Action Taken
+Root cause: aurora orbs are `position: absolute`, which in CSS stacking order places them above non-positioned block elements. The card wrapper had no `position` set, so orbs rendered on top of it and bled through the white right panel (visible as pink tint in the screenshot).
+Fix: added `position: 'relative'` and `zIndex: 1` to the card wrapper Box in `LoginPage`. This establishes a stacking context that keeps the card always above the orbs regardless of window size or orb position.
+
+## [2026-03-27T00:40:00Z] – Fix Prettier formatting issues in frontend
+
+### Prompt
+Run npm run format:check [showed 23 files with formatting issues]
+
+### Action Taken
+Ran `npx prettier --write src/` in the frontend directory. All files were already conforming to Prettier style (all reported as unchanged). Verified with `npm run format:check` — passes cleanly.
+
+## [2026-03-27T00:45:00Z] – Fix ruff lint errors in backend
+
+### Prompt
+Run ruff check . [showed UP038 and F401 errors]
+
+### Action Taken
+Fixed both errors:
+- `config/drf_exception_handler.py:70`: changed `isinstance(exc, (NotAuthenticated, AuthenticationFailed))` to `isinstance(exc, NotAuthenticated | AuthenticationFailed)` (UP038)
+- `tests/test_exception_handler.py:12`: removed unused `from apps.categories.models import Category` import (F401)
+Verified with `ruff check .` — all checks passed.
