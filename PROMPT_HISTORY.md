@@ -2481,3 +2481,28 @@ everything still with the same size
 Bumped sizes more aggressively in the desktop table of `category-table/index.tsx`:
 - Badge: `size="md"` → `size="lg"`
 - ActionIcon: `size="md"` → `size="lg"`, icons 16px → 18px, gap 4 → 6
+
+## [2026-03-28T00:00:00Z] – backend test coverage setup
+
+### Prompt
+You are a senior backend engineer and test infrastructure specialist.
+
+I want you to analyze this backend codebase and implement a complete **test coverage setup** so that we can measure, enforce, and maintain a minimum quality bar for automated tests.
+
+## Main goal
+
+Set up the backend so that:
+
+1. Test coverage is collected and reported reliably
+2. The coverage configuration is part of the project tooling
+3. A git hook enforces that the backend must have at least **80% coverage**
+4. Commits should fail when coverage is below the threshold
+5. The setup is maintainable, fast enough for local development, and clearly documented
+
+[... full task prompt as provided — see conversation history for complete text]
+
+### Action Taken
+1. Added `[tool.coverage.run]` and `[tool.coverage.report]` sections to `backend/pyproject.toml` (source=apps, omits migrations/tests/manage.py, fail_under=80, show_missing=true).
+2. Added `test-backend-coverage` and `check-backend-coverage` Makefile targets; updated `.PHONY` and help text.
+3. Added `backend-coverage` pre-commit hook to `.pre-commit-config.yaml` scoped to `^backend/.*\.py$` files, running `pytest --cov=apps --cov-report=term-missing --cov-fail-under=80 -q`.
+4. Created `docs/engineering/global/testing-coverage.md` documenting the setup, commands, hook behavior, and remediation guidance.

@@ -12,6 +12,7 @@
         format format-backend \
         fix fix-backend \
         test test-backend test-frontend \
+        test-backend-coverage check-backend-coverage \
         pre-commit-install pre-commit-run
 
 # ── Default ───────────────────────────────────────────────────────────────────
@@ -56,9 +57,11 @@ help:
 	@echo "    fix-backend       Run ruff --fix + black on the backend"
 	@echo ""
 	@echo "  Testing"
-	@echo "    test              Run all tests (backend + frontend)"
-	@echo "    test-backend      Run backend tests with pytest"
-	@echo "    test-frontend     Run frontend tests with vitest"
+	@echo "    test                     Run all tests (backend + frontend)"
+	@echo "    test-backend             Run backend tests with pytest"
+	@echo "    test-frontend            Run frontend tests with vitest"
+	@echo "    test-backend-coverage    Run backend tests with coverage report"
+	@echo "    check-backend-coverage   Run backend tests and fail if coverage < 80%"
 	@echo ""
 	@echo "  Pre-commit"
 	@echo "    pre-commit-install  Install pre-commit hooks into .git/hooks"
@@ -159,6 +162,12 @@ test: test-backend test-frontend
 
 test-backend:
 	cd backend && pytest
+
+test-backend-coverage:
+	cd backend && pytest --cov=apps --cov-report=term-missing
+
+check-backend-coverage:
+	cd backend && pytest --cov=apps --cov-report=term-missing --cov-fail-under=80
 
 test-frontend:
 	cd frontend && npm run test -- --run
