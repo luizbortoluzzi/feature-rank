@@ -48,6 +48,16 @@ repos:
           - build
           - perf
 
+  # ── Backend — test coverage enforcement (≥80%) ──────────────────────────
+  - repo: local
+    hooks:
+      - id: backend-coverage
+        name: Backend test coverage (≥80%)
+        entry: bash -c 'cd backend && pytest --cov=apps --cov-report=term-missing --cov-fail-under=80 -q'
+        language: system
+        pass_filenames: false
+        files: ^backend/.*\.py$
+
   # ── Frontend — ESLint + TypeScript ───────────────────────────────────────
   - repo: local
     hooks:

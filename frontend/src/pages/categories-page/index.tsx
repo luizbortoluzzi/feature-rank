@@ -135,7 +135,7 @@ export function CategoriesPage() {
       )}
 
       <CategoryFormModal
-        opened={createModalOpen}
+        isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSubmit={handleCreate}
         title="New Category"
@@ -145,10 +145,10 @@ export function CategoriesPage() {
 
       {editTarget && (
         <CategoryFormModal
-          opened={!!editTarget}
+          isOpen={!!editTarget}
           onClose={() => setEditTarget(null)}
           onSubmit={handleUpdate}
-          initialValues={editTarget}
+          defaultValues={editTarget}
           title={`Edit "${editTarget.name}"`}
           isPending={isUpdating}
           submitError={updateError}

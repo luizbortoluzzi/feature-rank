@@ -27,10 +27,10 @@ export function useUpdateStatus(): UseUpdateStatusResult {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: statusKeys.all })
       queryClient.invalidateQueries({ queryKey: statusKeys.detail(data.id) })
-      notify.success('Status updated.')
+      notify.success('Status Successfully Updated!', 'Status changes have been saved.')
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to update status', err)
+      notify.error('Status Update Failed', err)
     },
   })
 

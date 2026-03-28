@@ -23,10 +23,10 @@ export function useUpdateCategory(): UseUpdateCategoryResult {
     mutationFn: ({ id, payload }: UpdateCategoryArgs) => updateCategory(id, payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: categoryKeys.all })
-      notify.success('Category updated!')
+      notify.success('Category Successfully Updated!', 'Category changes have been saved.')
     },
     onError: (err: ApiError) => {
-      notify.error('Failed to update category', err)
+      notify.error('Category Update Failed', err)
     },
   })
 

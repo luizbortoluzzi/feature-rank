@@ -1,9 +1,13 @@
-import { Group, Paper, Stack, Text, Title, Avatar } from '@mantine/core'
-import { IconArrowUp, IconCheck, IconStar, IconStarFilled, IconClock } from '@tabler/icons-react'
+import { Avatar, Group, Paper, Stack, Text, type MantineColor } from '@mantine/core'
+import { IconClock, IconStarFilled } from '@tabler/icons-react'
+import { useIsMobile } from '../../../../hooks/use-is-mobile'
 import type { FeatureRequest } from '../../../../types/feature'
 import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
 import { formatRelativeDate } from '../../../../utils/formatDate'
+import { getInitials } from '../../../../utils/formatUser'
+import { VoteButton } from '../../../../components/vote-button'
+import { PRIORITY_CONFIG } from '../../../../constants/priority'
 
 interface FeatureCardProps {
   feature: FeatureRequest
@@ -11,117 +15,122 @@ interface FeatureCardProps {
   onVote: () => void
 }
 
-function StarRating({ value }: { value: number }) {
+function PriorityRating({ value }: { value: number }) {
+  const config = PRIORITY_CONFIG[value] ?? PRIORITY_CONFIG[3]
+
   return (
-    <Group gap={2}>
-      {[1, 2, 3, 4, 5].map((i) =>
-        i <= value ? (
-          <IconStarFilled key={i} size={18} color="var(--mantine-color-yellow-5)" />
-        ) : (
-          <IconStar key={i} size={18} color="var(--mantine-color-gray-3)" />
-        ),
-      )}
+    <Group gap={4} wrap="nowrap">
+      <IconStarFilled size={14} color="var(--mantine-color-yellow-6)" />
+      <Text fz="xs" fw={700} c="yellow.8">
+        {value.toFixed(1)}
+      </Text>
+      <Text fz="xs" c="dimmed">
+        {config.label}
+      </Text>
     </Group>
   )
 }
 
-const AVATAR_COLORS = ['indigo', 'violet', 'grape', 'blue', 'teal', 'green', 'orange']
+const AVATAR_COLORS: MantineColor[] = [
+  'indigo',
+  'violet',
+  'grape',
+  'blue',
+  'teal',
+  'green',
+  'orange',
+]
 
 export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
-  const authorInitials = feature.author.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
+  const isMobile = useIsMobile()
+  const authorInitials = getInitials(feature.author.name)
   const avatarColor = AVATAR_COLORS[feature.author.id % AVATAR_COLORS.length]
 
   return (
-    <Paper p="md" radius="md" withBorder>
-      <Group align="flex-start" gap="md" wrap="nowrap">
-        {/* Vote Widget */}
-        <Stack
-          align="center"
-          gap={4}
-          style={{
-            minWidth: 80,
-            padding: '14px 10px',
-            borderRadius: 'var(--mantine-radius-md)',
-            cursor: isVoting ? 'default' : 'pointer',
-            backgroundColor: feature.has_voted
-              ? 'var(--mantine-color-green-1)'
-              : 'var(--mantine-color-gray-0)',
-            border: `1px solid ${feature.has_voted ? 'var(--mantine-color-green-4)' : 'var(--mantine-color-gray-2)'}`,
-            transition: 'background-color 0.15s, border-color 0.15s',
-            opacity: isVoting ? 0.6 : 1,
-            pointerEvents: isVoting ? 'none' : 'auto',
-          }}
-          onClick={onVote}
-          role="button"
-          aria-pressed={feature.has_voted}
-          aria-label={
-            feature.has_voted
-              ? `Remove vote (${feature.vote_count})`
-              : `Vote (${feature.vote_count})`
-          }
-        >
-          {feature.has_voted ? (
-            <IconCheck size={22} color="var(--mantine-color-green-6)" stroke={2.5} />
+    <Paper
+      p="lg"
+      radius="xl"
+      withBorder
+      style={{
+        transition: 'transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease',
+      }}
+    >
+      <Group align="flex-start" gap="lg" wrap="nowrap">
+        <VoteButton
+          voteCount={feature.vote_count}
+          hasVoted={feature.has_voted}
+          isDisabled={isVoting}
+          isLoading={isVoting}
+          onVote={onVote}
+        />
+
+        <Stack gap="sm" style={{ flex: 1, minWidth: 0 }}>
+          <Group justify="space-between" align="flex-start" gap="sm" wrap="wrap">
+            <Group gap={8} wrap="nowrap">
+              <CategoryBadge category={feature.category} size="md" />
+              <StatusBadge status={feature.status} size="md" />
+            </Group>
+
+            <PriorityRating value={feature.rate} />
+          </Group>
+
+          <Stack gap={6}>
+            <Text fz="xl" fw={700} lh={1.3} c="dark" lineClamp={1}>
+              {feature.title}
+            </Text>
+
+            <Text fz="sm" lh={1.55} c="gray.6" lineClamp={2}>
+              {feature.description}
+            </Text>
+          </Stack>
+
+          {isMobile ? (
+            <Stack gap={4} mt={4}>
+              <Group gap={8} wrap="nowrap" style={{ minWidth: 0 }}>
+                <Avatar
+                  size={32}
+                  radius="xl"
+                  color={avatarColor}
+                  src={feature.author.avatar_url ?? undefined}
+                  style={{ flexShrink: 0 }}
+                >
+                  {authorInitials}
+                </Avatar>
+                <Text fz="sm" fw={600} c="gray.8" truncate>
+                  {feature.author.name}
+                </Text>
+              </Group>
+              <Group gap={4} wrap="nowrap">
+                <IconClock size={13} color="var(--mantine-color-gray-5)" />
+                <Text fz="xs" c="gray.5">
+                  Posted {formatRelativeDate(feature.created_at)}
+                </Text>
+              </Group>
+            </Stack>
           ) : (
-            <IconArrowUp size={22} color="var(--mantine-color-gray-5)" stroke={2} />
+            <Group justify="space-between" align="center" mt={4} gap={8} wrap="nowrap">
+              <Group gap={8} wrap="nowrap" style={{ minWidth: 0, flex: '1 1 0' }}>
+                <Avatar
+                  size={32}
+                  radius="xl"
+                  color={avatarColor}
+                  src={feature.author.avatar_url ?? undefined}
+                  style={{ flexShrink: 0 }}
+                >
+                  {authorInitials}
+                </Avatar>
+                <Text fz="sm" fw={600} c="gray.8" truncate>
+                  {feature.author.name}
+                </Text>
+              </Group>
+              <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+                <IconClock size={14} color="var(--mantine-color-gray-5)" />
+                <Text fz="sm" c="gray.5" style={{ whiteSpace: 'nowrap' }}>
+                  {formatRelativeDate(feature.created_at)}
+                </Text>
+              </Group>
+            </Group>
           )}
-          <Text fw={700} lh={1} c={feature.has_voted ? 'green' : 'dark'} style={{ fontSize: 32 }}>
-            {feature.vote_count}
-          </Text>
-          <Text fz="xs" c="dimmed" lh={1}>
-            votes
-          </Text>
-        </Stack>
-
-        {/* Card content */}
-        <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
-          {/* Badges + Star rating */}
-          <Group justify="space-between" align="center">
-            <Group gap="xs">
-              <CategoryBadge category={feature.category} size="lg" />
-              <StatusBadge status={feature.status} size="lg" />
-            </Group>
-            <StarRating value={feature.rate} />
-          </Group>
-
-          {/* Title */}
-          <Title order={4} lineClamp={1} mt={2}>
-            {feature.title}
-          </Title>
-
-          {/* Description */}
-          <Text fz="sm" c="dimmed" lineClamp={2}>
-            {feature.description}
-          </Text>
-
-          {/* Footer */}
-          <Group gap="md" mt={4}>
-            <Group gap={6} wrap="nowrap">
-              <Avatar
-                size={32}
-                radius="xl"
-                color={avatarColor}
-                src={feature.author.avatar_url ?? undefined}
-              >
-                {authorInitials}
-              </Avatar>
-              <Text fz="sm" fw={500}>
-                {feature.author.name}
-              </Text>
-            </Group>
-            <Group gap={4} wrap="nowrap">
-              <IconClock size={14} color="var(--mantine-color-gray-5)" />
-              <Text fz="xs" c="dimmed">
-                Posted {formatRelativeDate(feature.created_at)}
-              </Text>
-            </Group>
-          </Group>
         </Stack>
       </Group>
     </Paper>

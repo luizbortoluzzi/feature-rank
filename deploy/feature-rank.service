@@ -1,0 +1,55 @@
+# =============================================================================
+# feature-rank.service — systemd unit for the feature-rank Docker Compose stack
+# =============================================================================
+# Ensures the stack starts automatically on VM boot, after Docker is ready.
+#
+# Install:
+#   sudo cp deploy/feature-rank.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable feature-rank
+#   sudo systemctl start feature-rank
+#
+# Commands:
+#   sudo systemctl status feature-rank
+#   sudo systemctl stop feature-rank
+#   sudo systemctl restart feature-rank
+#   sudo journalctl -u feature-rank -f
+# =============================================================================
+
+[Unit]
+Description=feature-rank Docker Compose stack
+Documentation=https://github.com/your-username/feature-rank
+# Start after Docker is fully ready
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+# Update this path if the repo is cloned to a different location
+WorkingDirectory=/opt/demo-apps/feature-rank
+
+# Ensure the shared Traefik network exists before starting
+ExecStartPre=docker network create traefik_net || true
+
+ExecStart=docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --wait
+ExecStop=docker compose -f docker-compose.prod.yml --env-file .env.prod stop
+ExecReload=docker compose -f docker-compose.prod.yml --env-file .env.prod pull && \
+           docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --wait
+
+# Restart the unit if it fails (e.g. Docker was not ready yet)
+Restart=on-failure
+RestartSec=15s
+
+# Run as the deploy user (not root) — must be in the docker group
+# Change 'ubuntu' to your actual VM username
+User=ubuntu
+Group=ubuntu
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -23,6 +23,15 @@ class GetStatusesListSelectorTest(TestCase):
         """get_statuses_list returns an empty queryset when no statuses are present."""
         self.assertEqual(get_statuses_list().count(), 0)
 
+    def test_search_returns_matching_statuses_only(self):
+        """get_statuses_list with search= filters by name (case-insensitive)."""
+        Status.objects.create(name="open_srch", color="#000", is_terminal=False, sort_order=300)
+        Status.objects.create(name="completed_srch", color="#000", is_terminal=True, sort_order=400)
+        results = list(get_statuses_list(search="open_srch"))
+        names = [s.name for s in results]
+        self.assertIn("open_srch", names)
+        self.assertNotIn("completed_srch", names)
+
 
 class GetStatusSelectorTest(TestCase):
     def setUp(self):

@@ -16,6 +16,7 @@ import { useIsMobile } from '../hooks/use-is-mobile'
 import { IconLayoutList, IconTag, IconCircleDot, IconUsers, IconLogout } from '@tabler/icons-react'
 import { useCurrentUser } from './AuthProvider'
 import { registerNavigate } from '../services/navigation'
+import { getInitials } from '../utils/formatUser'
 
 interface AppLayoutProps {
   children: ReactNode
@@ -45,14 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     registerNavigate(navigate)
   }, [navigate])
 
-  const userInitials = user
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : '?'
+  const userInitials = user ? getInitials(user.name) : '?'
 
   function handleNavigate(path: string) {
     navigate(path)
@@ -68,7 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Mobile header */}
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <img src="/logo.svg" alt="Feature Rank" style={{ width: 200 }} />
+          <img src="/logo.svg" alt="Feature Rank" style={{ width: 160 }} />
           <Burger opened={opened} onClick={toggle} size="sm" aria-label="Toggle navigation" />
         </Group>
       </AppShell.Header>
@@ -186,9 +180,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </AppShell.Navbar>
 
-      <AppShell.Main style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>
-        {children}
-      </AppShell.Main>
+      <AppShell.Main>{children}</AppShell.Main>
     </AppShell>
   )
 }

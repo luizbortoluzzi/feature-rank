@@ -51,7 +51,7 @@ export function useCastVote(params?: FeatureListParams): UseCastVoteResult {
       return { previousList, previousDetail }
     },
     onSuccess: (voteResponse) => {
-      notify.success('Vote added!')
+      notify.success('Vote Successfully Added!', 'Your vote has been recorded.')
       const { feature_request_id, has_voted, vote_count } = voteResponse
 
       if (params) {
@@ -84,7 +84,7 @@ export function useCastVote(params?: FeatureListParams): UseCastVoteResult {
       if (context?.previousDetail) {
         queryClient.setQueryData(featureKeys.detail(featureId), context.previousDetail)
       }
-      notify.error('Vote failed', err)
+      notify.error('Vote Failed', err)
     },
   })
 
