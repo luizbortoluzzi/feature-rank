@@ -1,17 +1,14 @@
 import { useEffect } from 'react'
-import {
-  Button,
-  ColorInput,
-  Group,
-  Modal,
-  Stack,
-  Switch,
-  Text,
-  Textarea,
-  TextInput,
-} from '@mantine/core'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
+import { Modal, Stack } from '@mantine/core'
 import { IconPicker } from '../icon-picker'
+import { FormTextInput } from '../../../../components/form/text-input'
+import { FormTextarea } from '../../../../components/form/textarea'
+import { FormColorInput } from '../../../../components/form/color-input'
+import { FormSwitch } from '../../../../components/form/switch'
+import { FormSubmitError } from '../../../../components/form/submit-error'
+import { FormActions } from '../../../../components/form/actions'
+import { useServerFieldErrors } from '../../../../hooks/use-server-field-errors'
 
 export interface CategoryFormValues {
   name: string
@@ -43,8 +40,8 @@ export function CategoryFormModal({
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
+    control,
+    setError,
     reset,
     formState: { errors },
   } = useForm<CategoryFormValues>({
@@ -69,65 +66,74 @@ export function CategoryFormModal({
     }
   }, [isOpen, defaultValues, reset])
 
-  const iconValue = watch('icon')
-  const colorValue = watch('color')
-  const isActiveValue = watch('is_active')
+  useServerFieldErrors(submitError, setError)
 
   return (
-    <Modal opened={isOpen} onClose={onClose} title={title} size="md">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="sm">
-          <TextInput
+    <Modal opened={isOpen} onClose={onClose} title={title} size="lg">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Stack gap="lg">
+          <FormSubmitError error={submitError} />
+
+          <FormTextInput
             label="Name"
             placeholder="e.g. Core Feature"
-            required
-            error={errors.name?.message ?? submitError?.details?.name?.[0]}
+            withAsterisk
+            error={errors.name?.message}
             {...register('name', { required: 'Name is required' })}
           />
 
-          <Textarea
+          <FormTextarea
             label="Description"
             placeholder="Brief description of this category"
-            rows={3}
-            error={submitError?.details?.description?.[0]}
+            error={errors.description?.message}
             {...register('description')}
           />
 
-          <IconPicker
-            value={iconValue}
-            onChange={(val) => setValue('icon', val)}
-            error={submitError?.details?.icon?.[0]}
+          <Controller
+            name="icon"
+            control={control}
+            render={({ field }) => (
+              <IconPicker
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.icon?.message}
+              />
+            )}
           />
 
-          <ColorInput
-            label="Color"
-            placeholder="#4C6EF5"
-            value={colorValue}
-            onChange={(val) => setValue('color', val)}
-            error={submitError?.details?.color?.[0]}
+          <Controller
+            name="color"
+            control={control}
+            render={({ field }) => (
+              <FormColorInput
+                label="Color"
+                placeholder="#4C6EF5"
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.color?.message}
+              />
+            )}
           />
 
-          <Switch
-            label="Active"
-            description="Inactive categories are hidden from feature submission forms"
-            checked={isActiveValue}
-            onChange={(e) => setValue('is_active', e.currentTarget.checked)}
+          <Controller
+            name="is_active"
+            control={control}
+            render={({ field }) => (
+              <FormSwitch
+                label="Active"
+                description="Inactive categories are hidden from feature submission forms"
+                checked={field.value}
+                onChange={(e) => field.onChange(e.currentTarget.checked)}
+              />
+            )}
           />
 
-          {submitError && !submitError.details && (
-            <Text c="red" fz="sm" role="alert">
-              {submitError.message}
-            </Text>
-          )}
-
-          <Group justify="flex-end" mt="xs">
-            <Button variant="default" onClick={onClose} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button type="submit" loading={isPending}>
-              Save
-            </Button>
-          </Group>
+          <FormActions
+            layout="page"
+            onCancel={onClose}
+            isPending={isPending}
+            submitLabel="Save"
+          />
         </Stack>
       </form>
     </Modal>

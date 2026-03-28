@@ -1,23 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import {
-  Alert,
   Badge,
   Button,
   Collapse,
   Group,
   Paper,
-  Select,
   SimpleGrid,
   Stack,
   Text,
-  TextInput,
-  Textarea,
   ThemeIcon,
   UnstyledButton,
 } from '@mantine/core'
 import {
-  IconAlertCircle,
   IconBulb,
   IconChevronDown,
   IconChevronUp,
@@ -30,6 +25,12 @@ import type { Category } from '../../../../types/category'
 import type { Status } from '../../../../types/status'
 import type { ApiError } from '../../../../types/api'
 import { PRIORITY_CONFIG } from '../../../../constants/priority'
+import { FormTextInput } from '../../../../components/form/text-input'
+import { FormTextarea } from '../../../../components/form/textarea'
+import { FormSelect } from '../../../../components/form/select'
+import { FormSubmitError } from '../../../../components/form/submit-error'
+import { FormActions } from '../../../../components/form/actions'
+import { useServerFieldErrors } from '../../../../hooks/use-server-field-errors'
 
 export interface FeatureFormFields {
   title: string
@@ -137,17 +138,10 @@ export function FeatureForm({
     },
   })
 
-  useEffect(() => {
-    if (submitError?.details) {
-      Object.entries(submitError.details).forEach(([field, messages]) => {
-        setError(field as keyof FeatureFormFields, { message: messages[0] })
-      })
-    }
-  }, [submitError, setError])
+  useServerFieldErrors(submitError, setError)
 
   const titleValue = watch('title') ?? ''
   const descriptionValue = watch('description') ?? ''
-  const titleLength = titleValue.length
 
   useEffect(() => {
     if (descriptionValue.trim().length > 0) {
@@ -165,44 +159,22 @@ export function FeatureForm({
     label: status.name,
   }))
 
-  const titleCounterColor = titleLength > 90 ? 'red' : titleLength > 70 ? 'yellow.7' : 'dimmed'
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <Stack gap="lg">
-        {submitError && !submitError.details && (
-          <Alert
-            color="red"
-            variant="light"
-            radius="xl"
-            icon={<IconAlertCircle size={18} />}
-            title="We couldn't submit your request"
-          >
-            {submitError.message}
-          </Alert>
-        )}
+        <FormSubmitError error={submitError} title="We couldn't submit your request" />
 
-        <Stack gap="xs">
-          <TextInput
-            label="Feature title"
-            description="Keep it short, specific, and easy to scan."
-            withAsterisk
-            placeholder="Enter a clear, concise title for your feature request"
-            maxLength={100}
-            size="md"
-            error={errors.title?.message}
-            {...register('title', { required: 'Title is required.' })}
-          />
-
-          <Group justify="space-between" px={8}>
-            <Text fz="xs" c="dimmed">
-              A strong title helps similar requests get discovered faster.
-            </Text>
-            <Text fz="xs" c={titleCounterColor}>
-              {titleLength} / 100
-            </Text>
-          </Group>
-        </Stack>
+        <FormTextInput
+          label="Feature title"
+          description="Keep it short, specific, and easy to scan."
+          withAsterisk
+          placeholder="Enter a clear, concise title for your feature request"
+          charLimit={100}
+          charCount={titleValue.length}
+          helperText="A strong title helps similar requests get discovered faster."
+          error={errors.title?.message}
+          {...register('title', { required: 'Title is required.' })}
+        />
 
         <Stack gap="xs">
           <Group justify="space-between" align="center">
@@ -252,24 +224,15 @@ export function FeatureForm({
           </Collapse>
         </Stack>
 
-        <Stack gap="xs">
-          <Textarea
-            label="Description"
-            description="Explain what problem this solves, who it helps, and why it matters."
-            withAsterisk
-            placeholder="Describe your feature request in detail. What problem does it solve? How would it benefit users?"
-            rows={5}
-            size="md"
-            autosize
-            minRows={5}
-            maxRows={10}
-            error={errors.description?.message}
-            {...register('description', { required: 'Description is required.' })}
-          />
-          <Text fz="xs" c="dimmed" px={8}>
-            The more context you provide, the easier it is to evaluate the request accurately.
-          </Text>
-        </Stack>
+        <FormTextarea
+          label="Description"
+          description="Explain what problem this solves, who it helps, and why it matters."
+          withAsterisk
+          placeholder="Describe your feature request in detail. What problem does it solve? How would it benefit users?"
+          helperText="The more context you provide, the easier it is to evaluate the request accurately."
+          error={errors.description?.message}
+          {...register('description', { required: 'Description is required.' })}
+        />
 
         <Paper
           p="md"
@@ -314,19 +277,15 @@ export function FeatureForm({
                 control={control}
                 rules={{ required: 'Category is required.' }}
                 render={({ field }) => (
-                  <Select
+                  <FormSelect
                     label="Category"
                     description="What area does this request belong to?"
                     withAsterisk
-                    size="md"
-                    placeholder={isLoadingCategories ? 'Loading…' : 'Select a category'}
                     data={categoryData}
-                    disabled={isLoadingCategories}
+                    isLoading={isLoadingCategories}
                     value={field.value || null}
                     onChange={(value) => field.onChange(value ?? '')}
                     error={errors.category_id?.message}
-                    searchable
-                    nothingFoundMessage="No categories found"
                   />
                 )}
               />
@@ -337,14 +296,12 @@ export function FeatureForm({
                   control={control}
                   rules={{ required: 'Status is required.' }}
                   render={({ field }) => (
-                    <Select
+                    <FormSelect
                       label="Initial status"
                       description="Choose how this request should start."
                       withAsterisk
-                      size="md"
-                      placeholder={isLoadingStatuses ? 'Loading…' : 'Select a status'}
                       data={statusData}
-                      disabled={isLoadingStatuses}
+                      isLoading={isLoadingStatuses}
                       value={field.value || null}
                       onChange={(value) => field.onChange(value ?? '')}
                       error={errors.status_id?.message}
@@ -360,22 +317,13 @@ export function FeatureForm({
           <span style={{ color: 'var(--mantine-color-red-6)' }}>*</span> Required fields
         </Text>
 
-        <Group justify="space-between" gap="sm">
-          <Button variant="subtle" color="gray" onClick={onCancel} disabled={isPending} size="md">
-            Cancel
-          </Button>
-
-          <Button
-            type="submit"
-            variant="gradient"
-            style={{ flex: 1 }}
-            leftSection={<IconSend size={16} />}
-            loading={isPending}
-            size="md"
-          >
-            Submit Request
-          </Button>
-        </Group>
+        <FormActions
+          layout="page"
+          onCancel={onCancel}
+          isPending={isPending}
+          submitLabel="Submit Request"
+          submitIcon={<IconSend size={16} />}
+        />
       </Stack>
     </form>
   )

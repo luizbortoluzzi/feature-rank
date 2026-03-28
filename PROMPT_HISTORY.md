@@ -2829,3 +2829,45 @@ ok but lets increse the size of both of them
 
 ### Action Taken
 Updated README.md header image sizes: favicon from 48px to 80px, logo from 280px to 420px.
+
+---
+
+## [2026-03-28T00:00:00Z] – Implement reusable form components and standardize all forms
+
+### Prompt
+ok, go ahead with the implementation
+
+(preceded by a multi-turn planning conversation covering: using features form as reference, abstracting reusable components into components/form/, standardizing TextInput/Textarea/Select/ColorInput/NumberInput/Switch/error display/actions across feature-form, category-form-modal, and status-form-modal — with no form- prefix on folder names)
+
+### Action Taken
+Created 9 new files: `hooks/use-server-field-errors.ts` (extracts setError useEffect pattern), `components/form/submit-error/` (unified Alert-based non-field error), `components/form/actions/` (page/modal layout variants), `components/form/text-input/` (size=md + charLimit counter + helperText), `components/form/textarea/` (size=md + autosize defaults + helperText), `components/form/select/` (size=md + searchable + isLoading), `components/form/color-input/` (size=md + format=hex), `components/form/number-input/` (size=md + min=0), `components/form/switch/` (color=indigo default). Refactored all three forms to use the new components: feature-form (reference), status-form-modal (smallest diff), category-form-modal (largest diff — added noValidate, Controller for ColorInput/Switch/IconPicker, useServerFieldErrors).
+
+---
+
+## [2026-03-28T00:01:00Z] – Align category/status form modals to feature form visual style
+
+### Prompt
+ok, so now for both forms category/status we should make it with the same visual and size of the features form
+
+### Action Taken
+Updated both category-form-modal and status-form-modal: Modal size "md" → "lg", Stack gap "md" → "lg", removed FormTextarea minRows/maxRows overrides (now uses defaults of 5/10), FormActions layout "modal" → "page" (gradient submit button, size="md", space-between layout).
+
+---
+
+## [2026-03-28T00:02:00Z] – Style IconPicker to match other form fields
+
+### Prompt
+ok great, and now lets customize the icon picker field to have the same style of the other fields
+
+### Action Taken
+Updated IconPicker in categories/components/icon-picker/index.tsx: replaced manual Box+Text label and Text error with Mantine Input.Wrapper (picks up theme InputWrapper styles automatically), restyled trigger UnstyledButton to match Mantine Input defaults (height 52px, radius xl, gray-2 border, white background, 120ms transition), added opened-state-driven indigo-5 border + focus ring shadow (mirrors theme Input focus styles), removed legacy sm radius and gray-4 border.
+
+---
+
+## [2026-03-28T00:03:00Z] – Fix inputs not capturing typed values
+
+### Prompt
+ok, now we need to fix some bugs, the inputs are not catching the inputed value
+
+### Action Taken
+Added forwardRef to FormTextInput and FormTextarea. When {…register('field')} is spread onto a wrapper component, React extracts ref as a special prop — without forwardRef it never reaches the inner Mantine element, so RHF cannot register the field or read its value. Controller-based components (FormSelect, FormColorInput, FormNumberInput, FormSwitch) are unaffected as they use controlled value/onChange and don't rely on ref for value tracking.

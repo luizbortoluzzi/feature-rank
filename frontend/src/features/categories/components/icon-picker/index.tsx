@@ -4,12 +4,14 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Popover,
   Box,
+  Input,
   TextInput,
   SimpleGrid,
   ActionIcon,
   Text,
   ScrollArea,
   UnstyledButton,
+  rem,
 } from '@mantine/core'
 import { IconSearch, IconX } from '@tabler/icons-react'
 
@@ -47,12 +49,18 @@ export function IconPicker({ value, onChange, error }: IconPickerProps) {
     handleClose()
   }
 
-  return (
-    <Box>
-      <Text component="label" fz="sm" fw={500} mb={4} display="block">
-        Icon
-      </Text>
+  const borderColor = error
+    ? 'var(--mantine-color-red-6)'
+    : opened
+      ? 'var(--mantine-color-indigo-5)'
+      : 'var(--mantine-color-gray-2)'
 
+  const boxShadow = opened
+    ? '0 0 0 3px color-mix(in srgb, var(--mantine-color-indigo-5) 14%, transparent)'
+    : undefined
+
+  return (
+    <Input.Wrapper label="Icon" error={error}>
       <Popover
         opened={opened}
         onClose={handleClose}
@@ -63,16 +71,20 @@ export function IconPicker({ value, onChange, error }: IconPickerProps) {
         <Popover.Target>
           <UnstyledButton
             onClick={() => setOpened((o) => !o)}
+            mt={6}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 8,
-              padding: '7px 12px',
-              border: `1px solid ${error ? 'var(--mantine-color-red-6)' : 'var(--mantine-color-gray-4)'}`,
-              borderRadius: 'var(--mantine-radius-sm)',
+              height: rem(52),
+              padding: '0 12px',
+              border: `1px solid ${borderColor}`,
+              borderRadius: 'var(--mantine-radius-xl)',
               width: '100%',
-              backgroundColor: 'var(--mantine-color-body)',
+              backgroundColor: 'var(--mantine-color-white)',
               cursor: 'pointer',
+              transition: 'border-color 120ms ease, box-shadow 120ms ease',
+              boxShadow,
             }}
           >
             {SelectedIcon ? (
@@ -109,7 +121,7 @@ export function IconPicker({ value, onChange, error }: IconPickerProps) {
           </UnstyledButton>
         </Popover.Target>
 
-        <Popover.Dropdown p="sm">
+        <Popover.Dropdown p="sm" style={{ boxShadow: '0 0 0 1px rgba(30, 36, 53, 0.06), 0 8px 16px rgba(30, 36, 53, 0.10), 0 24px 60px rgba(30, 36, 53, 0.18)' }}>
           <TextInput
             placeholder="Search icons…"
             leftSection={<IconSearch size={14} />}
@@ -152,12 +164,6 @@ export function IconPicker({ value, onChange, error }: IconPickerProps) {
           )}
         </Popover.Dropdown>
       </Popover>
-
-      {error && (
-        <Text c="red" fz="xs" mt={4}>
-          {error}
-        </Text>
-      )}
-    </Box>
+    </Input.Wrapper>
   )
 }
