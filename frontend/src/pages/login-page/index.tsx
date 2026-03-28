@@ -216,6 +216,8 @@ export function LoginPage() {
           overflow: 'hidden',
           display: 'flex',
           minHeight: isMobile ? '100vh' : undefined,
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         {/* Left panel — hidden on mobile */}
