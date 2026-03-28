@@ -12,10 +12,16 @@ export function useNotify() {
       styles: {
         root: {
           backgroundColor: 'var(--mantine-color-green-0)',
-          borderColor: 'var(--mantine-color-green-4)',
+          borderColor: 'var(--mantine-color-green-3)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
         },
-        title: { color: 'var(--mantine-color-green-8)' },
-        description: { color: 'var(--mantine-color-green-7)' },
+        title: {
+          color: 'var(--mantine-color-gray-9)',
+          fontWeight: '600',
+        },
+        description: {
+          color: 'var(--mantine-color-gray-6)',
+        },
       },
     })
   }
@@ -30,10 +36,16 @@ export function useNotify() {
       styles: {
         root: {
           backgroundColor: 'var(--mantine-color-red-0)',
-          borderColor: 'var(--mantine-color-red-4)',
+          borderColor: 'var(--mantine-color-red-3)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
         },
-        title: { color: 'var(--mantine-color-red-8)' },
-        description: { color: 'var(--mantine-color-red-7)' },
+        title: {
+          color: 'var(--mantine-color-gray-9)',
+          fontWeight: '600',
+        },
+        description: {
+          color: 'var(--mantine-color-gray-6)',
+        },
       },
     })
   }
