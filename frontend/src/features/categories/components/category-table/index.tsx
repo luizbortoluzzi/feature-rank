@@ -1,8 +1,7 @@
 import { ActionIcon, Badge, Box, Group, Paper, Stack, Table, Text } from '@mantine/core'
 import { IconPencil, IconTrash } from '@tabler/icons-react'
-import { DataTable, type DataTableColumn } from '../../../../components/data-table'
-import { Pagination } from '../../../../components/pagination'
-import { useIsMobile } from '../../../../hooks/use-is-mobile'
+import { type DataTableColumn } from '../../../../components/data-table'
+import { ResponsiveTable } from '../../../../components/responsive-table'
 import { formatDate } from '../../../../utils/formatDate'
 import type { PaginationMeta } from '../../../../types/api'
 import type { CategoryListItem } from '../../../../types/category'
@@ -43,148 +42,132 @@ export function CategoryTable({
   meta,
   onPageChange,
 }: CategoryTableProps) {
-  const isMobile = useIsMobile()
+  const mobileCards = categories.map((category) => (
+    <Paper key={category.id} p="md" radius="md" withBorder>
+      <Stack gap="xs">
+        <Group justify="space-between" wrap="nowrap" align="flex-start">
+          <Group gap="sm" wrap="nowrap">
+            <CategoryIcon icon={category.icon} color={category.color} />
+            <Box>
+              <Text fw={600} fz="sm">
+                {category.name}
+              </Text>
+              <Text fz="xs" c="dimmed">
+                {category.feature_count} requests
+              </Text>
+            </Box>
+          </Group>
+          <ActiveBadge isActive={category.is_active} />
+        </Group>
 
-  if (isMobile) {
-    return (
-      <Stack gap="sm">
-        {categories.map((category) => (
-          <Paper key={category.id} p="md" radius="md" withBorder>
-            <Stack gap="xs">
-              <Group justify="space-between" wrap="nowrap" align="flex-start">
-                <Group gap="sm" wrap="nowrap">
-                  <CategoryIcon icon={category.icon} color={category.color} />
-                  <Box>
-                    <Text fw={600} fz="sm">
-                      {category.name}
-                    </Text>
-                    <Text fz="xs" c="dimmed">
-                      {category.feature_count} requests
-                    </Text>
-                  </Box>
-                </Group>
-                <ActiveBadge isActive={category.is_active} />
-              </Group>
+        {category.description && (
+          <Text fz="xs" c="dimmed" lineClamp={2}>
+            {category.description}
+          </Text>
+        )}
 
-              {category.description && (
-                <Text fz="xs" c="dimmed" lineClamp={2}>
-                  {category.description}
-                </Text>
-              )}
-
-              {isAdmin && (
-                <Group justify="flex-end" gap={4} mt={4}>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    size="md"
-                    aria-label={`Edit ${category.name}`}
-                    onClick={() => onEdit(category)}
-                  >
-                    <IconPencil size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    size="md"
-                    aria-label={`Delete ${category.name}`}
-                    onClick={() => onDelete(category)}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Group>
-              )}
-            </Stack>
-          </Paper>
-        ))}
-        {meta && meta.total_pages > 1 && onPageChange && (
-          <Group justify="center">
-            <Pagination meta={meta} onPageChange={onPageChange} />
+        {isAdmin && (
+          <Group justify="flex-end" gap={4} mt={4}>
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="md"
+              aria-label={`Edit ${category.name}`}
+              onClick={() => onEdit(category)}
+            >
+              <IconPencil size={16} />
+            </ActionIcon>
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              size="md"
+              aria-label={`Delete ${category.name}`}
+              onClick={() => onDelete(category)}
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
           </Group>
         )}
       </Stack>
-    )
-  }
+    </Paper>
+  ))
+
+  const desktopRows = categories.map((category) => (
+    <Table.Tr key={category.id}>
+      <Table.Td>
+        <Group gap="sm" wrap="nowrap">
+          <CategoryIcon icon={category.icon} color={category.color} />
+          <Box>
+            <Text fw={600} fz="sm" lh={1.3}>
+              {category.name}
+            </Text>
+            {category.description ? (
+              <Text fz="xs" c="dimmed" lineClamp={1} lh={1.4}>
+                {category.description}
+              </Text>
+            ) : (
+              <Text fz="xs" c="dimmed" fs="italic" lh={1.4}>
+                No description
+              </Text>
+            )}
+          </Box>
+        </Group>
+      </Table.Td>
+
+      <Table.Td>
+        <Text fw={600} fz="sm" lh={1.2}>
+          {category.feature_count}
+        </Text>
+        <Text fz="xs" c="dimmed" lh={1.2}>
+          requests
+        </Text>
+      </Table.Td>
+
+      <Table.Td>
+        <ActiveBadge isActive={category.is_active} />
+      </Table.Td>
+
+      <Table.Td>
+        <Text fz="xs" c="dimmed">
+          {formatDate(category.created_at)}
+        </Text>
+      </Table.Td>
+
+      {isAdmin && (
+        <Table.Td>
+          <Group gap={6} wrap="nowrap">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="lg"
+              aria-label={`Edit ${category.name}`}
+              onClick={() => onEdit(category)}
+            >
+              <IconPencil size={18} />
+            </ActionIcon>
+            <ActionIcon
+              variant="subtle"
+              color="red"
+              size="lg"
+              aria-label={`Delete ${category.name}`}
+              onClick={() => onDelete(category)}
+            >
+              <IconTrash size={18} />
+            </ActionIcon>
+          </Group>
+        </Table.Td>
+      )}
+    </Table.Tr>
+  ))
 
   return (
-    <DataTable
+    <ResponsiveTable
       columns={isAdmin ? COLUMNS : COLUMNS_NO_ACTIONS}
       meta={meta}
       onPageChange={onPageChange}
       itemLabel="categories"
-    >
-      {categories.map((category) => (
-        <Table.Tr key={category.id}>
-          {/* Category — icon + name + description */}
-          <Table.Td>
-            <Group gap="sm" wrap="nowrap">
-              <CategoryIcon icon={category.icon} color={category.color} />
-              <Box>
-                <Text fw={600} fz="sm" lh={1.3}>
-                  {category.name}
-                </Text>
-                {category.description ? (
-                  <Text fz="xs" c="dimmed" lineClamp={1} lh={1.4}>
-                    {category.description}
-                  </Text>
-                ) : (
-                  <Text fz="xs" c="dimmed" fs="italic" lh={1.4}>
-                    No description
-                  </Text>
-                )}
-              </Box>
-            </Group>
-          </Table.Td>
-
-          {/* Features — count primary, label secondary */}
-          <Table.Td>
-            <Text fw={600} fz="sm" lh={1.2}>
-              {category.feature_count}
-            </Text>
-            <Text fz="xs" c="dimmed" lh={1.2}>
-              requests
-            </Text>
-          </Table.Td>
-
-          {/* Status */}
-          <Table.Td>
-            <ActiveBadge isActive={category.is_active} />
-          </Table.Td>
-
-          {/* Created */}
-          <Table.Td>
-            <Text fz="xs" c="dimmed">
-              {formatDate(category.created_at)}
-            </Text>
-          </Table.Td>
-
-          {/* Actions */}
-          {isAdmin && (
-            <Table.Td>
-              <Group gap={6} wrap="nowrap">
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  size="lg"
-                  aria-label={`Edit ${category.name}`}
-                  onClick={() => onEdit(category)}
-                >
-                  <IconPencil size={18} />
-                </ActionIcon>
-                <ActionIcon
-                  variant="subtle"
-                  color="red"
-                  size="lg"
-                  aria-label={`Delete ${category.name}`}
-                  onClick={() => onDelete(category)}
-                >
-                  <IconTrash size={18} />
-                </ActionIcon>
-              </Group>
-            </Table.Td>
-          )}
-        </Table.Tr>
-      ))}
-    </DataTable>
+      mobileCards={mobileCards}
+      desktopRows={desktopRows}
+    />
   )
 }
