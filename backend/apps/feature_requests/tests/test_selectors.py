@@ -25,7 +25,10 @@ def make_category_with_name(name):
 
 
 def make_status_with_name(name, sort_order):
-    return Status.objects.create(name=name, color="#6B7280", is_terminal=False, sort_order=sort_order)
+    return Status.objects.create(
+        name=name, color="#6B7280", is_terminal=False, sort_order=sort_order
+    )
+
 
 User = get_user_model()
 

@@ -273,7 +273,9 @@ class UpdateFeatureRequestServiceTest(TestCase):
 
     def test_update_category_id(self):
         """update_feature_request updates the category_id field."""
-        new_category = Category.objects.create(name="Alt Svc Category", icon="code", color="#F59E0B")
+        new_category = Category.objects.create(
+            name="Alt Svc Category", icon="code", color="#F59E0B"
+        )
         update_feature_request(
             feature_request=self.feature,
             user=self.user,
