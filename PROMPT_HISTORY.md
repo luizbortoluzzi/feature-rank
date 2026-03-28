@@ -2809,3 +2809,23 @@ one more adjust the title should be the FeatureName + ""Successfully Created/Upd
 
 ### Action Taken
 Updated all 11 notify call sites to prepend the entity name to the title using " — " separator. Pattern: "Feature Request — Successfully Updated!", "Category — Successfully Created!", "Status — Successfully Deleted!", "Vote — Successfully Added!", etc. Error titles follow the same pattern: "Feature Request — Update Failed", "Category — Delete Failed", etc.
+
+---
+
+## [2026-03-28T10:15:00Z] – Add favicon and logo to README.md header
+
+### Prompt
+ok and is it possible to add the app logo from the public folder of frontend and the favicon.svg in our main README.md file? to make it prettier let put in the begining of the file the favicon and the logo bellow the favicon and boths centralized
+
+### Action Taken
+Added a centered `<div>` block at the top of README.md with the favicon SVG (48px) and the logo SVG (280px) below it, both centered using `align="center"` on the container. Paths point to `frontend/public/favicon/favicon.svg` and `frontend/public/logo.svg` relative to the repo root.
+
+---
+
+## [2026-03-28T10:20:00Z] – Increase favicon and logo sizes in README.md
+
+### Prompt
+ok but lets increse the size of both of them
+
+### Action Taken
+Updated README.md header image sizes: favicon from 48px to 80px, logo from 280px to 420px.
