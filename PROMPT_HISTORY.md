@@ -2410,3 +2410,23 @@ Fixed both errors:
 - `config/drf_exception_handler.py:70`: changed `isinstance(exc, (NotAuthenticated, AuthenticationFailed))` to `isinstance(exc, NotAuthenticated | AuthenticationFailed)` (UP038)
 - `tests/test_exception_handler.py:12`: removed unused `from apps.categories.models import Category` import (F401)
 Verified with `ruff check .` — all checks passed.
+
+## [2026-03-27T00:50:00Z] – Fix pre-commit-run failing due to wrong Python version
+
+### Prompt
+make pre-commit-run [...error: failed to find interpreter for python_spec='python3.12']
+
+### Action Taken
+Changed `language_version: python3.12` to `language_version: python3.13` in `.pre-commit-config.yaml` for the black hook. The system has Python 3.13 installed, not 3.12.
+
+## [2026-03-27T00:55:00Z] – Update Python version to 3.13 across the project
+
+### Prompt
+lets update the python
+
+### Action Taken
+Updated Python version from 3.12 to 3.13 in all relevant files:
+- `backend/pyproject.toml`: `requires-python = ">=3.12"` → `">=3.13"`
+- `.github/workflows/ci.yml`: both `python-version: "3.12"` occurrences → `"3.13"`
+- `.pre-commit-config.yaml`: already updated in previous step (`language_version: python3.13`)
+- `backend/Dockerfile`: was already using `python:3.13-slim`
