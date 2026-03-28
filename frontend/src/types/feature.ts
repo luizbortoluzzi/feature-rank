@@ -1,12 +1,14 @@
 import type { Category } from './category'
 import type { Status } from './status'
+import type { PaginationMeta } from './api'
 
 export interface FeatureAuthor {
   id: number
   name: string
+  avatar_url: string | null
 }
 
-export interface FeatureRequestSummary {
+export interface FeatureRequest {
   id: number
   title: string
   description: string
@@ -20,4 +22,7 @@ export interface FeatureRequestSummary {
   updated_at: string
 }
 
-export type FeatureRequest = FeatureRequestSummary
+export interface CachedListData {
+  items: FeatureRequest[]
+  meta: PaginationMeta
+}

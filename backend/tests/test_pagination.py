@@ -14,7 +14,11 @@ from apps.users.models import User
 
 def create_admin():
     return User.objects.create_user(
-        username="pagadmin", email="pagadmin@example.com", name="Admin", password="pass", is_admin=True
+        username="pagadmin",
+        email="pagadmin@example.com",
+        name="Admin",
+        password="pass",
+        is_admin=True,
     )
 
 

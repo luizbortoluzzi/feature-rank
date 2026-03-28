@@ -67,7 +67,7 @@ def custom_exception_handler(exc, context):
         response.data = data
         return response
 
-    if isinstance(exc, (NotAuthenticated, AuthenticationFailed)):
+    if isinstance(exc, NotAuthenticated | AuthenticationFailed):
         data = {
             "error": {
                 "code": "unauthorized",

@@ -24,8 +24,10 @@ class Category(models.Model):
     """
 
     name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=500, blank=True, default="")
     icon = models.CharField(max_length=100)
     color = models.CharField(max_length=7)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

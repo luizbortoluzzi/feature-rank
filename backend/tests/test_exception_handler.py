@@ -9,7 +9,6 @@ according to the documented error envelope:
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from apps.categories.models import Category
 from apps.users.models import User
 
 
@@ -21,7 +20,11 @@ def create_user():
 
 def create_admin():
     return User.objects.create_user(
-        username="excadmin", email="excadmin@example.com", name="Admin", password="pass", is_admin=True
+        username="excadmin",
+        email="excadmin@example.com",
+        name="Admin",
+        password="pass",
+        is_admin=True,
     )
 
 
@@ -88,4 +91,4 @@ class ExceptionHandlerTest(TestCase):
         # Ensure no Python traceback indicators are in the response
         body_str = str(body)
         self.assertNotIn("Traceback", body_str)
-        self.assertNotIn("File \"", body_str)
+        self.assertNotIn('File "', body_str)

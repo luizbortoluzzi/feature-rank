@@ -63,6 +63,22 @@ class StatusListViewTest(TestCase):
         for field in ["page", "limit", "total", "total_pages"]:
             self.assertIn(field, meta)
 
+    def test_list_response_includes_new_fields(self):
+        """List response data items include description, is_active, and usage_count."""
+        response = self.client.get("/api/v1/statuses/")
+        body = response.json()
+        item = body["data"][0]
+        for field in ["description", "is_active", "usage_count"]:
+            self.assertIn(field, item)
+
+    def test_usage_count_is_integer(self):
+        """usage_count in list response is a non-negative integer."""
+        response = self.client.get("/api/v1/statuses/")
+        body = response.json()
+        item = body["data"][0]
+        self.assertIsInstance(item["usage_count"], int)
+        self.assertGreaterEqual(item["usage_count"], 0)
+
 
 class StatusRetrieveViewTest(TestCase):
     def setUp(self):
@@ -119,6 +135,37 @@ class StatusCreateViewTest(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 201)
+
+    def test_admin_create_with_description_and_is_active(self):
+        """POST with description and is_active persists those fields in the response."""
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post(
+            "/api/v1/statuses/",
+            {
+                "name": "desc_active_status",
+                "color": "#000",
+                "sort_order": _next_sort(),
+                "description": "A detailed description",
+                "is_active": False,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        body = response.json()
+        self.assertEqual(body["data"]["description"], "A detailed description")
+        self.assertFalse(body["data"]["is_active"])
+
+    def test_usage_count_not_accepted_from_client(self):
+        """POST with usage_count in body does not set it — it is read-only."""
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post(
+            "/api/v1/statuses/",
+            {"name": "uc_reject", "color": "#000", "sort_order": _next_sort(), "usage_count": 999},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        body = response.json()
+        self.assertEqual(body["data"]["usage_count"], 0)
 
     def test_admin_missing_name_returns_400(self):
         """POST /api/v1/statuses/ without name returns 400."""

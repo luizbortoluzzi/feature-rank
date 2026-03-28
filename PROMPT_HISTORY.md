@@ -1521,3 +1521,928 @@ Rewrote four files to match the prototype:
 3. router.tsx: Removed title/subtitle from /features/new AppLayout.
 4. services/features.ts: Added status_id?: number to CreateFeaturePayload.
 Also updated EditFeaturePage.tsx to pass new required props (statuses, isAdmin, isLoadingStatuses) to FeatureForm and convert category_id to string. TypeScript check passed with no errors.
+
+## [2026-03-26T10:00:00Z] – Implement backend changes for Categories admin page feature
+
+### Prompt
+Implement backend changes for the Categories admin page feature in /home/isam/prj/feature-rank.
+
+## Changes required
+
+### 1. Update `backend/apps/categories/models.py`
+Add two new fields to the Category model:
+- `description = models.CharField(max_length=500, blank=True, default='')`
+- `is_active = models.BooleanField(default=True)`
+
+Keep all existing fields unchanged: id, name, icon, color, created_at.
+
+### 2. Create migration `backend/apps/categories/migrations/0002_category_description_is_active.py`
+Generate a migration for the two new fields. Use today's date (2026-03-26) in the migration timestamp. Dependencies: `[("categories", "0001_initial")]`
+
+### 3. Update `backend/apps/categories/serializers.py`
+Add to CategorySerializer:
+- `description` and `is_active` in the fields list: `["id", "name", "description", "icon", "color", "is_active", "feature_count", "created_at"]`
+- Add `feature_count` as a SerializerMethodField: `def get_feature_count(self, obj) -> int: return getattr(obj, 'feature_count', 0)`
+- Update `read_only_fields` to: `["id", "feature_count", "created_at"]`
+
+**Important:** Do NOT change `CategoryNestedSerializer` in `feature_requests/serializers.py` — it must remain `["id", "name", "icon", "color"]` only.
+
+### 4. Update `backend/apps/categories/selectors.py`
+Update `get_categories_list` to:
+- Accept an optional `search: str | None = None` keyword argument
+- Annotate `feature_count=Count('feature_requests', distinct=True)` (import Count from django.db.models)
+- Apply `filter(name__icontains=search)` when search is provided
+- Keep ordering by name
+
+Keep `get_category` unchanged.
+
+### 5. Update `backend/apps/categories/services.py`
+Update service functions to handle new fields:
+- `create_category`: add `description: str = ""` and `is_active: bool = True` params, pass them to `Category.objects.create(...)`
+- `update_category`: add `description: str | None = None` and `is_active: bool | None = None` params, update them if not None
+- `delete_category`: unchanged
+
+### 6. Update `backend/apps/categories/views.py`
+Update the `list` method to:
+- Extract search param: `search = request.query_params.get('search') or None`
+- Pass it to selector: `qs = get_categories_list(search=search)`
+
+Update the `create` method to pass new fields and update `partial_update` to pass new fields.
+
+Actually for retrieve: update `get_category` to also annotate feature_count so it's consistent.
+
+Write all changes now.
+
+### Action Taken
+Updated 6 files across the categories app:
+1. `backend/apps/categories/models.py` — added `description` (CharField max_length=500, blank, default='') and `is_active` (BooleanField, default=True) fields.
+2. `backend/apps/categories/migrations/0002_category_description_is_active.py` — created migration with AddField operations for both new fields, depending on 0001_initial.
+3. `backend/apps/categories/serializers.py` — added `feature_count` SerializerMethodField using getattr fallback, expanded fields list to include description, is_active, feature_count, updated read_only_fields.
+4. `backend/apps/categories/selectors.py` — updated `get_categories_list` to accept optional `search` kwarg, annotate `feature_count` via Count, apply name__icontains filter when search is provided; updated `get_category` to also annotate `feature_count`.
+5. `backend/apps/categories/services.py` — extended `create_category` with description and is_active params; extended `update_category` with description and is_active params (None-guarded updates).
+6. `backend/apps/categories/views.py` — list now extracts search param and passes to selector; create and partial_update pass new fields; both create and partial_update re-fetch via `get_category(pk=...)` after mutation so the response serializer receives the annotated instance with a correct feature_count.
+
+## [2026-03-26T23:58:00Z] – Implement Categories admin page matching screenshot
+
+### Prompt
+Lets implement this page of Categories in frontend, the result should be the same as the image
+
+### Action Taken
+Implemented the full Categories admin page (full-stack change):
+
+Backend (6 files):
+- `backend/apps/categories/models.py` — added `description` (CharField, max_length=500, blank, default='') and `is_active` (BooleanField, default=True) fields
+- `backend/apps/categories/migrations/0002_category_description_is_active.py` — migration for both new fields
+- `backend/apps/categories/serializers.py` — added `description`, `is_active`, and `feature_count` (SerializerMethodField) to CategorySerializer
+- `backend/apps/categories/selectors.py` — updated `get_categories_list` to accept optional `search` kwarg, annotate `feature_count` via Count; updated `get_category` to also annotate feature_count
+- `backend/apps/categories/services.py` — added `description` and `is_active` params to `create_category` and `update_category`
+- `backend/apps/categories/views.py` — pass search param to selector; pass new fields in create/partial_update
+
+Frontend (9 files):
+- `frontend/src/types/category.ts` — added `CategoryListItem` interface extending `Category` with description, is_active, feature_count, created_at
+- `frontend/src/services/categories.ts` — added `getCategoryList`, `createCategory`, `updateCategory`, `deleteCategory` service functions with proper types
+- `frontend/src/features/categories/queryKeys.ts` — added `list(params)` query key
+- `frontend/src/features/categories/hooks/use-category-list.ts` — new paginated list hook
+- `frontend/src/features/categories/hooks/use-create-category.ts` — create mutation hook
+- `frontend/src/features/categories/hooks/use-update-category.ts` — update mutation hook
+- `frontend/src/features/categories/hooks/use-delete-category.ts` — delete mutation hook
+- `frontend/src/features/categories/index.ts` — updated exports
+- `frontend/src/pages/CategoriesPage.tsx` — full implementation: page header with search + New Category button, table with CATEGORY NAME/DESCRIPTION/FEATURES/STATUS/CREATED/ACTIONS columns, create/edit modal forms, delete confirmation modal, loading/error/empty states, pagination footer
+- `frontend/src/app/router.tsx` — removed `title="Categories"` from AppLayout (page renders own header)
+
+## [2026-03-26T00:00:00Z] – Implement feature request detail page redesign
+
+### Prompt
+Rewrite the feature request detail page to match the prototype layout shown below. The page is at `frontend/src/pages/FeatureDetailPage.tsx`.
+
+## Prototype Layout Description
+
+The page has:
+1. **Page header**: back arrow (←) on the left, feature title + "Feature Request #FR-{id}" subtitle, Share button + Edit button on the right
+2. **Two-column layout** (main ~65%, sidebar ~35%)
+   - **Main column**: A Paper card containing:
+     - Left: large vote box (border, chevron-up icon, big vote count number, "votes" text below)
+     - Right of vote box: category badge, status badge, priority badge (rate-based), then author avatar+name+timestamps
+     - Divider
+     - Feature description (whitespace preserved)
+     - Delete button (if canDelete) at bottom of card
+   - **Sidebar column**:
+     - "Status & Details" card: Current Status (StatusBadge), Priority (rate-as-priority badge), Category (CategoryBadge), Posted date, Last Updated date
+     - "Engagement" card: shows Votes count (the only API-available engagement metric)
+
+## Priority mapping for `rate` field (display only, no logic):
+- rate 5 → "Critical"
+- rate 4 → "High Priority"
+- rate 3 → "Medium Priority"
+- rate 1-2 → "Low Priority"
+Use `IconBolt` with `color="orange"` Badge for priority display.
+
+## Relative date formatting:
+Add `formatRelativeDate(isoString: string): string` to `frontend/src/utils/formatDate.ts` that returns relative text like "5 days ago", "2 hours ago", "just now", etc. using basic math (no external library).
+
+## Implementation rules:
+- Use Mantine components: `Grid`, `Paper`, `Group`, `Stack`, `Text`, `Title`, `Badge`, `Avatar`, `ActionIcon`, `Divider`, `UnstyledButton`
+- Use `@tabler/icons-react`: `IconArrowLeft`, `IconChevronUp`, `IconBolt`, `IconShare2`
+- Use existing components: `StatusBadge`, `CategoryBadge`, `Spinner`, `ErrorMessage`, `Button`
+- The vote box is an `UnstyledButton` (or similar) styled as a bordered box - clicking it votes/unvotes
+- If user is not authenticated, show the vote box as static display (no click)
+- The Share button copies `window.location.href` to clipboard
+- Keep all three states: loading (Spinner), error (ErrorMessage + 404 special case), success
+
+## Files to change:
+1. `frontend/src/utils/formatDate.ts` — add `formatRelativeDate` export
+2. `frontend/src/pages/FeatureDetailPage.tsx` — full rewrite
+3. `frontend/src/app/router.tsx` — remove `title="Feature Detail"` from the `/features/:id` route (since the page manages its own header now)
+
+## API fields available on `FeatureRequest`:
+- `id`, `title`, `description`, `rate` (1-5), `vote_count`, `has_voted`
+- `author: { id, name }`
+- `category: { id, name, color, icon }`
+- `status: { id, name, color, is_terminal }`
+- `created_at`, `updated_at` (ISO strings)
+
+## Important constraints:
+- Do NOT include fields not in the API (no comments count, views, followers, top voters, target release, estimated effort)
+- vote_count and has_voted come from API only
+- Use `useCastVote(emptyParams)` and `useRemoveVote(emptyParams)` as the current page does
+- Keep 404 error handling and general error handling
+- Keep isOwner/canEdit/canDelete logic
+- The `isTerminal` check for disabling votes: if `feature.status.is_terminal` is true, disable voting
+
+## After implementing, also append to `PROMPT_HISTORY.md` at project root:
+
+```
+## [2026-03-26T00:00:00Z] – Implement feature request detail page redesign
+
+### Prompt
+let create the feature request details page in our frontend, the result should be equal the prototype image
+
+### Action Taken
+Rewrote FeatureDetailPage.tsx with two-column layout (main content + sidebar) matching prototype design. Added formatRelativeDate to utils/formatDate.ts. Updated router.tsx to remove hardcoded title from detail route. Implemented large vote box, author avatar with initials, priority badge from rate field, Status & Details sidebar card, and Engagement sidebar card.
+```
+
+### Action Taken
+Rewrote FeatureDetailPage.tsx with two-column layout (main content + sidebar) matching prototype design. Added formatRelativeDate to utils/formatDate.ts. Updated router.tsx to remove hardcoded title from detail route. Implemented large vote box, author avatar with initials, priority badge from rate field, Status & Details sidebar card, and Engagement sidebar card.
+
+## [2026-03-27T00:08:00Z] – Implement Status List admin page
+
+### Prompt
+lets implement the Status page in our frontend, the result should be exactly as the image prototype
+
+### Action Taken
+Implemented full-stack Status List admin page matching the prototype. Backend: added `description` (TextField) and `is_active` (BooleanField) to Status model with migration 0002, updated StatusSerializer to include `description`, `is_active`, `usage_count` (via SerializerMethodField), updated selectors to annotate `usage_count` via Count, updated services and views to pass new fields through the create/update flow, added tests for all new fields (52 total, all passing). Frontend: extended Status type with new fields, expanded services/statuses.ts with getStatusList/createStatus/updateStatus/deleteStatus, expanded statusKeys with list/detail keys, created use-status-list/use-create-status/use-update-status/use-delete-status hooks, created status-table component with colored dot + color swatch + description + usage count + active toggle + edit/delete actions, created status-form-modal component with React Hook Form + ColorInput, implemented full StatusesPage with header (title/subtitle/search/+button), table wrapped in Paper, showing X-Y of Z footer text + Pagination, inline delete confirmation modal. Also fixed pre-existing TypeScript type errors in categories hooks (mutate function signatures). Build passes with 0 errors.
+
+## [2026-03-27T00:15:00Z] – Install lucide-react icon library
+
+### Prompt
+ok, lets install the lucied-react lib to andle the icons
+
+### Action Taken
+Installed lucide-react (^1.7.0) in the frontend via npm install.
+
+## [2026-03-27T00:20:00Z] – Update seeds to use lucide-react icon names
+
+### Prompt
+ok, now lets update the seeds to use icons from this library
+
+### Action Taken
+Updated CATEGORIES in seed_reference_data.py to use lucide-react component names (Palette, Zap, Code2, Shield, Terminal, MoreHorizontal). Updated CategoryIcon component in CategoriesPage.tsx to dynamically resolve and render lucide-react icons by name using `LucideIcons[name]`, with a text fallback for unknown names. Build passes with 0 errors.
+
+## [2026-03-27T00:25:00Z] – Fix lucide-react missing in Docker container
+
+### Prompt
+[plugin:vite:import-analysis] Failed to resolve import "lucide-react" from "src/pages/CategoriesPage.tsx". Does the file exist?
+
+### Action Taken
+The frontend runs in Docker (feature-rank-frontend-1 container). lucide-react was only installed in the local node_modules, not inside the container. Ran `docker exec feature-rank-frontend-1 npm install lucide-react` to install it inside the running container.
+
+## [2026-03-27T01:36:00Z] – Fix category icons showing as black text instead of icon
+
+### Prompt
+aqui não está sendo mostrado o ícone corretamente, só aparece um texto em preto
+
+### Action Taken
+Root cause: seed_reference_data used get_or_create which does not update existing records, so the database still had old lowercase icon names ("palette", "zap", etc.) instead of lucide-react PascalCase names ("Palette", "Zap", etc.). Fixed by changing Category seeding to use update_or_create so icon names are always kept in sync with the seed data. Re-ran make backend-seed which updated all 6 categories in the database.
+
+## [2026-03-26T00:00:00Z] – Move create feature request from page to modal
+
+### Prompt
+Ok, now I think that doesnt make any sens to have a separated page for create new feature request, i guess we can follow the other pages and use the form in the modal in the lst page, do it the changes
+
+### Action Taken
+Moved the create feature request flow from the dedicated CreateFeaturePage into a Modal on FeatureListPage. Updated FeatureListPage to add modal state, useCreateFeature hook, handleCreateSubmit handler, and a Mantine Modal containing the FeatureForm. Changed the "New Request" button and empty state action to open the modal instead of navigating. Removed the /features/new route from router.tsx, deleted CreateFeaturePage.tsx.
+
+## [2026-03-26T00:01:00Z] – Invert modal buttons and fix scrollbar
+
+### Prompt
+ok but we need to invert the buttons position and improve that weird scroll bar
+
+### Action Taken
+Swapped button order in FeatureForm so "Save as Draft" appears first and "Submit Feature Request" second. Added scrollAreaComponent={ScrollArea.Autosize} to the Modal in FeatureListPage to replace the browser's default scrollbar with Mantine's styled scroll area.
+
+## [2026-03-26T00:02:00Z] – Fix double scrollbar in create feature modal
+
+### Prompt
+now it has two scrollbar, one inside and other outside the modal, look the image
+
+### Action Taken
+Removed scrollAreaComponent={ScrollArea.Autosize} which was creating a second scrollbar inside the modal's own scroll container. Replaced with a styles prop on the modal body using scrollbar-width: thin and scrollbar-color to produce a single slim native scrollbar.
+
+## [2026-03-26T00:03:00Z] – Fix double scrollbar root cause in modal
+
+### Prompt
+the problem it is in this component with the overflow-y setted
+
+### Action Taken
+Moved scrollbar styling from styles.body to styles.inner. The mantine-Modal-inner div already has overflow-y: auto from Mantine defaults — adding overflow-y: auto on the body created a second scroll container. Targeting inner applies the thin scrollbar to the actual scroll container without duplicating overflow.
+
+## [2026-03-26T00:00:00Z] — Frontend audit improvements
+
+### Prompt
+ok, lets start the improvements process, go ahead
+
+### Action Taken
+Implemented all P0 and P1 improvements from the frontend audit report:
+
+1. **TanStack Query error type augmentation** — Added `declare module '@tanstack/react-query' { interface Register { defaultError: ApiError } }` to `main.tsx`. Removed all 17 `error as unknown as ApiError` casts across every hook file.
+2. **Dead code deleted** — Removed `features/voting/components/vote-button/index.tsx` (never imported), `hooks/usePagination.ts` (never called), `components/button/index.tsx` (wrapper with minimal value, single consumer updated), and `theme.other` block (properties never consumed).
+3. **`formatRelativeDate` duplication fixed** — Deleted the private inferior copy in `feature-card/index.tsx`; now imports the canonical version from `utils/formatDate.ts`.
+4. **`EditFeaturePage` rewritten with Mantine** — Replaced all Tailwind `className` usage with Mantine layout components (`Box`, `Stack`, `Title`, `Text`, `Anchor`, `Center`). Added an ownership guard: redirects non-owners (non-admin users who aren't the author) to the detail page before rendering the form. Replaced `useEffect` redirect with `onSuccess` callback in `updateFeature`.
+5. **Mutate function types fixed in feature request hooks** — `createFeature`, `updateFeature`, and `deleteFeature` now use `ReturnType<typeof useMutation<...>>['mutate']` type, consistent with status hooks.
+6. **`Pagination` component simplified** — Stripped the outer `Group` wrapper and the "Page X of Y" `Text` node; now renders only `MantinePagination` controls. Pages control their own info text.
+7. **Vote hooks made context-independent** — Made `params` optional in `useCastVote` and `useRemoveVote`. When absent, list cache optimistic update is skipped (detail page still gets full optimistic update). Removed `emptyParams = {}` workaround from `FeatureDetailPage`.
+8. **`FeatureDetailPage` updated** — Replaced `import { Button } from '../components/button'` with Mantine `Button` directly. Updated all variant/prop names (`ghost`→`subtle/gray`, `secondary`→`light/gray`, `danger`→`filled/red`, `isLoading`→`loading`). Removed `ApiError` cast from 404 check.
+
+Build: ✓ zero TypeScript errors, built in 5.42s.
+
+## [2026-03-26T00:01:00Z] — Add avatar_url to AuthUser, FeatureAuthor, and Avatar components
+
+### Prompt
+The backend is adding an `avatar_url` field (nullable string) to the User model. Update the frontend to consume it.
+
+## Changes needed
+
+### 1. `frontend/src/types/user.ts`
+Add `avatar_url` field:
+```ts
+export interface AuthUser {
+  id: number
+  username: string
+  name: string
+  email: string
+  is_admin: boolean
+  avatar_url: string | null
+}
+```
+
+### 2. `frontend/src/types/feature.ts`
+Add `avatar_url` to `FeatureAuthor`:
+```ts
+export interface FeatureAuthor {
+  id: number
+  name: string
+  avatar_url: string | null
+}
+```
+
+### 3. `frontend/src/app/AppLayout.tsx`
+The current Avatar uses initials only. Update it to show the `avatar_url` image when available, falling back to initials when null.
+
+Mantine's `Avatar` accepts a `src` prop. Change the Avatar in the user profile strip at the bottom of the navbar from:
+```tsx
+<Avatar size={32} radius="xl" color="indigo">
+  {userInitials}
+</Avatar>
+```
+to:
+```tsx
+<Avatar size={32} radius="xl" color="indigo" src={user.avatar_url ?? undefined}>
+  {userInitials}
+</Avatar>
+```
+
+### 4. `frontend/src/pages/FeatureDetailPage.tsx`
+The author Avatar currently uses initials only. Update it to use `avatar_url` when available.
+
+Change:
+```tsx
+<Avatar size={32} radius="xl" color="indigo">
+  {authorInitials}
+</Avatar>
+```
+to:
+```tsx
+<Avatar size={32} radius="xl" color="indigo" src={feature.author.avatar_url ?? undefined}>
+  {authorInitials}
+</Avatar>
+```
+
+(The `authorInitials` still works as the fallback when src is null/undefined — Mantine renders children as fallback when src fails to load or is undefined.)
+
+## That's all — only these 4 small targeted changes. Do not modify anything else.
+
+### Action Taken
+Added `avatar_url: string | null` to `AuthUser` in `frontend/src/types/user.ts` and to `FeatureAuthor` in `frontend/src/types/feature.ts`. Updated the navbar Avatar in `frontend/src/app/AppLayout.tsx` and the author Avatar in `frontend/src/pages/FeatureDetailPage.tsx` to pass `src={..avatar_url ?? undefined}`, falling back to initials children when the field is null.
+
+## [2026-03-26T00:04:00Z] – Implement large demo data seed (Option A)
+
+### Prompt
+ok so lets go with option A
+
+### Action Taken
+Added avatar_url field to User model with migration 0002_user_avatar_url. Exposed avatar_url in UserMeSerializer and AuthorSerializer. Created seed_demo_data management command with 20 demo users (pravatar.cc avatars), 60 curated feature requests across all categories/statuses with backdated timestamps, and realistic vote distribution. Added make seed-demo target to Makefile.
+
+## [2026-03-26T00:01:00Z] — Reorganize pages into kebab-case folders
+
+### Prompt
+ok, now I would like to improve the organization of this pages here /home/isam/prj/feature-rank/frontend/src/pages, I guess it would be better to have a separated folder for each one with the folder name as the component in kebab-case and inside each folder we export an index.tsx file
+
+### Action Taken
+Moved each page from a flat `.tsx` file to a kebab-case folder with `index.tsx`:
+- `CategoriesPage.tsx` → `categories-page/index.tsx`
+- `EditFeaturePage.tsx` → `edit-feature-page/index.tsx`
+- `FeatureDetailPage.tsx` → `feature-detail-page/index.tsx`
+- `FeatureListPage.tsx` → `feature-list-page/index.tsx`
+- `LoginPage.tsx` → `login-page/index.tsx`
+- `StatusesPage.tsx` → `statuses-page/index.tsx`
+- `UsersPage.tsx` → `users-page/index.tsx`
+
+Updated all relative imports inside each page file from `../` to `../../` (one level deeper). Updated `router.tsx` to import from the new folder paths. Build: ✓ zero TypeScript errors.
+
+## [2026-03-26T00:02:00Z] — Create standard PageHeader component
+
+### Prompt
+ok, now lets create a standard header component to be used in dashboard layout to keep the same appearance in all the pages, I was thinking something with the image prototype
+
+### Action Taken
+Created `components/page-header/index.tsx` — a reusable `PageHeader` component with:
+- `icon?: ElementType` — optional Tabler icon rendered in an indigo-tinted box (36×36, border-radius 8)
+- `title: string` — rendered as `Title order={2} fz="xl"`
+- `subtitle?: string` — rendered as `Text c="dimmed" fz="sm"`
+- `actions?: ReactNode` — right-side slot for search inputs and buttons, wrapped in `Group gap="sm"`
+
+Updated all pages to use it:
+- `feature-list-page` — `IconLayoutList` icon, title + subtitle, search + gradient "New Request" button
+- `statuses-page` — `IconCircleDot` icon, title + subtitle, search + gradient "New Status" button
+- `categories-page` — `IconTag` icon, title + subtitle, search + conditional "New Category" button
+- `users-page` — `IconUsers` icon, title + subtitle, no actions (placeholder page)
+- `edit-feature-page` — `IconPencil` icon, title only, no actions
+
+Removed the `title`/`subtitle` props and corresponding rendering block from `AppLayout` (pages now own their headers entirely). Removed stale `title` props from `router.tsx` for edit and users routes. Cleaned up unused imports (`Group`, `Title`, `Box`, `Text`, `Stack`) from each page's Mantine import list. Build: ✓ zero TypeScript errors.
+
+## [2026-03-26T00:10:00Z] — Dashboard layout: gray content area + PageHeader border-bottom
+
+### Prompt
+ok but I would like that the dashboard layout had that gray/dark background in the part of the content and the header had the border bottom as can you see in the image
+
+### Action Taken
+Applied two visual changes to match the prototype:
+1. `app/AppLayout.tsx` — added `style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}` to `AppShell.Main` so the entire content area has a light gray background.
+2. `components/page-header/index.tsx` — added full-width breakout styling to the header wrapper: negative margins on top/left/right (`calc(-1 * var(--mantine-spacing-md))`) to counteract the AppShell.Main padding, white background, `borderBottom: '1px solid var(--mantine-color-gray-2)'`, and padding restored inside. Bottom margin (`var(--mantine-spacing-md)`) creates spacing to the content below.
+3. `pages/edit-feature-page/index.tsx` — restructured so `PageHeader` is at the Fragment root level (outside the `Box maw={672}` constrained container) so the breakout negative margins span the full main area rather than just the 672px box. Back link moved inside the constrained Stack below the header.
+
+## [2026-03-26T00:20:00Z] — PageHeader: match sidebar background color + ensure border-bottom
+
+### Prompt
+ok but i want the header background in the same color of the sidebar background and um a border bottom as you can see in tha image
+
+### Action Taken
+Fixed two issues in `components/page-header/index.tsx`:
+1. Corrected a JSX syntax error introduced in the previous edit — the closing `>` on the outer `Group` opening tag was missing, which would cause a compile error.
+2. Changed `backgroundColor: 'white'` to `backgroundColor: 'var(--mantine-color-body)'` so the PageHeader uses the same CSS variable as Mantine's `AppShell.Navbar`, guaranteeing they always render the same background color (defaults to white, but respects theme overrides).
+The `borderBottom: '1px solid var(--mantine-color-gray-2)'` was already in place.
+
+## [2026-03-27T00:00:00Z] — Abstract shared DataTable component
+
+### Prompt
+Ok, now we need to abstract and improve a component, acctually we have a data table hard coded here /home/isam/prj/feature-rank/frontend/src/pages/categories-page/index.tsx and a scope data table here /home/isam/prj/feature-rank/frontend/src/features/statuses/components/status-table/index.tsx. we need to abstract to a data-table shared component and reuse it in the needed pages, this way we turn the code simpler and we keep a concised component
+
+### Action Taken
+Created `components/data-table/index.tsx` — a generic structural `DataTable` component with:
+- `columns: DataTableColumn[]` — array of `{ key, label, sortable? }` for header rendering (sortable adds `IconSelector` indicator)
+- `children: ReactNode` — `Table.Tr` rows passed by the consumer
+- `meta?: PaginationMeta | null` + `onPageChange?` — optional built-in pagination footer (border-top separator, "Showing X–Y of N {itemLabel}" text + Pagination component)
+- `itemLabel?: string` — label for the count line (default "items")
+- Owns: border container (gray-3 border, md radius, overflow hidden), `Table highlightOnHover`, styled column headers (xs uppercase fw:600 dimmed), `Table.Tbody`, pagination footer
+
+Refactored `StatusTable` to use `DataTable` internally:
+- Added `meta?` and `onPageChange?` props, threaded through to `DataTable`
+- Defined `COLUMNS` constant at module level
+- Removed bare `Table` and `withTableBorder` (DataTable owns the container)
+
+Updated `statuses-page`:
+- Removed `Paper withBorder` wrapper around `StatusTable`
+- Removed standalone pagination `Group` with Showing X–Y text
+- Passed `meta` and `onPageChange` directly to `StatusTable`
+- Cleaned up now-unused imports: `Paper`, `Pagination`, `Group`, `Text`, `startItem`, `endItem`
+
+Updated `categories-page`:
+- Added `DataTable` import
+- Defined `columns` array dynamically (conditional Actions column for admins)
+- Replaced the 70-line `Box + Table + pagination footer` block with a 5-line `<DataTable>` usage
+- Cleaned up now-unused imports: `Pagination`, `IconSelector`
+
+## [2026-03-27T00:10:00Z] — DataTable style fixes + larger action buttons
+
+### Prompt
+great but now we need to improve the style of the table because as you can se the borders are weird and the table base are not colored filled as the rest of the table, also we need to increse the size of the action buttons
+
+### Action Taken
+Three changes to `DataTable` and table action buttons:
+1. `components/data-table/index.tsx` — added `backgroundColor: 'var(--mantine-color-body)'` to the outer Box so the white fill is explicit and the gray page background doesn't bleed through. Added `style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}` to `Table.Thead` to give the header row a subtle fill distinct from the white data rows — this eliminates the visual "borders are weird" effect where the header and body were indistinguishable.
+2. `features/statuses/components/status-table/index.tsx` — bumped action `ActionIcon` size from `size="sm"` to `size="md"`, icon size from 14 to 16.
+3. `pages/categories-page/index.tsx` — same button size bump applied for consistency.
+
+## [2026-03-27T00:20:00Z] — Increase badge and action icon sizes in table rows
+
+### Prompt
+ok now we need to increse the chip size and the action icons in the table rows
+
+### Action Taken
+Categories page (`pages/categories-page/index.tsx`):
+- Added `size="md"` to the Active/Inactive `Badge` and bumped the dot indicator from 6→7px for proportional scaling.
+- Bumped action `ActionIcon` from `size="md"` → `size="lg"`, icon from 16→18px.
+
+Statuses table (`features/statuses/components/status-table/index.tsx`):
+- Same `ActionIcon` bump: `size="md"` → `size="lg"`, icon 16→18px, applied consistently.
+
+## [2026-03-27T00:30:00Z] — Replace icon text input with icon picker in categories form
+
+### Prompt
+ok now for the form in categories we need to turn the icon field as a icon picker to improve the ui
+
+### Action Taken
+Created `features/categories/components/icon-picker/index.tsx` — a Popover-based icon picker that:
+- Shows a trigger button with the selected icon preview + name (or placeholder if none)
+- Has a clear (×) button to deselect the current icon
+- Opens a Popover with a search `TextInput` (auto-focused) and a 7-column `SimpleGrid` of `ActionIcon` buttons inside a `ScrollArea` (h=240)
+- Filters the full Lucide icon set by name as the user types, capped at 80 results
+- Highlights the currently selected icon with indigo filled style
+- Shows "No icons found" empty state and a hint when results are capped at 80
+
+Updated `pages/categories-page/index.tsx`:
+- Imported `IconPicker`
+- Added `watch('icon')` → `iconValue`
+- Replaced the plain `TextInput label="Icon"` with `<IconPicker value={iconValue} onChange={(val) => setValue('icon', val)} error={...} />`
+
+## [2026-03-27T00:00:00Z] – Increase feature card element sizes
+
+### Prompt
+ok, now we gonna increase all the side props in the feature card, the author and his avatar must be bigger, the stars rate must be bigger, the category and status must be bigger too
+
+### Action Taken
+In feature-card: avatar size 22→32 (with avatar_url src), author text fz xs→sm, star icons size 14→18, clock icon size 12→14, badges now pass size="md". Added size prop (BadgeProps['size']) to StatusBadge and CategoryBadge components to support the new size prop.
+
+## [2026-03-27T00:40:00Z] — Fix icon picker showing empty grid
+
+### Prompt
+the icon picker are no showing any icons just an empty box
+
+### Action Taken
+Fixed two checks in `features/categories/components/icon-picker/index.tsx`:
+- `ALL_ICON_NAMES` filter: removed `typeof val === 'function'` guard — Lucide icons are React `forwardRef` objects, not plain functions, so the check silently excluded every icon. Now filters only by capitalised key name (`/^[A-Z]/`), which is sufficient since all non-icon exports (`createLucideIcon` etc.) start with lowercase.
+- `getLucideIcon`: replaced `typeof Icon === 'function'` with a simple null check (`Icon != null`).
+
+## [2026-03-27T00:01:00Z] – Green filled vote button with check icon when voted
+
+### Prompt
+ok now for the vote button we need to do some improvements the correct it would be: if the user voted it must be filled in green and the icon must be a check
+
+### Action Taken
+Updated vote widget in feature-card: when has_voted, background switches to green-1, border to green-4, icon switches from IconArrowUp to IconCheck (green-6), vote count text color changes to green. Unvoted state unchanged (gray background, arrow up icon).
+
+## [2026-03-27T00:02:00Z] – Increase category and status badge sizes further
+
+### Prompt
+but lets increase more the two upper props
+
+### Action Taken
+Changed category and status badge sizes from "md" to "lg" in the feature card.
+
+## [2026-03-27T00:03:00Z] – Category badge uses its own color
+
+### Prompt
+and we must display the chips of each category with its own color
+
+### Action Taken
+Updated CategoryBadge to use category.color for background (color + 18 alpha), text, and border (color + 30 alpha), matching the same pattern already used by StatusBadge.
+
+## [2026-03-27T00:04:00Z] – Fix search in feature list
+
+### Prompt
+ok now we need to fix the search in the searchbar in the features list page
+
+### Action Taken
+Root cause: the selector had no search parameter and the view never read the search query param. Added search parameter to get_feature_requests_list selector (Q filter on title__icontains OR description__icontains). View now reads the search query param and passes it to the selector. Added search to OpenAPI docs.
+
+## [2026-03-27T00:05:00Z] – Bold sidebar nav links with gradient active state and rounded borders
+
+### Prompt
+ok now in the side bar i guess we need to setup bold the options and the filled color of the selected option must be the same gradient of the theme and with rounded borders
+
+### Action Taken
+Updated both regular and admin NavLinks in AppLayout: labels are now bold (fontWeight 600 via styles.label), active state shows indigo-to-violet gradient via inline style prop, rounded corners via styles.root borderRadius. Used variant="filled" + color="indigo" as the base. radius prop removed (not supported by NavLink in this Mantine version) in favour of styles.root.borderRadius.
+
+## [2026-03-27T00:06:00Z] – Add notification system for mutation feedback
+
+### Prompt
+ok, great, now we will need a notification system to display the alerts to the user based in actions response
+
+### Action Taken
+Created useNotify hook in hooks/useNotify.ts wrapping @mantine/notifications with success (green, 3s) and error (red, 5s) helpers. Wired success+error notifications into use-create-feature, use-update-feature, use-delete-feature. Wired error-only notifications into use-cast-vote and use-remove-vote (vote success is visually indicated by the button state change).
+
+## [2026-03-26T00:00:00Z] – Wire notifications into status mutation hooks
+
+### Prompt
+ok but we need to set to for create/delete/update in status page and the categories too
+
+### Action Taken
+Completed wiring of useNotify into all status mutation hooks (use-create-status.ts, use-update-status.ts, use-delete-status.ts): added `const notify = useNotify()` calls and onSuccess/onError notification callbacks to each. Category hooks were completed in the prior session.
+
+## [2026-03-27T00:00:00Z] – Login page background gradient effect
+
+### Prompt
+ok, now for the login page we need to do some effect in the background outside the card, maybe some gradient combination
+
+### Action Taken
+Replaced the plain gray-0 background on the login page outer container with a soft indigo/violet/purple radial gradient base plus four absolutely-positioned blurred orbs (top-left, bottom-right, mid-right, bottom-left) to create a layered depth effect that complements the card's left-panel gradient.
+
+## [2026-03-27T00:01:00Z] – Pre-fill login form with admin credentials
+
+### Prompt
+great now its possible to load the page with the login form pre filled with the admin@example.com and the password admin1234?
+
+### Action Taken
+Updated login form defaultValues to username="admin" and password="admin1234". Also added admin user creation (username=admin, email=admin@example.com, password=admin1234, is_admin=True) to the seed_demo_data management command so the account always exists after seeding.
+
+## [2026-03-27T00:02:00Z] – Make login page responsive
+
+### Prompt
+ok great, so now we need to turn the login page responsive
+
+### Action Taken
+Added useMediaQuery('(max-width: 62em)') from @mantine/hooks. On mobile: left panel is hidden (display:none), right panel expands to 100% width with rounded corners and shadow of its own, outer wrapper aligns to top with 24px vertical / 16px horizontal padding, card container loses its shadow/radius (right panel takes over). Desktop layout unchanged.
+
+## [2026-03-27T00:03:00Z] – Improve mobile login page contrast
+
+### Prompt
+ok but in mobile the card and the background are too similar how can we improve that?
+
+### Action Taken
+On mobile, switched the page background from the light indigo/violet gradient to the same deep gradient as the left panel (135deg, #5B21B6 → #4338CA → #6366F1). Updated the four decorative orbs to use white semi-transparent radial gradients on mobile so they remain visible on the dark background.
+
+## [2026-03-27T00:04:00Z] – Make dashboard layout responsive
+
+### Prompt
+ok, now we need to turn the features page responsive, I guess we need to start by the dashboard layout
+
+### Action Taken
+Rewrote AppLayout.tsx to be responsive: added useDisclosure for mobile nav toggle, useMediaQuery for sm breakpoint detection. Added AppShell.Header (collapsed on desktop, visible on mobile) with Burger button and brand. Navbar now uses collapsed: { mobile: !opened } so it slides in/out on mobile. Brand in navbar is hidden on mobile (header shows it instead). Nav links call close() after navigation to auto-dismiss the drawer.
+
+## [2026-03-27T00:05:00Z] – Fix vote button flash on other cards
+
+### Prompt
+ok, great, but I just realised a wrong behaviour when I click to vote in a feature, when I click to vote the other features that I already voted flash in the vote button
+
+### Action Taken
+Root cause: isVoting was a single global boolean (isCastingVote || isRemovingVote) applied to every FeatureCard, so all cards dimmed when any vote was in flight. Fixed by exposing votingId/removingId (mutation.variables when isPending) from useCastVote and useRemoveVote. Updated FeatureListPage to pass isVoting={feature.id === votingId || feature.id === removingId} so only the specific card being voted on shows the pending state.
+
+## [2026-03-27T00:06:00Z] – Notify user on vote toggle
+
+### Prompt
+great and I guess that it would be interesting to notify the user when it toggle a vote
+
+### Action Taken
+Added notify.success('Vote added!') to onSuccess in use-cast-vote.ts and notify.success('Vote removed.') to onSuccess in use-remove-vote.ts.
+
+## [2026-03-27T00:07:00Z] – Full-width fields on mobile feature list page
+
+### Prompt
+great, now I guess that for mobile it would be better if we left this fields with 100% width
+
+### Action Taken
+Updated PageHeader to stack actions below the title on mobile (useMediaQuery sm). Updated FeatureListPage search input to width 100% and button to fullWidth on mobile. Updated FeatureListFilters to use Stack instead of Group on mobile with width 100% on both selects and fullWidth on clear button.
+
+## [2026-03-27T00:08:00Z] – Responsive data tables (categories & statuses)
+
+### Prompt
+great, now for this screen i guess we will need to have an approach to turn the data table responsive, usually we use a list view in a mobile mode
+
+### Action Taken
+Categories page: added useMediaQuery, full-width search/button on mobile, conditionally renders Paper card list instead of DataTable on mobile (icon+name+badge, description, admin actions). Added Pagination import for the mobile card list. Statuses page: added useMediaQuery, full-width search/button on mobile. StatusTable component: added useMediaQuery, renders a Paper card list on mobile (color swatch+name, active switch, usage count, edit/delete actions) and the existing DataTable on desktop.
+
+## [2026-03-27T00:09:00Z] – Refactor and organize Makefile
+
+### Prompt
+ok now we will need to refactor, fix, improve and organize the makefile
+
+### Action Taken
+Rewrote Makefile: added help target with descriptions, removed duplicate targets (backend-run/frontend-run merged into dev-backend/dev-frontend), grouped targets into sections (Setup, Docker, Development, Database, Code quality, Testing) with separator comments, added missing targets (logs, restart, ps, makemigrations, shell), fixed make → $(MAKE) in recursive dev call, expanded format and fix to cover both layers (format-backend, fix-backend with frontend stubs ready), standardized seed target names (seed/seed-demo), cleaned up .PHONY declaration.
+
+## [2026-03-27T00:10:00Z] – Set up pre-commit hooks
+
+### Prompt
+ok, now we need to setup the pre-commit hook in our repo
+
+### Action Taken
+Rewrote .pre-commit-config.yaml: updated pre-commit-hooks to v4.6.0, added check-toml and --maxkb=500 on large-files check, added black hook (rev 24.8.0 matching pyproject.toml), fixed ruff rev from v0.3.0 to v0.5.7 (matching pyproject.toml), added local hooks for frontend ESLint and TypeScript type-check scoped to frontend/src/**.(ts|tsx). Added pre-commit-install and pre-commit-run targets to Makefile.
+
+## [2026-03-27T00:11:00Z] – Add conventional commits pre-commit hook
+
+### Prompt
+i guess we can set this too:
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, chore, test, refactor, docs, ci, build, perf]
+
+### Action Taken
+Added conventional-pre-commit hook (v3.4.0) to .pre-commit-config.yaml with commit-msg stage and the specified allowed types. Updated pre-commit-install Makefile target to also run `pre-commit install --hook-type commit-msg` so the commit-msg hook is registered alongside the pre-commit hook.
+
+## [2026-03-27T00:12:00Z] – Unified CI workflow
+
+### Prompt
+now we need to set this ci: [template provided]. i realized that in current project we have two separated files: backend, frontend. I guess we can adapt the old one to this current mode
+
+### Action Taken
+Deleted backend-ci.yml and frontend-ci.yml. Created unified .github/workflows/ci.yml with four jobs: structure (required files/dirs check, removed scripts/ which doesn't exist), pre-commit (skips frontend-lint and frontend-typecheck via SKIP env var since those run in frontend-quality), frontend-quality (type-check, lint, format:check, tests with --run flag, build), backend-tests (libmysqlclient-dev, pip install -e ".[dev]", ruff lint+format check, pytest with coverage). Added pytest-cov>=5.0 to backend pyproject.toml dev dependencies.
+
+## [2026-03-27T00:13:00Z] – Frontend codebase audit
+
+### Prompt
+[Full audit prompt requesting deep analysis across architecture, component design, folder organization, naming, reusability, TypeScript quality, state management, maintainability, code smells, and consistency]
+
+### Action Taken
+Performed a complete read of all 75 frontend source files. Produced a structured audit report covering 10 dimensions with severity ratings, concrete file references, and a prioritized remediation roadmap. Key findings: unprotected /features/:id route, categories/index.ts exporting wrong feature's hooks, LoginPage god component with adjacent empty stub directory, DataTable dead sort UI, duplicated breakpoint magic strings, FeatureRequest type alias inconsistency, window.location.href bypassing React Router.
+
+## [2026-03-27T00:00:00Z] – Phase 1 audit fixes
+
+### Prompt
+ok, lets done everything, lets start with phase 1
+
+### Action Taken
+Executed all Phase 1 audit remediation items:
+1. Confirmed features/categories/index.ts barrel was already correct — no action needed.
+2. Added ProtectedRoute wrapper to /features/:id route in app/router.tsx.
+3. Renamed hooks/useNotify.ts to hooks/use-notify.ts (git mv) and updated all 11 import sites.
+4. Created hooks/use-is-mobile.ts with SM_BREAKPOINT, MD_BREAKPOINT constants and useIsMobile() hook; updated 7 files to use useIsMobile() and login-page to use MD_BREAKPOINT constant.
+5. Added CachedListData interface to types/feature.ts; removed duplicate local declarations from use-cast-vote.ts and use-remove-vote.ts.
+6. Created services/navigation.ts singleton (registerNavigate/redirectToLogin); updated services/api.ts to use redirectToLogin() instead of window.location.href; registered navigate function in AppLayout useEffect.
+7. Removed dead sortable prop from DataTableColumn interface and corresponding IconSelector conditional render from DataTable component.
+
+## [2026-03-27T00:30:00Z] – Phase 2 component extraction
+
+### Prompt
+Ok, now lets do the phase 2
+
+### Action Taken
+Executed Phase 2 component extraction and god-component reduction:
+1. Fixed TypeScript error: removed leftover `sortable: true` from CategoriesPage columns (sortable was removed from DataTableColumn interface in Phase 1).
+2. Extracted `CategoryIcon` → `features/categories/components/category-icon/index.tsx` (LucideIcon renderer with colored circular background).
+3. Extracted `CategoryFormModal` → `features/categories/components/category-form-modal/index.tsx` (exported CategoryFormValues type alongside component).
+4. Extracted `DeleteConfirmModal` → `features/categories/components/delete-confirm-modal/index.tsx` (category-specific confirmation dialog).
+5. Extracted `CategoryTable` → `features/categories/components/category-table/index.tsx` (handles both desktop DataTable and mobile Paper card list, removes isMobile duplication from the page, owns ActiveBadge helper internally).
+6. Rewrote `CategoriesPage` from 540 lines to ~130 lines — now only handles state, data fetching, and event wiring.
+7. Extracted `LoginForm` (right panel) → `pages/login-page/login-form/index.tsx` (owns form state, error mapping, social buttons, footer; receives onSubmit/isPending/error/isMobile as props).
+8. Rewrote `LoginPage` from 486 lines to ~130 lines — now handles auth guard, layout shell, background orbs, and left panel only.
+
+## [2026-03-27T01:00:00Z] – Phase 3 architecture cleanup
+
+### Prompt
+ok, now let's done the phase three
+
+### Action Taken
+Executed Phase 3 architecture cleanup — type system consolidation and barrel file standardization:
+
+1. Collapsed FeatureRequest/FeatureRequestSummary type duplication:
+   - Renamed `FeatureRequestSummary` interface to `FeatureRequest` in types/feature.ts
+   - Removed the `type FeatureRequest = FeatureRequestSummary` alias (was a confusing indirection)
+   - Updated CachedListData.items to use `FeatureRequest` directly
+   - Updated 3 files that still referenced the old name: services/features.ts, use-feature-list.ts, feature-card/index.tsx
+   - Verified no remaining FeatureRequestSummary references
+
+2. Standardized all feature barrel files:
+   - features/categories/index.ts: added missing `useCategories` export
+   - features/feature-requests/index.ts: was exporting only featureKeys; now exports all 5 hooks (useFeatureList, useFeatureDetail, useCreateFeature, useUpdateFeature, useDeleteFeature)
+   - features/voting/index.ts: was empty (export {}); now exports useCastVote and useRemoveVote
+   - features/auth/index.ts: added useLogin export alongside existing authKeys
+
+## [2026-03-27T14:55:00Z] – Phase 4: verification and test coverage
+
+### Prompt
+yes, lets do the phase four
+
+### Action Taken
+Ran type-check (tsc --noEmit — passed), ESLint (passed after fixing unused Group import in categories-page and replacing 4 `any` types in styles/theme.ts with MantineTheme), and existing test suite (no test files existed — exit code 1). Created test infrastructure: added matchMedia mock to test-setup.ts, created src/test/render.tsx with renderWithMantine utility. Wrote 4 test files (29 tests total): use-is-mobile.test.ts (4 tests), category-table.test.tsx (8 tests), category-form-modal.test.tsx (9 tests), login-form.test.tsx (8 tests). Fixed test failure in category-form-modal caused by jsdom native constraint validation intercepting button click — changed to fireEvent.submit on the form element. All 29 tests pass.
+
+## [2026-03-27T00:00:00Z] – Generate polished root README.md
+
+### Prompt
+You are acting as a senior software engineer, software architect, and technical writer.
+
+Your task is to deeply inspect this monorepo, understand how it works, and then produce a polished, professional, high-quality `README.md` for the root of the repository.
+
+This is a technical challenge submission for a software engineering job application, so the README must feel thoughtful, complete, and impressive to experienced reviewers.
+
+## Primary Objective
+
+Do **not** generate the README immediately.
+
+First, perform a full repository analysis so you can understand:
+
+* the overall purpose of the project
+* the architecture and boundaries between backend and frontend
+* how the application is configured and run
+* development workflows
+* Docker and compose setup
+* testing, linting, formatting, and tooling
+* environment variables
+* database initialization and seed flows
+* CI/CD or automation workflows
+* supporting documentation inside `/docs`
+* important engineering decisions that can be inferred from the codebase
+
+After that analysis, generate a complete and polished `README.md` at the root of the repository.
+
+[... full prompt as received ...]
+
+### Action Taken
+Performed a comprehensive repository analysis using an Explore agent, covering: Makefile (40+ targets), docker-compose.yml and docker-compose.prod.yml, .env.example, backend pyproject.toml, entrypoint.sh, all five Django apps and their layer structure, both management commands (seed_reference_data, seed_demo_data), frontend package.json and vite.config.ts, GitHub Actions CI workflow, all docs/ subdirectories, Dockerfile configurations for backend (multi-stage) and frontend (4-stage), nginx configuration, and MySQL init scripts. Generated and wrote a complete, polished README.md covering: project overview, full tech stack table, architecture (layer boundaries, data flow, containerization), project structure tree, prerequisites, environment variable reference, development and demo mode run instructions, database setup, all Makefile commands, testing, code quality, CI/CD pipeline summary, docs directory guide, key engineering decisions, future improvements, and contributing guidelines.
+
+## [2026-03-27T00:00:00Z] – Fix CI prettier formatting failures
+
+### Prompt
+lets to fix a few things that it broke in the ci automation:
+
+Run npm run format:check
+  npm run format:check
+  shell: /usr/bin/bash -e {0}
+
+> feature-rank-frontend@0.1.0 format:check
+> prettier --check src/
+
+Checking formatting...
+[warn] src/app/AppLayout.tsx
+[warn] src/components/data-table/index.tsx
+[warn] src/components/page-header/index.tsx
+[warn] src/features/categories/components/category-form-modal/index.tsx
+[warn] src/features/categories/components/category-table/index.tsx
+[warn] src/features/categories/components/icon-picker/index.tsx
+[warn] src/features/categories/hooks/use-create-category.ts
+[warn] src/features/feature-requests/components/feature-card/index.tsx
+[warn] src/features/feature-requests/components/feature-form/index.tsx
+[warn] src/features/feature-requests/components/feature-list-filters/index.tsx
+[warn] src/features/feature-requests/hooks/use-create-feature.ts
+[warn] src/features/feature-requests/hooks/use-update-feature.ts
+[warn] src/features/statuses/components/status-form-modal/index.tsx
+[warn] src/features/statuses/components/status-table/index.tsx
+[warn] src/hooks/use-notify.ts
+[warn] src/main.tsx
+[warn] src/pages/edit-feature-page/index.tsx
+[warn] src/pages/feature-detail-page/index.tsx
+[warn] src/pages/feature-list-page/index.tsx
+[warn] src/pages/login-page/index.tsx
+[warn] src/pages/login-page/login-form/index.tsx
+[warn] src/pages/statuses-page/index.tsx
+[warn] src/pages/users-page/index.tsx
+[warn] Code style issues found in 23 files. Run Prettier with --write to fix.
+Error: Process completed with exit code 1.
+
+### Action Taken
+Ran `npx prettier --write src/` in the frontend directory to fix formatting in all 23 flagged files. Verified the fix by re-running `npm run format:check`, which now passes with "All matched files use Prettier code style!"
+
+## [2026-03-27T00:00:00Z] – Improve login page background with richer gradients
+
+### Prompt
+I want to improve the backgorund outside de main card of login-page to no be so "boring" do you think that we can create something beauty for the background and using some gradients that harmonizes with the theme?
+
+### Action Taken
+Enhanced the desktop background in `frontend/src/pages/login-page/index.tsx`:
+- Changed the base gradient to a richer indigo/violet/blue progression (`#f5f3ff → #ede9fe → #e0e7ff → #eef2ff`)
+- Added a subtle dot-grid texture overlay (28px grid, 10% indigo dots) for modern depth
+- Replaced 4 weak orbs with 5 more prominent, larger aurora-style glowing blobs:
+  - Top-left: large violet aurora (700×700px, 42% opacity)
+  - Bottom-right: deep indigo aurora (680×680px, 38% opacity)
+  - Top-right: soft grape accent (460×460px, 45% opacity)
+  - Center: warm lavender lift glow (520×520px)
+  - Bottom-left: cool blue-indigo accent (320×320px, 28% opacity)
+- All decorative elements are `pointerEvents: none` and desktop-only (mobile keeps its solid gradient)
+
+## [2026-03-27T00:10:00Z] – Make login page background more visually striking
+
+### Prompt
+it still boring
+
+### Action Taken
+Completely overhauled the desktop background in `frontend/src/pages/login-page/index.tsx`:
+- Changed base from washed-out light lavender to a deep dark indigo/midnight (`#0f0824 → #1a0e3a → #0d1b4b → #0a0f2e`)
+- Injected CSS `@keyframes` (`orb-drift-1` through `orb-drift-4`) via a `<style>` tag for animated aurora orbs
+- Added 5 animated aurora blobs with distinct colors: vivid violet, deep indigo, rose accent (for contrast), bright purple, and cool cyan-blue
+- Each orb drifts independently on different durations (14s–22s) for an organic, living feel
+- Upgraded the card box-shadow to a dramatic 60% black shadow with a subtle white border ring so it floats clearly against the dark background
+- Mobile layout untouched
+
+## [2026-03-27T00:15:00Z] – Lighten login background to reduce clash with card left panel
+
+### Prompt
+I guess we just need to turn it a little bit lighter because the background is rushing with the left side of the card
+
+### Action Taken
+Lightened the desktop background gradient in `frontend/src/pages/login-page/index.tsx` from near-black (`#0f0824 → #1a0e3a → #0d1b4b → #0a0f2e`) to a rich dark-medium indigo-blue (`#2a1260 → #16245e → #1e1258 → #0f1d52`), creating clearer visual separation from the card's dark indigo left panel while keeping the aurora effect intact.
+
+## [2026-03-27T00:20:00Z] – Add down-volumes and demo targets to Makefile
+
+### Prompt
+ok, now other thing lets update the Makefile to has a comand to down and erase all the app volumes and another command called 'make demo' that starts the aplication and run the seeds
+
+### Action Taken
+Updated `Makefile`:
+- Added `down-volumes` target: runs `docker compose down -v` to stop all services and delete all named volumes (full reset)
+- Added `demo` target: runs `docker compose up -d`, then `migrate`, then `seed_reference_data`, then `seed_demo_data` in sequence
+- Registered both new targets in `.PHONY`
+- Added descriptions for both to the `help` output
+
+## [2026-03-27T00:25:00Z] – Rename down-volumes to clear and add --rmi local
+
+### Prompt
+yes but be sure that only affects the current app and also rename the comand down-volumes to clear
+
+### Action Taken
+Renamed `down-volumes` to `clear` and updated the command to `docker compose down -v --rmi local`. The `--rmi local` flag removes only images built by this compose project (untagged/local images), leaving images from other projects untouched. Updated .PHONY and help text accordingly.
+
+## [2026-03-27T00:30:00Z] – Fix migrate crash on Django 5 + MySQL (contenttypes 0002)
+
+### Prompt
+docker compose exec -T backend python manage.py migrate
+[...error: django.db.utils.OperationalError: (1054, "Unknown column 'name' in 'django_content_type'")]
+
+### Action Taken
+Root cause: Django 5's `contenttypes.0001_initial` no longer creates the `name` column, but `contenttypes.0002_remove_content_type_name` still tries to ALTER it, crashing on MySQL with "Unknown column".
+Fix: updated both `migrate` and `demo` targets in the Makefile to run `migrate contenttypes 0001` first, then `migrate contenttypes 0002 --fake` (skips the no-op removal), then the full `migrate`.
+
+## [2026-03-27T00:35:00Z] – Fix aurora orbs bleeding through login card on resize
+
+### Prompt
+ok, now we will need to fix the login page background style effects to have the same behaviour always even I resize the screen, take a look into the image to look how weird it is if I resize the window
+
+### Action Taken
+Root cause: aurora orbs are `position: absolute`, which in CSS stacking order places them above non-positioned block elements. The card wrapper had no `position` set, so orbs rendered on top of it and bled through the white right panel (visible as pink tint in the screenshot).
+Fix: added `position: 'relative'` and `zIndex: 1` to the card wrapper Box in `LoginPage`. This establishes a stacking context that keeps the card always above the orbs regardless of window size or orb position.
+
+## [2026-03-27T00:40:00Z] – Fix Prettier formatting issues in frontend
+
+### Prompt
+Run npm run format:check [showed 23 files with formatting issues]
+
+### Action Taken
+Ran `npx prettier --write src/` in the frontend directory. All files were already conforming to Prettier style (all reported as unchanged). Verified with `npm run format:check` — passes cleanly.
+
+## [2026-03-27T00:45:00Z] – Fix ruff lint errors in backend
+
+### Prompt
+Run ruff check . [showed UP038 and F401 errors]
+
+### Action Taken
+Fixed both errors:
+- `config/drf_exception_handler.py:70`: changed `isinstance(exc, (NotAuthenticated, AuthenticationFailed))` to `isinstance(exc, NotAuthenticated | AuthenticationFailed)` (UP038)
+- `tests/test_exception_handler.py:12`: removed unused `from apps.categories.models import Category` import (F401)
+Verified with `ruff check .` — all checks passed.
+
+## [2026-03-27T00:50:00Z] – Fix pre-commit-run failing due to wrong Python version
+
+### Prompt
+make pre-commit-run [...error: failed to find interpreter for python_spec='python3.12']
+
+### Action Taken
+Changed `language_version: python3.12` to `language_version: python3.13` in `.pre-commit-config.yaml` for the black hook. The system has Python 3.13 installed, not 3.12.
+
+## [2026-03-27T00:55:00Z] – Update Python version to 3.13 across the project
+
+### Prompt
+lets update the python
+
+### Action Taken
+Updated Python version from 3.12 to 3.13 in all relevant files:
+- `backend/pyproject.toml`: `requires-python = ">=3.12"` → `">=3.13"`
+- `.github/workflows/ci.yml`: both `python-version: "3.12"` occurrences → `"3.13"`
+- `.pre-commit-config.yaml`: already updated in previous step (`language_version: python3.13`)
+- `backend/Dockerfile`: was already using `python:3.13-slim`
+
+## [2026-03-27T01:00:00Z] – Fix 5 failing backend tests (health check + JWT auth)
+
+### Prompt
+Run pytest --cov=apps [...] 5 failed: test_auth (2), test_health (3)
+
+### Action Taken
+Two root causes fixed:
+
+1. **Health check 404** — `health_check` view existed in `config/views.py` but was never registered. Added `path("api/v1/health/", health_check, name="health_check")` to `config/urls.py`.
+
+2. **JWT auth tests** — refresh token is stored in an HttpOnly cookie (`refresh_token`), not the response body. Tests were incorrectly asserting `payload["refresh"]`. Updated `tests/test_auth.py`:
+   - `test_valid_credentials_returns_200_with_tokens`: now asserts `"refresh_token" in response.cookies`
+   - `_obtain_refresh_token` renamed to `_obtain_refresh_cookie` — just makes the token request so the test client stores the cookie automatically
+   - `test_valid_refresh_token_returns_200_with_new_access`: calls refresh endpoint with no body (cookie is replayed automatically by test client)
+   - `test_invalid_refresh_token_returns_401` renamed to `test_missing_refresh_cookie_returns_401` — tests with no cookie present (which returns 401 per the view's logic)

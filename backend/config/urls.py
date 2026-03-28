@@ -6,9 +6,11 @@ from config.auth_views import (
     CookieTokenRefreshView,
     LogoutView,
 )
+from config.views import health_check
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/health/", health_check, name="health_check"),
     # JWT authentication
     path(
         "api/v1/auth/token/",

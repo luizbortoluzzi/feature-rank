@@ -7,6 +7,13 @@ import { Notifications } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { App } from './App'
 import { theme } from './styles/theme'
+import type { ApiError } from './types/api'
+
+declare module '@tanstack/react-query' {
+  interface Register {
+    defaultError: ApiError
+  }
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +27,7 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="light">
-      <Notifications position="top-right" />
+      <Notifications position="top-center" />
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>

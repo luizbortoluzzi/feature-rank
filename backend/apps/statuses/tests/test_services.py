@@ -26,6 +26,28 @@ class CreateStatusServiceTest(TestCase):
         s = create_status(name="default_svc", color="#000", sort_order=6)
         self.assertFalse(s.is_terminal)
 
+    def test_creates_status_with_description(self):
+        """create_status persists the description field."""
+        s = create_status(
+            name="with_desc", color="#000", sort_order=7, description="A test description"
+        )
+        self.assertEqual(s.description, "A test description")
+
+    def test_creates_status_with_is_active(self):
+        """create_status persists the is_active field."""
+        s = create_status(name="inactive_svc", color="#000", sort_order=8, is_active=False)
+        self.assertFalse(s.is_active)
+
+    def test_description_defaults_to_empty_string(self):
+        """create_status without description defaults to empty string."""
+        s = create_status(name="nodesc_svc", color="#000", sort_order=9)
+        self.assertEqual(s.description, "")
+
+    def test_is_active_defaults_to_true(self):
+        """create_status without is_active defaults to True."""
+        s = create_status(name="active_default_svc", color="#000", sort_order=10)
+        self.assertTrue(s.is_active)
+
 
 class UpdateStatusServiceTest(TestCase):
     def setUp(self):
@@ -55,6 +77,16 @@ class UpdateStatusServiceTest(TestCase):
         self.assertEqual(self.status.name, "only_name_changed")
         self.assertEqual(self.status.color, "#000000")
         self.assertFalse(self.status.is_terminal)
+
+    def test_updates_description(self):
+        """update_status updates the description field."""
+        updated = update_status(status=self.status, description="Updated description")
+        self.assertEqual(updated.description, "Updated description")
+
+    def test_updates_is_active(self):
+        """update_status can flip is_active to False."""
+        updated = update_status(status=self.status, is_active=False)
+        self.assertFalse(updated.is_active)
 
 
 class DeleteStatusServiceTest(TestCase):

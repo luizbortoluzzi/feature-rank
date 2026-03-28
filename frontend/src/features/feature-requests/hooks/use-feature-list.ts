@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { featureKeys } from '../queryKeys'
 import { getFeatureList, type FeatureListParams } from '../../../services/features'
-import type { FeatureRequestSummary } from '../../../types/feature'
+import type { FeatureRequest } from '../../../types/feature'
 import type { PaginationMeta, ApiError } from '../../../types/api'
 
 interface UseFeatureListResult {
-  features: FeatureRequestSummary[]
+  features: FeatureRequest[]
   meta: PaginationMeta | null
   isLoading: boolean
   isError: boolean
@@ -23,6 +23,6 @@ export function useFeatureList(params: FeatureListParams): UseFeatureListResult 
     meta: data?.meta ?? null,
     isLoading,
     isError,
-    error: isError ? (error as unknown as ApiError) : null,
+    error: isError ? error : null,
   }
 }

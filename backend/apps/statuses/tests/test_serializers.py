@@ -33,3 +33,36 @@ class StatusSerializerTest(TestCase):
         # When is_terminal is omitted, the model's default (False) is used on save.
         # The serializer may not have it in validated_data if it uses the model default.
         self.assertFalse(s.validated_data.get("is_terminal", False))
+
+    def test_new_fields_present_in_output(self):
+        """Serializer output includes description, is_active, and usage_count."""
+        data = StatusSerializer(self.status).data
+        self.assertIn("description", data)
+        self.assertIn("is_active", data)
+        self.assertIn("usage_count", data)
+
+    def test_description_defaults_to_empty_string(self):
+        """description field defaults to empty string when not provided."""
+        data = StatusSerializer(self.status).data
+        self.assertEqual(data["description"], "")
+
+    def test_is_active_defaults_to_true(self):
+        """is_active field defaults to True when not provided."""
+        data = StatusSerializer(self.status).data
+        self.assertTrue(data["is_active"])
+
+    def test_usage_count_reflects_feature_request_count(self):
+        """usage_count equals zero for a status with no feature requests."""
+        from apps.statuses.selectors import get_status
+
+        annotated = get_status(pk=self.status.pk)
+        data = StatusSerializer(annotated).data
+        self.assertEqual(data["usage_count"], 0)
+
+    def test_usage_count_is_read_only(self):
+        """usage_count is not accepted as input — it is a read-only derived value."""
+        s = StatusSerializer(
+            data={"name": "wc_test", "color": "#000", "sort_order": 77, "usage_count": 999}
+        )
+        self.assertTrue(s.is_valid(), s.errors)
+        self.assertNotIn("usage_count", s.validated_data)

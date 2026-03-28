@@ -1,12 +1,11 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { FeatureListPage } from '../pages/FeatureListPage'
-import { FeatureDetailPage } from '../pages/FeatureDetailPage'
-import { CreateFeaturePage } from '../pages/CreateFeaturePage'
-import { EditFeaturePage } from '../pages/EditFeaturePage'
-import { LoginPage } from '../pages/LoginPage'
-import { CategoriesPage } from '../pages/CategoriesPage'
-import { StatusesPage } from '../pages/StatusesPage'
-import { UsersPage } from '../pages/UsersPage'
+import { FeatureListPage } from '../pages/feature-list-page'
+import { FeatureDetailPage } from '../pages/feature-detail-page'
+import { EditFeaturePage } from '../pages/edit-feature-page'
+import { LoginPage } from '../pages/login-page'
+import { CategoriesPage } from '../pages/categories-page'
+import { StatusesPage } from '../pages/statuses-page'
+import { UsersPage } from '../pages/users-page'
 import { ProtectedRoute } from './ProtectedRoute'
 import { AppLayout } from './AppLayout'
 
@@ -30,28 +29,20 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/features/new',
+    path: '/features/:id',
     element: (
       <ProtectedRoute>
         <AppLayout>
-          <CreateFeaturePage />
+          <FeatureDetailPage />
         </AppLayout>
       </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/features/:id',
-    element: (
-      <AppLayout title="Feature Detail">
-        <FeatureDetailPage />
-      </AppLayout>
     ),
   },
   {
     path: '/features/:id/edit',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Edit Feature">
+        <AppLayout>
           <EditFeaturePage />
         </AppLayout>
       </ProtectedRoute>
@@ -61,7 +52,7 @@ export const router = createBrowserRouter([
     path: '/categories',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Categories">
+        <AppLayout>
           <CategoriesPage />
         </AppLayout>
       </ProtectedRoute>
@@ -71,7 +62,7 @@ export const router = createBrowserRouter([
     path: '/statuses',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Statuses">
+        <AppLayout>
           <StatusesPage />
         </AppLayout>
       </ProtectedRoute>
@@ -81,7 +72,7 @@ export const router = createBrowserRouter([
     path: '/admin/users',
     element: (
       <ProtectedRoute>
-        <AppLayout title="Users">
+        <AppLayout>
           <UsersPage />
         </AppLayout>
       </ProtectedRoute>
