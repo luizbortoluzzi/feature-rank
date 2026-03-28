@@ -10,6 +10,7 @@ import {
   IconClock,
   IconStarFilled,
 } from '@tabler/icons-react'
+import { useIsMobile } from '../../../../hooks/use-is-mobile'
 import type { FeatureRequest } from '../../../../types/feature'
 import { StatusBadge } from '../../../statuses/components/status-badge'
 import { CategoryBadge } from '../../../categories/components/category-badge'
@@ -51,6 +52,7 @@ const AVATAR_COLORS: MantineColor[] = [
 ]
 
 export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
+  const isMobile = useIsMobile()
   const authorInitials = getInitials(feature.author.name)
   const avatarColor = AVATAR_COLORS[feature.author.id % AVATAR_COLORS.length]
 
@@ -92,32 +94,53 @@ export function FeatureCard({ feature, isVoting, onVote }: FeatureCardProps) {
             </Text>
           </Stack>
 
-          <Group align="center" mt={4} gap={8} wrap="nowrap" style={{ minWidth: 0 }}>
-            <Avatar
-              size={32}
-              radius="xl"
-              color={avatarColor}
-              src={feature.author.avatar_url ?? undefined}
-              style={{ flexShrink: 0 }}
-            >
-              {authorInitials}
-            </Avatar>
-
-            <Group gap={8} wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-              <Text fz="sm" fw={600} c="gray.8" truncate style={{ minWidth: 0 }}>
-                {feature.author.name}
-              </Text>
-              <Text fz="sm" c="gray.4" style={{ flexShrink: 0 }}>
-                ·
-              </Text>
-              <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
-                <IconClock size={14} color="var(--mantine-color-gray-5)" />
-                <Text fz="sm" c="gray.5" style={{ whiteSpace: 'nowrap' }}>
+          {isMobile ? (
+            <Stack gap={4} mt={4}>
+              <Group gap={8} wrap="nowrap" style={{ minWidth: 0 }}>
+                <Avatar
+                  size={32}
+                  radius="xl"
+                  color={avatarColor}
+                  src={feature.author.avatar_url ?? undefined}
+                  style={{ flexShrink: 0 }}
+                >
+                  {authorInitials}
+                </Avatar>
+                <Text fz="sm" fw={600} c="gray.8" truncate>
+                  {feature.author.name}
+                </Text>
+              </Group>
+              <Group gap={4} wrap="nowrap">
+                <IconClock size={13} color="var(--mantine-color-gray-5)" />
+                <Text fz="xs" c="gray.5">
                   Posted {formatRelativeDate(feature.created_at)}
                 </Text>
               </Group>
+            </Stack>
+          ) : (
+            <Group justify="space-between" align="center" mt={4} gap={8} wrap="nowrap">
+              <Group gap={8} wrap="nowrap" style={{ minWidth: 0, flex: '1 1 0' }}>
+                <Avatar
+                  size={32}
+                  radius="xl"
+                  color={avatarColor}
+                  src={feature.author.avatar_url ?? undefined}
+                  style={{ flexShrink: 0 }}
+                >
+                  {authorInitials}
+                </Avatar>
+                <Text fz="sm" fw={600} c="gray.8" truncate>
+                  {feature.author.name}
+                </Text>
+              </Group>
+              <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+                <IconClock size={14} color="var(--mantine-color-gray-5)" />
+                <Text fz="sm" c="gray.5" style={{ whiteSpace: 'nowrap' }}>
+                  {formatRelativeDate(feature.created_at)}
+                </Text>
+              </Group>
             </Group>
-          </Group>
+          )}
         </Stack>
       </Group>
     </Paper>
