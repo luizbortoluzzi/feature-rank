@@ -14,7 +14,9 @@
         fix fix-backend \
         test test-backend test-frontend \
         test-backend-coverage check-backend-coverage \
-        pre-commit-install pre-commit-run
+        pre-commit-install pre-commit-run \
+        prod-up prod-down prod-logs prod-ps prod-restart prod-build \
+        prod-deploy prod-seed prod-seed-demo prod-create-dump prod-reset-db
 
 # ── Default ───────────────────────────────────────────────────────────────────
 
@@ -28,7 +30,7 @@ help:
 	@echo "    install-frontend  Install Node dependencies"
 	@echo "    setup-env         Generate .env and frontend/.env with random secrets (skips if files exist)"
 	@echo ""
-	@echo "  Docker"
+	@echo "  Docker (development)"
 	@echo "    up                Start all services (detached)"
 	@echo "    down              Stop all services"
 	@echo "    clear             Stop services, delete volumes and locally-built images (full reset)"
@@ -48,6 +50,19 @@ help:
 	@echo "    seed              Seed reference data (categories + statuses)"
 	@echo "    seed-demo         Seed full demo dataset (users, features, votes)"
 	@echo "    demo              Full setup: generate env files, build and start services, migrate, seed"
+	@echo ""
+	@echo "  Production (OCI) — requires .env.prod"
+	@echo "    prod-up           Start production stack (docker-compose.prod.yml)"
+	@echo "    prod-down         Stop production stack"
+	@echo "    prod-restart      Restart production stack"
+	@echo "    prod-build        Build production images without starting"
+	@echo "    prod-logs         Tail production logs"
+	@echo "    prod-ps           Show production service status"
+	@echo "    prod-deploy       Pull latest code, rebuild, and restart (full deploy)"
+	@echo "    prod-seed         Seed reference data in production"
+	@echo "    prod-seed-demo    Seed demo dataset in production"
+	@echo "    prod-create-dump  Create seed dump from running production database"
+	@echo "    prod-reset-db     Reset production database to seed state (manual trigger)"
 	@echo ""
 	@echo "  Code quality"
 	@echo "    lint              Lint backend + frontend"
@@ -176,6 +191,46 @@ demo: setup-env
 	docker compose exec -T backend python manage.py migrate
 	docker compose exec -T backend python manage.py seed_reference_data
 	docker compose exec -T backend python manage.py seed_demo_data
+
+# ── Production (OCI) ──────────────────────────────────────────────────────────
+# All prod-* targets use docker-compose.prod.yml with .env.prod.
+# Ensure .env.prod exists before running any of these targets.
+
+PROD_COMPOSE = docker compose -f docker-compose.prod.yml --env-file .env.prod
+
+prod-up:
+	docker network create traefik_net 2>/dev/null || true
+	$(PROD_COMPOSE) up -d --wait
+
+prod-down:
+	$(PROD_COMPOSE) down
+
+prod-restart:
+	$(PROD_COMPOSE) restart
+
+prod-build:
+	$(PROD_COMPOSE) build --pull
+
+prod-logs:
+	$(PROD_COMPOSE) logs -f
+
+prod-ps:
+	$(PROD_COMPOSE) ps
+
+prod-deploy:
+	./scripts/deploy.sh
+
+prod-seed:
+	$(PROD_COMPOSE) exec -T backend python manage.py seed_reference_data
+
+prod-seed-demo:
+	$(PROD_COMPOSE) exec -T backend python manage.py seed_demo_data
+
+prod-create-dump:
+	./scripts/create-seed-dump.sh
+
+prod-reset-db:
+	./scripts/reset-db.sh
 
 # ── Code quality ──────────────────────────────────────────────────────────────
 

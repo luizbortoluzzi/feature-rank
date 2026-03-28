@@ -22,10 +22,11 @@ print("MySQL not reachable after 60s.", flush=True)
 sys.exit(1)
 PYEOF
 
-# Run migrations only in development
-if [ "${DJANGO_ENV:-development}" = "development" ]; then
-    echo "Running migrations..."
-    python manage.py migrate --noinput
-fi
+# Always run migrations — safe and idempotent in all environments.
+# In production, the gunicorn command overrides this entrypoint's CMD but
+# migrations still run here before gunicorn starts, ensuring the schema is
+# up to date on every container start or redeploy.
+echo "Running migrations..."
+python manage.py migrate --noinput
 
 exec "$@"

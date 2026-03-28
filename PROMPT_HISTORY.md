@@ -2638,3 +2638,174 @@ we need to improve the male file in the make demo command, the idea it is that t
 
 ### Action Taken
 Added a `setup-env` target to the Makefile that generates `.env` (with random `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, and `DJANGO_SECRET_KEY`) and `frontend/.env` (copied from example) if they do not already exist. Updated `demo` target to: call `setup-env` first, add `--build --wait` to `docker compose up` (rebuilds images and waits for health checks), then run migrations and seeds. Updated help text accordingly.
+
+## [2026-03-28T00:00:00Z] – Phase 4 frontend refactoring: create ResponsiveTable component
+
+### Prompt
+Implement Phase 4 of a frontend refactoring. Create a `ResponsiveTable` component and update two existing table components to use it. Follow the existing patterns exactly.
+
+---
+
+## Task 1: Create `frontend/src/components/responsive-table/index.tsx`
+
+This component abstracts the repeated `if (isMobile)` branching pattern found in `CategoryTable` and `StatusTable`. It switches between a mobile card stack and a desktop `DataTable`.
+
+```typescript
+// frontend/src/components/responsive-table/index.tsx
+import { type ReactNode } from 'react'
+import { Group, Stack } from '@mantine/core'
+import { useIsMobile } from '../../hooks/use-is-mobile'
+import { DataTable, type DataTableColumn } from '../data-table'
+import { Pagination } from '../pagination'
+import type { PaginationMeta } from '../../types/api'
+
+interface ResponsiveTableProps {
+  columns: DataTableColumn[]
+  meta?: PaginationMeta | null
+  onPageChange?: (page: number) => void
+  itemLabel?: string
+  desktopRows: ReactNode
+  mobileCards: ReactNode
+}
+
+export function ResponsiveTable({
+  columns,
+  meta,
+  onPageChange,
+  itemLabel,
+  desktopRows,
+  mobileCards,
+}: ResponsiveTableProps) {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return (
+      <Stack gap="sm">
+        {mobileCards}
+        {meta && meta.total_pages > 1 && onPageChange && (
+          <Group justify="center">
+            <Pagination meta={meta} onPageChange={onPageChange} />
+          </Group>
+        )}
+      </Stack>
+    )
+  }
+
+  return (
+    <DataTable columns={columns} meta={meta} onPageChange={onPageChange} itemLabel={itemLabel}>
+      {desktopRows}
+    </DataTable>
+  )
+}
+```
+
+---
+
+## Task 2: Rewrite `frontend/src/features/categories/components/category-table/index.tsx`
+
+Remove the `if (isMobile)` branching and replace with `ResponsiveTable`. The existing content of the mobile cards and desktop rows must stay exactly the same — only the structural wrapper changes.
+
+[... full prompt content as provided ...]
+
+## Task 3: Rewrite `frontend/src/features/statuses/components/status-table/index.tsx`
+
+Same treatment as CategoryTable.
+
+[... full prompt content as provided ...]
+
+### Action Taken
+1. Created `frontend/src/components/responsive-table/index.tsx` — new shared component that encapsulates the `useIsMobile` branch, rendering a `Stack` of mobile cards with optional pagination on mobile, or a `DataTable` on desktop.
+2. Rewrote `frontend/src/features/categories/components/category-table/index.tsx` — removed `useIsMobile`, `DataTable`, `Pagination`, and `Stack` imports; extracted mobile cards and desktop rows as local variables passed to `<ResponsiveTable>` props. All card/row content preserved exactly.
+3. Rewrote `frontend/src/features/statuses/components/status-table/index.tsx` — same treatment: removed the `if (isMobile)` branch and replaced with `<ResponsiveTable mobileCards={...} desktopRows={...}>`. All content preserved exactly.
+TypeScript compilation confirmed clean with no errors.
+
+---
+
+## [2026-03-28T00:00:00Z] – Implement Phase 4: ResponsiveTable + icon library consolidation
+
+### Prompt
+Ok, so now let's implemements the pahe 4
+
+### Action Taken
+Created `ResponsiveTable` component and updated both table components to use it. Confirmed icon library boundary was already clean (no changes needed).
+1. Created `frontend/src/components/responsive-table/index.tsx` — owns `useIsMobile`, renders `mobileCards` in a `Stack` with pagination on mobile, or `desktopRows` inside `DataTable` on desktop.
+2. Rewrote `CategoryTable` — removed `useIsMobile`, `DataTable`, `Pagination`, `Stack` imports; extracted mobile cards and desktop rows as local variables, delegated to `<ResponsiveTable>`.
+3. Rewrote `StatusTable` — same treatment.
+4. Icon library consolidation confirmed: Lucide is already isolated to `category-icon` and `icon-picker` (data-driven category icons only); all UI icons use Tabler. No code changes needed.
+
+---
+
+## [2026-03-28T00:01:00Z] – Notification icon + text color improvements
+
+### Prompt
+Ok, so now gimme a proposal to improve the notification component styles to have an aproprietate icon for each tipy and more harmonic with the theme
+
+I would suggest to imrpove too the texts colors of the notifications
+
+ok, approved you can implement
+
+### Action Taken
+Updated `frontend/src/styles/theme.ts` — added `icon` styles to the Notification override: circular container (`radius.full`), `palette[1]` background, `palette[6]` icon color, `palette[2]` border. Updated `title` to `palette[8]` and `description` to `palette[7]` (both fall back to gray when no color). Updated `frontend/src/hooks/use-notify.ts` — added `createElement`-based icons to `success` (IconCircleCheckFilled/green) and `error` (IconAlertCircleFilled/red); added `info` (IconInfoCircleFilled/indigo, 4000ms) and `warning` (IconAlertTriangleFilled/yellow, 5000ms) functions. Used `createElement` instead of JSX to keep the file as `.ts`.
+
+## [2026-03-28T00:01:00Z] – standardize notification message format across all call sites
+
+### Prompt
+Ok but I would suggests to have a sub message for allt the notify messages and also that all the success messages should have a  FEATURE + 'Successfully Update! or FEATURE + Successfully Created! and all the other types os notify and messages follow the same idea and formatting
+
+### Action Taken
+Updated all 21 notify call sites across 11 mutation hooks (use-cast-vote, use-remove-vote, use-create/update/delete-feature, use-create/update/delete-category, use-create/update/delete-status) to follow a consistent format: title = entity name ('Feature Request', 'Category', 'Status', 'Vote'), success message = 'Successfully created/updated/deleted/added/removed.', error title = same entity name with sub-message from API error or generic fallback. No changes to use-notify.ts hook signature were needed.
+
+---
+
+## [2026-03-28T00:02:00Z] – Fix notification title/message hierarchy across all call sites
+
+### Prompt
+you didn't catchup the Successfully Updated/Created! must be in the main title of the message and the submessage you can generate for each one
+
+### Action Taken
+Updated all 11 notify call sites across the mutation hooks to put the action outcome as the bold title and a descriptive sub-message as the body. Feature requests: "Successfully Submitted!" / "Successfully Updated!" / "Successfully Deleted!" with contextual messages. Categories and statuses: same pattern with entity-appropriate descriptions. Voting: "Vote Added!" / "Vote Removed!" with short confirmation messages. Error titles updated from entity names to action-specific labels: "Submission Failed", "Update Failed", "Delete Failed", "Creation Failed", "Vote Failed".
+
+---
+
+## [2026-03-28T10:00:00Z] – Prepare repository for production-like Oracle Cloud Infrastructure deployment
+
+### Prompt
+You are acting as a senior DevOps / Platform / Cloud engineer.
+
+I want you to transform this repository and prepare it for a future production-like deployment environment on Oracle Cloud Infrastructure (OCI), with a strong preference for solutions that are both:
+
+1. professional / portfolio-worthy
+2. free or compatible with Oracle Cloud Always Free whenever possible
+
+This project is part of my public portfolio and open source work. The goal is to host multiple demo applications over time on a single Oracle Cloud environment so that:
+
+- end clients can interact with live demos and build trust in the kinds of products I can deliver
+- technical recruiters can evaluate my software engineering, DevOps, infrastructure, deployment, security, and systems design skills
+
+Important product/infra assumptions
+- My projects are primarily demo apps, not high-traffic production SaaS
+- Data volume is very small
+- Users must be able to manipulate application data normally during a demo session
+- The environment must automatically reset the database to a known clean state every day
+- I want a setup that is technically sound, professional, reproducible, and secure
+- I already use Vercel for some frontends, but for this task focus on making this repository production-ready for Oracle Cloud
+- The project is dockerized
+- The current stack uses MySQL
+- Prefer the most professional architecture available at zero cost
+- If a fully managed Oracle MySQL option is not actually available in the free tier or in the expected region/tenancy, detect that and implement a strong fallback using a containerized MySQL setup with clear rationale
+- Do not make shallow assumptions: inspect the codebase and infer the actual stack, services, dependencies, startup behavior, and runtime requirements before making changes
+
+[Full prompt truncated for log brevity — see conversation for complete specification covering sections A through F with all deliverable requirements]
+
+### Action Taken
+Inspected the full repository (Docker, Django, React, nginx, Makefile, CI). Identified three production blockers: (1) nginx default.conf had no /api/ proxy_pass, (2) frontend Dockerfile did not accept VITE_API_BASE_URL build arg causing hard-coded localhost:8000, (3) backend entrypoint.sh only ran migrations in development mode. Fixed all three. Rewrote docker-compose.prod.yml as a standalone production file with Traefik v3.1, network segmentation (traefik_net external + feature_rank_internal isolated), resource limits, security_opt, and health checks. Created docker/traefik/dynamic.yml with redirect-to-https middleware and modern TLS options. Created .env.prod.example with all production variables documented. Created scripts/: deploy.sh (git pull + rebuild + restart), reset-db.sh (database restore from seed dump), create-seed-dump.sh (capture baseline state), bootstrap-vm.sh (one-time VM setup), cron-reset.sh (daily cron wrapper). Created deploy/feature-rank.service (systemd unit for auto-start on reboot). Added prod-* targets to Makefile. Updated .gitignore to exclude .env.prod and acme.json. Created docs/deployment/: oci-deployment-guide.md (step-by-step), architecture.md (runtime diagram + multi-app notes), database-reset.md (daily reset explanation), security.md (OCI firewall rules, container hardening, secret management).
+
+---
+
+## [2026-03-28T00:03:00Z] – Prefix notification titles with entity name
+
+### Prompt
+one more adjust the title should be the FeatureName + ""Successfully Created/Updated!" and not only the "Successfully Updated/Created!", got it?
+
+### Action Taken
+Updated all 11 notify call sites to prepend the entity name to the title using " — " separator. Pattern: "Feature Request — Successfully Updated!", "Category — Successfully Created!", "Status — Successfully Deleted!", "Vote — Successfully Added!", etc. Error titles follow the same pattern: "Feature Request — Update Failed", "Category — Delete Failed", etc.
