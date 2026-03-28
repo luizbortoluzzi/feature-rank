@@ -62,7 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Mobile header */}
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <img src="/logo.svg" alt="Feature Rank" style={{ width: 200 }} />
+          <img src="/logo.svg" alt="Feature Rank" style={{ width: 160 }} />
           <Burger opened={opened} onClick={toggle} size="sm" aria-label="Toggle navigation" />
         </Group>
       </AppShell.Header>
