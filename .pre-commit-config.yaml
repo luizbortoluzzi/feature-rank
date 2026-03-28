@@ -57,7 +57,7 @@ repos:
         language: system
         pass_filenames: false
         files: ^backend/.*\.py$
-        stages: [pre-commit]
+        stages: [commit]
 
   # ── Frontend — ESLint + TypeScript ───────────────────────────────────────
   - repo: local

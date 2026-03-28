@@ -52,7 +52,7 @@ export function StatusTable({
                       height: 32,
                       borderRadius: 6,
                       backgroundColor: status.color,
-                      border: '1px solid rgba(0,0,0,0.1)',
+                      border: '1px solid var(--mantine-color-gray-2)',
                       flexShrink: 0,
                     }}
                   />
@@ -150,7 +150,7 @@ export function StatusTable({
                   height: 20,
                   borderRadius: 4,
                   backgroundColor: status.color,
-                  border: '1px solid rgba(0,0,0,0.1)',
+                  border: '1px solid var(--mantine-color-gray-2)',
                   flexShrink: 0,
                 }}
               />

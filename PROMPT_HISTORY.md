@@ -2602,3 +2602,39 @@ Implemented all Phase 1 changes (excluding the CSS module change for login page 
 12. Updated `src/pages/login-page/index.tsx` — updated `MD_BREAKPOINT` import to come from `constants/layout`
 
 TypeScript compilation confirmed clean with no errors.
+
+## [2026-03-28T08:05:06Z] – Implement Phase 2 frontend refactoring
+
+### Prompt
+ok now lets implement the phase 2
+
+### Action Taken
+Implemented all Phase 2 changes (style centralization into the theme), excluding the CSS module item which was deferred in the prior conversation:
+
+1. Updated `src/styles/theme.ts`:
+   - Added `full: '9999px'` to `theme.radius`
+   - Replaced `borderRadius: 999` (3 occurrences in Modal close + ScrollArea scrollbar/thumb) with `theme.radius.full`
+   - Fixed `Paper` background from `'#FCFCFE'` to `theme.white`
+   - Fixed `Input` focus shadow from hardcoded `rgba(99, 102, 241, 0.14)` to `color-mix(in srgb, ${theme.colors.indigo[5]} 14%, transparent)`
+   - Added `AppShell` component override setting `main.backgroundColor` to `theme.colors.gray[0]`
+   - Replaced `Notification` component override with a dynamic styles function: adds `withBorder: true` to defaultProps, applies color-based background/border from theme palette, and centralises title/description styles
+
+2. Removed `style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}` from `AppShell.Main` in `src/app/AppLayout.tsx` — now driven by theme
+
+3. Simplified `src/hooks/use-notify.ts` — removed all inline `styles` overrides from both `success()` and `error()` calls; styling is now fully handled by the theme Notification override
+
+4. Fixed `src/features/statuses/components/status-table/index.tsx` — replaced `border: '1px solid rgba(0,0,0,0.1)'` (2 occurrences) with `border: '1px solid var(--mantine-color-gray-2)'`
+
+5. Fixed `src/features/feature-requests/components/feature-form/index.tsx` — replaced `borderRadius: '999px'` in PriorityPicker with `var(--mantine-radius-full)`
+
+6. Updated `src/pages/login-page/index.tsx` — replaced `maw={960}` with `maw={PAGE_MAX_WIDTH}` from `constants/layout`
+
+TypeScript compilation confirmed clean with no errors.
+
+## [2026-03-28T00:00:00Z] – improve make demo command with env generation
+
+### Prompt
+we need to improve the male file in the make demo command, the idea it is that this command should set ALL the necessary things to run the entire app and this is including to generate a random values for the necessary vars in the .env files also what more it's needed to install/generate?
+
+### Action Taken
+Added a `setup-env` target to the Makefile that generates `.env` (with random `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, and `DJANGO_SECRET_KEY`) and `frontend/.env` (copied from example) if they do not already exist. Updated `demo` target to: call `setup-env` first, add `--build --wait` to `docker compose up` (rebuilds images and waits for health checks), then run migrations and seeds. Updated help text accordingly.

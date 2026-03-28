@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useMediaQuery } from '@mantine/hooks'
-import { MD_BREAKPOINT } from '../../constants/layout'
+import { MD_BREAKPOINT, PAGE_MAX_WIDTH } from '../../constants/layout'
 import { Avatar, Box, Divider, Group, Stack, Text } from '@mantine/core'
 import { IconStack2, IconCheck, IconUsers, IconTrendingUp } from '@tabler/icons-react'
 import { useCurrentUser } from '../../app/AuthProvider'
@@ -204,7 +204,7 @@ export function LoginPage() {
       )}
 
       <Box
-        maw={960}
+        maw={PAGE_MAX_WIDTH}
         w="100%"
         mx="auto"
         px={isMobile ? 'md' : 0}

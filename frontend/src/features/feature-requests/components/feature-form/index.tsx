@@ -23,7 +23,6 @@ import {
   IconChevronUp,
   IconInfoCircle,
   IconSend,
-  IconSparkles,
   IconStar,
   IconStarFilled,
 } from '@tabler/icons-react'
@@ -89,7 +88,7 @@ function PriorityPicker({ value, onChange }: PriorityPickerProps) {
                   placeItems: 'center',
                   width: 34,
                   height: 34,
-                  borderRadius: '999px',
+                  borderRadius: 'var(--mantine-radius-full)',
                   color: isActive
                     ? 'var(--mantine-color-indigo-5)'
                     : 'var(--mantine-color-gray-3)',
@@ -181,7 +180,7 @@ export function FeatureForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <Stack gap="lg">
-      
+
 
         {submitError && !submitError.details && (
           <Alert

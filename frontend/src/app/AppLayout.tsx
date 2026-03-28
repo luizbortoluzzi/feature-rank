@@ -180,7 +180,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
       </AppShell.Navbar>
 
-      <AppShell.Main style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>
+      <AppShell.Main>
         {children}
       </AppShell.Main>
     </AppShell>

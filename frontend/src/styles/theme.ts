@@ -146,6 +146,7 @@ export const theme = createTheme({
     md: rem(16),
     lg: rem(20),
     xl: rem(28),
+    full: '9999px',
   },
 
   defaultRadius: 'lg',
@@ -203,7 +204,6 @@ export const theme = createTheme({
           backgroundColor: theme.white,
           justifyContent: 'center',
 
-          // 🔥 linha com padding lateral real
           '&::after': {
             content: '""',
             position: 'absolute',
@@ -233,7 +233,7 @@ export const theme = createTheme({
         },
 
         close: {
-          borderRadius: 999,
+          borderRadius: theme.radius.full,
           color: theme.colors.gray[6],
           transition: 'background-color 120ms ease, color 120ms ease',
 
@@ -264,12 +264,12 @@ export const theme = createTheme({
         },
         scrollbar: {
           backgroundColor: theme.colors.gray[0],
-          borderRadius: 999,
+          borderRadius: theme.radius.full,
           padding: rem(2),
         },
         thumb: {
           backgroundColor: theme.colors.gray[4],
-          borderRadius: 999,
+          borderRadius: theme.radius.full,
           minHeight: rem(28),
         },
         corner: {
@@ -313,7 +313,7 @@ export const theme = createTheme({
 
           '&:focus, &:focus-within': {
             borderColor: theme.colors.indigo[5],
-            boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.14)',
+            boxShadow: `0 0 0 3px color-mix(in srgb, ${theme.colors.indigo[5]} 14%, transparent)`,
           },
         },
       }),
@@ -347,7 +347,7 @@ export const theme = createTheme({
       },
       styles: (theme: MantineTheme) => ({
         root: {
-          backgroundColor: '#FCFCFE',
+          backgroundColor: theme.white,
           borderColor: theme.colors.gray[2],
         },
       }),
@@ -378,7 +378,6 @@ export const theme = createTheme({
       },
       styles: (theme: MantineTheme) => ({
         table: {
-          // borderCollapse: 'separate',
           borderSpacing: 0,
           overflow: 'hidden',
           backgroundColor: theme.white,
@@ -427,14 +426,39 @@ export const theme = createTheme({
       },
     },
 
+    AppShell: {
+      styles: (theme: MantineTheme) => ({
+        main: {
+          backgroundColor: theme.colors.gray[0],
+        },
+      }),
+    },
+
     Notification: {
       defaultProps: {
         radius: 'xl',
+        withBorder: true,
       },
-      styles: {
-        root: {
-          boxShadow: '0 10px 24px rgba(30, 36, 53, 0.08)',
-        },
+      styles: (theme: MantineTheme, props: Record<string, unknown>) => {
+        const colorKey = props.color as keyof typeof theme.colors | undefined
+        const palette = colorKey ? theme.colors[colorKey] : undefined
+
+        return {
+          root: {
+            boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+            ...(palette && {
+              backgroundColor: palette[0],
+              borderColor: palette[3],
+            }),
+          },
+          title: {
+            color: theme.colors.gray[9],
+            fontWeight: '600',
+          },
+          description: {
+            color: theme.colors.gray[6],
+          },
+        }
       },
     },
   },
