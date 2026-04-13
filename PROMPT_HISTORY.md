@@ -2871,3 +2871,21 @@ ok, now we need to fix some bugs, the inputs are not catching the inputed value
 
 ### Action Taken
 Added forwardRef to FormTextInput and FormTextarea. When {…register('field')} is spread onto a wrapper component, React extracts ref as a special prop — without forwardRef it never reaches the inner Mantine element, so RHF cannot register the field or read its value. Controller-based components (FormSelect, FormColorInput, FormNumberInput, FormSwitch) are unaffected as they use controlled value/onChange and don't rely on ref for value tracking.
+
+## [2026-04-13T00:00:00Z] – fix lint error for unused FeatureDetailPage import
+
+### Prompt
+> feature-rank-frontend@0.1.0 lint
+> eslint src/
+
+
+/home/isam/prj/feature-rank/frontend/src/app/router.tsx
+  3:10  error  'FeatureDetailPage' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/isam/prj/feature-rank/frontend/src/test/render.tsx
+  5:10  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file  react-refresh/only-export-components
+
+✖ 2 problems (1 error, 1 warning)
+
+### Action Taken
+Added the missing `/features/:id` route to router.tsx using FeatureDetailPage, resolving the unused import lint error. The import was intentional — the detail page existed but its route had not been wired up yet.
