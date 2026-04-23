@@ -1,18 +1,15 @@
 import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
-import {
-  Modal,
-  Stack,
-  TextInput,
-  Textarea,
-  NumberInput,
-  ColorInput,
-  Switch,
-  Group,
-  Button,
-  Text,
-} from '@mantine/core'
+import { Group, Modal, Stack } from '@mantine/core'
 import type { ApiError } from '../../../../types/api'
+import { FormTextInput } from '../../../../components/form/text-input'
+import { FormTextarea } from '../../../../components/form/textarea'
+import { FormColorInput } from '../../../../components/form/color-input'
+import { FormNumberInput } from '../../../../components/form/number-input'
+import { FormSwitch } from '../../../../components/form/switch'
+import { FormSubmitError } from '../../../../components/form/submit-error'
+import { FormActions } from '../../../../components/form/actions'
+import { useServerFieldErrors } from '../../../../hooks/use-server-field-errors'
 
 export interface StatusFormFields {
   name: string
@@ -75,30 +72,20 @@ export function StatusFormModal({
     }
   }, [isOpen, defaultValues, reset])
 
-  useEffect(() => {
-    if (submitError?.details) {
-      Object.entries(submitError.details).forEach(([field, messages]) => {
-        setError(field as keyof StatusFormFields, { message: messages[0] })
-      })
-    }
-  }, [submitError, setError])
+  useServerFieldErrors(submitError, setError)
 
   return (
     <Modal
       opened={isOpen}
       onClose={onClose}
       title={mode === 'create' ? 'New Status' : 'Edit Status'}
-      size="md"
+      size="lg"
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <Stack gap="md">
-          {submitError && !submitError.details && (
-            <Text c="red" fz="sm" role="alert">
-              {submitError.message}
-            </Text>
-          )}
+        <Stack gap="lg">
+          <FormSubmitError error={submitError} />
 
-          <TextInput
+          <FormTextInput
             label="Name"
             withAsterisk
             placeholder="e.g. In Progress"
@@ -111,11 +98,10 @@ export function StatusFormModal({
             control={control}
             rules={{ required: 'Color is required.' }}
             render={({ field }) => (
-              <ColorInput
+              <FormColorInput
                 label="Color"
                 withAsterisk
                 placeholder="#6B7280"
-                format="hex"
                 value={field.value}
                 onChange={field.onChange}
                 error={errors.color?.message}
@@ -123,10 +109,9 @@ export function StatusFormModal({
             )}
           />
 
-          <Textarea
+          <FormTextarea
             label="Description"
             placeholder="Brief description of this status"
-            rows={3}
             error={errors.description?.message}
             {...register('description')}
           />
@@ -139,11 +124,10 @@ export function StatusFormModal({
               min: { value: 0, message: 'Must be 0 or greater.' },
             }}
             render={({ field }) => (
-              <NumberInput
+              <FormNumberInput
                 label="Sort Order"
                 withAsterisk
                 placeholder="0"
-                min={0}
                 value={field.value}
                 onChange={(val) => field.onChange(typeof val === 'number' ? val : 0)}
                 error={errors.sort_order?.message}
@@ -156,12 +140,11 @@ export function StatusFormModal({
               name="is_terminal"
               control={control}
               render={({ field }) => (
-                <Switch
+                <FormSwitch
                   label="Terminal state"
                   description="Mark as a final lifecycle state"
                   checked={field.value}
                   onChange={(e) => field.onChange(e.currentTarget.checked)}
-                  color="indigo"
                 />
               )}
             />
@@ -170,25 +153,22 @@ export function StatusFormModal({
               name="is_active"
               control={control}
               render={({ field }) => (
-                <Switch
+                <FormSwitch
                   label="Active"
                   description="Show in active status filters"
                   checked={field.value}
                   onChange={(e) => field.onChange(e.currentTarget.checked)}
-                  color="indigo"
                 />
               )}
             />
           </Group>
 
-          <Group justify="flex-end" gap="sm" mt="xs">
-            <Button variant="default" onClick={onClose} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button type="submit" color="indigo" loading={isPending}>
-              {mode === 'create' ? 'Create Status' : 'Save Changes'}
-            </Button>
-          </Group>
+          <FormActions
+            layout="page"
+            onCancel={onClose}
+            isPending={isPending}
+            submitLabel={mode === 'create' ? 'Create Status' : 'Save Changes'}
+          />
         </Stack>
       </form>
     </Modal>
