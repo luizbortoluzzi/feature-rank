@@ -121,7 +121,13 @@ export function IconPicker({ value, onChange, error }: IconPickerProps) {
           </UnstyledButton>
         </Popover.Target>
 
-        <Popover.Dropdown p="sm" style={{ boxShadow: '0 0 0 1px rgba(30, 36, 53, 0.06), 0 8px 16px rgba(30, 36, 53, 0.10), 0 24px 60px rgba(30, 36, 53, 0.18)' }}>
+        <Popover.Dropdown
+          p="sm"
+          style={{
+            boxShadow:
+              '0 0 0 1px rgba(30, 36, 53, 0.06), 0 8px 16px rgba(30, 36, 53, 0.10), 0 24px 60px rgba(30, 36, 53, 0.18)',
+          }}
+        >
           <TextInput
             placeholder="Search icons…"
             leftSection={<IconSearch size={14} />}

@@ -2889,3 +2889,22 @@ Added forwardRef to FormTextInput and FormTextarea. When {…register('field')} 
 
 ### Action Taken
 Added the missing `/features/:id` route to router.tsx using FeatureDetailPage, resolving the unused import lint error. The import was intentional — the detail page existed but its route had not been wired up yet.
+
+---
+
+## [2026-04-23T12:44:20Z] – Fix Prettier formatting errors from CI
+
+### Prompt
+Run npm run format:check
+
+> feature-rank-frontend@0.1.0 format:check
+> prettier --check src/
+
+Checking formatting...
+[warn] src/features/categories/components/category-form-modal/index.tsx
+[warn] src/features/categories/components/icon-picker/index.tsx
+[warn] Code style issues found in 2 files. Run Prettier with --write to fix.
+Error: Process completed with exit code 1.
+
+### Action Taken
+Rodou `npm run format` (prettier --write) no diretório frontend para corrigir os dois arquivos sinalizados (category-form-modal/index.tsx e icon-picker/index.tsx). Verificou com `npm run format:check` que passou (All matched files use Prettier code style!). Mudanças deixadas unstaged para o usuário decidir quando committar.

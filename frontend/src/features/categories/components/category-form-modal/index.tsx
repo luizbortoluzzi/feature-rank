@@ -128,12 +128,7 @@ export function CategoryFormModal({
             )}
           />
 
-          <FormActions
-            layout="page"
-            onCancel={onClose}
-            isPending={isPending}
-            submitLabel="Save"
-          />
+          <FormActions layout="page" onCancel={onClose} isPending={isPending} submitLabel="Save" />
         </Stack>
       </form>
     </Modal>
